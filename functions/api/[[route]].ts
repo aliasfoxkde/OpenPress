@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import type { Bindings, Variables } from "./lib/types";
-import { securityHeaders, rateLimit, corsConfig } from "./lib/security";
+import { securityHeaders, rateLimit, corsConfig, requireCapability } from "./lib/security";
 import auth from "./lib/auth";
 import content from "./lib/content";
 import media from "./lib/media";
@@ -11,6 +11,7 @@ import products from "./lib/products";
 import orders, { cart } from "./lib/orders";
 import aiRoutes from "./lib/ai";
 import revisions from "./lib/revisions";
+import users from "./lib/users";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -108,14 +109,41 @@ protectedRoutes.use("*", async (c, next) => {
   }
 });
 
-protectedRoutes.route("/content", content);
+// Content routes - any authenticated user can read; write requires capabilities
+const contentRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+contentRoutes.get("/*", async (c, next) => next()); // Read = any auth user
+contentRoutes.post("/", requireCapability("submit_draft"), async (c, next) => next());
+contentRoutes.put("/*", async (c, next) => {
+  // Ownership check for content updates
+  const user = c.get("user");
+  if (!user) return c.json({ error: { message: "Authorization required", code: "UNAUTHORIZED" } }, 401);
+  const slug = c.req.path.split("/").pop();
+  if (!slug) return next();
+  const db = c.env.DB;
+  const item = await db?.prepare("SELECT author_id FROM content_items WHERE slug = ?").bind(slug).first<{ author_id: string }>();
+  // Admins/editors with edit_any can edit anything
+  if (user.role === "admin" || user.role === "editor") return next();
+  // Authors/contributors can only edit their own
+  if (item && item.author_id === user.id) return next();
+  return c.json({ error: { message: "Insufficient permissions", code: "FORBIDDEN" } }, 403);
+});
+contentRoutes.delete("/*", requireCapability("delete_any"));
+contentRoutes.route("/", content);
+protectedRoutes.route("/content", contentRoutes);
+
 protectedRoutes.route("/media", media);
+protectedRoutes.use("/taxonomies/*", requireCapability("manage_taxonomies"));
 protectedRoutes.route("/taxonomies", taxonomies);
+protectedRoutes.use("/settings/*", requireCapability("manage_settings"));
 protectedRoutes.route("/settings", settings);
+protectedRoutes.use("/products/*", requireCapability("manage_products"));
 protectedRoutes.route("/products", products);
+protectedRoutes.use("/orders/*", requireCapability("manage_orders"));
 protectedRoutes.route("/orders", orders);
+protectedRoutes.use("/ai/*", requireCapability("use_ai"));
 protectedRoutes.route("/ai", aiRoutes);
 protectedRoutes.route("/revisions", revisions);
+protectedRoutes.route("/users", users);
 
 app.route("/api", protectedRoutes);
 

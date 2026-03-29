@@ -62,19 +62,19 @@ Full revision history with diff view, restore, and automatic saving.
 
 ---
 
-## Phase 12: Role-Based Access Control (RBAC) [PENDING]
+## Phase 12: Role-Based Access Control (RBAC) [IN PROGRESS]
 
 WordPress-like role system with granular capabilities.
 
-- [ ] 12.1 Add `role` column to users table (values: admin, editor, author, contributor, subscriber)
-- [ ] 12.2 Define capability map: admin (all), editor (publish_any, edit_any, delete_any, manage_media), author (publish_own, edit_own, upload_media), contributor (submit_draft, edit_own), subscriber (read)
-- [ ] 12.3 Create `requireCapability(cap)` Hono middleware for route protection
-- [ ] 12.4 Apply capability checks to all API routes (content CRUD, media, settings, users, products, orders)
-- [ ] 12.5 Add user management API endpoints (GET /api/users, PUT /api/users/:id/role, DELETE /api/users/:id)
-- [ ] 12.6 Build AdminUsers page (user list table, role dropdown, delete button)
+- [x] 12.1 Add `role` column to users table (values: admin, editor, author, contributor, subscriber)
+- [x] 12.2 Define capability map: admin (all), editor (publish_any, edit_any, delete_any, manage_media), author (publish_own, edit_own, upload_media), contributor (submit_draft, edit_own), subscriber (read)
+- [x] 12.3 Create `requireCapability(cap)` Hono middleware for route protection
+- [x] 12.4 Apply capability checks to all API routes (content CRUD, media, settings, users, products, orders)
+- [x] 12.5 Add user management API endpoints (GET /api/users, PUT /api/users/:id/role, DELETE /api/users/:id)
+- [x] 12.6 Build AdminUsers page (user list table, role dropdown, delete button)
 - [ ] 12.7 Add "Pending Review" workflow (contributors submit, editors review/publish)
 - [ ] 12.8 Add author_name display on public blog posts
-- [ ] 12.9 Restrict admin navigation items based on current user role
+- [x] 12.9 Restrict admin navigation items based on current user role
 - [ ] 12.10 Add "My Content" filter (show only current user's content for authors/contributors)
 - [ ] 12.11 Add user profile page (name, email, password change, avatar)
 

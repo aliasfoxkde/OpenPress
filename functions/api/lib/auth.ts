@@ -123,10 +123,10 @@ auth.post("/register", async (c) => {
     .prepare(
       "INSERT INTO users (id, email, name, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
     )
-    .bind(id, email, name || email.split("@")[0], passwordHash, "admin", now, now)
+    .bind(id, email, name || email.split("@")[0], passwordHash, "subscriber", now, now)
     .run();
 
-  const token = await generateAccessToken(id, email, "admin", getJwtSecret(c));
+  const token = await generateAccessToken(id, email, "subscriber", getJwtSecret(c));
   const refreshToken = generateRefreshToken();
   const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
 
@@ -146,7 +146,7 @@ auth.post("/register", async (c) => {
   return c.json(
     {
       data: {
-        user: { id, email, name: name || email.split("@")[0], role: "admin" },
+        user: { id, email, name: name || email.split("@")[0], role: "subscriber" },
         access_token: token,
         expires_in: ACCESS_TOKEN_EXPIRY,
       },

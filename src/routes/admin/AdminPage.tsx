@@ -1,20 +1,34 @@
 import { Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/cn";
+import { useAuthStore } from "@/stores/auth";
+import type { UserRole } from "@shared/types";
 
-const navItems = [
-  { path: "/admin", label: "Dashboard", icon: "📊" },
-  { path: "/admin/content", label: "Content", icon: "📝" },
-  { path: "/admin/media", label: "Media", icon: "🖼️" },
-  { path: "/admin/products", label: "Products", icon: "🛒" },
-  { path: "/admin/orders", label: "Orders", icon: "📦" },
-  { path: "/admin/ai", label: "AI Assistant", icon: "🤖" },
-  { path: "/admin/users", label: "Users", icon: "👥" },
-  { path: "/admin/settings", label: "Settings", icon: "⚙️" },
+interface NavItem {
+  path: string;
+  label: string;
+  icon: string;
+  minRole: UserRole[];
+}
+
+const navItems: NavItem[] = [
+  { path: "/admin", label: "Dashboard", icon: "📊", minRole: ["admin", "editor", "author", "contributor", "subscriber", "viewer"] },
+  { path: "/admin/content", label: "Content", icon: "📝", minRole: ["admin", "editor", "author", "contributor"] },
+  { path: "/admin/media", label: "Media", icon: "🖼️", minRole: ["admin", "editor", "author", "contributor"] },
+  { path: "/admin/products", label: "Products", icon: "🛒", minRole: ["admin", "editor"] },
+  { path: "/admin/orders", label: "Orders", icon: "📦", minRole: ["admin", "editor"] },
+  { path: "/admin/ai", label: "AI Assistant", icon: "🤖", minRole: ["admin", "editor", "author"] },
+  { path: "/admin/users", label: "Users", icon: "👥", minRole: ["admin"] },
+  { path: "/admin/settings", label: "Settings", icon: "⚙️", minRole: ["admin"] },
 ];
 
 export function AdminPage() {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  const user = useAuthStore((s) => s.user);
+
+  const visibleItems = navItems.filter(
+    (item) => !user || item.minRole.includes(user.role),
+  );
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)]">
@@ -25,7 +39,7 @@ export function AdminPage() {
           </h2>
         </div>
         <nav className="flex-1 px-2 space-y-1">
-          {navItems.map((item) => (
+          {visibleItems.map((item) => (
             <Link
               key={item.path}
               to={item.path}
@@ -41,6 +55,13 @@ export function AdminPage() {
             </Link>
           ))}
         </nav>
+        {user && (
+          <div className="p-4 border-t border-border">
+            <div className="text-xs text-text-tertiary">
+              Role: <span className="capitalize font-medium text-text-secondary">{user.role}</span>
+            </div>
+          </div>
+        )}
       </aside>
 
       <div className="flex-1 flex flex-col">
@@ -52,7 +73,7 @@ export function AdminPage() {
             }}
             className="w-full rounded-md border border-border px-3 py-2 text-sm"
           >
-            {navItems.map((item) => (
+            {visibleItems.map((item) => (
               <option key={item.path} value={item.path}>
                 {item.icon} {item.label}
               </option>

@@ -54,7 +54,7 @@ export interface User {
   updated_at: string;
 }
 
-export type UserRole = "admin" | "editor" | "viewer";
+export type UserRole = "admin" | "editor" | "author" | "contributor" | "subscriber" | "viewer";
 
 // Taxonomy types
 export interface Taxonomy {

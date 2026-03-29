@@ -174,3 +174,129 @@ export function isValidContentType(type: string): boolean {
 export function isValidProductStatus(status: string): boolean {
   return (ALLOWED_PRODUCT_STATUSES as readonly string[]).includes(status);
 }
+
+// ─── RBAC Capability System ──────────────────────────────────────────────────
+
+export type Role = "admin" | "editor" | "author" | "contributor" | "subscriber" | "viewer";
+
+export type Capability =
+  | "publish_any"
+  | "edit_any"
+  | "delete_any"
+  | "manage_media"
+  | "manage_taxonomies"
+  | "manage_settings"
+  | "manage_users"
+  | "manage_plugins"
+  | "manage_products"
+  | "manage_orders"
+  | "use_ai"
+  | "publish_own"
+  | "edit_own"
+  | "delete_own"
+  | "upload_media"
+  | "submit_draft"
+  | "read";
+
+/**
+ * WordPress-style capability map.
+ * Each role inherits capabilities from roles below it.
+ */
+const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
+  admin: [
+    "publish_any", "edit_any", "delete_any",
+    "manage_media", "manage_taxonomies", "manage_settings",
+    "manage_users", "manage_plugins", "manage_products",
+    "manage_orders", "use_ai",
+    "publish_own", "edit_own", "delete_own",
+    "upload_media", "submit_draft", "read",
+  ],
+  editor: [
+    "publish_any", "edit_any", "delete_any",
+    "manage_media", "manage_taxonomies",
+    "manage_products", "manage_orders", "use_ai",
+    "publish_own", "edit_own", "delete_own",
+    "upload_media", "submit_draft", "read",
+  ],
+  author: [
+    "publish_own", "edit_own", "delete_own",
+    "upload_media", "use_ai",
+    "submit_draft", "read",
+  ],
+  contributor: [
+    "submit_draft", "edit_own",
+    "upload_media", "read",
+  ],
+  subscriber: [
+    "read",
+  ],
+  viewer: [
+    "read",
+  ],
+};
+
+/**
+ * Check if a role has a specific capability.
+ */
+export function hasCapability(role: string, cap: Capability): boolean {
+  const caps = ROLE_CAPABILITIES[role as Role];
+  if (!caps) return false;
+  return caps.includes(cap);
+}
+
+/**
+ * Hono middleware that requires a specific capability.
+ * Must be used AFTER auth middleware (requires c.get("user")).
+ */
+export function requireCapability(cap: Capability) {
+  return async (c: any, next: any) => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: { message: "Authorization required", code: "UNAUTHORIZED" } }, 401);
+    }
+
+    if (!hasCapability(user.role, cap)) {
+      return c.json({ error: { message: "Insufficient permissions", code: "FORBIDDEN" } }, 403);
+    }
+
+    return next();
+  };
+}
+
+/**
+ * Hono middleware that checks ownership for "own" capabilities.
+ * If user has the "any" variant, allow regardless of ownership.
+ * Otherwise, verify the user owns the resource.
+ */
+export function requireOwnership(capAny: Capability, capOwn: Capability, getOwnerId: (c: any) => Promise<string | null>) {
+  return async (c: any, next: any) => {
+    const user = c.get("user");
+    if (!user) {
+      return c.json({ error: { message: "Authorization required", code: "UNAUTHORIZED" } }, 401);
+    }
+
+    // Admins/editors with "any" capability bypass ownership check
+    if (hasCapability(user.role, capAny)) {
+      return next();
+    }
+
+    // Check if user has "own" capability
+    if (!hasCapability(user.role, capOwn)) {
+      return c.json({ error: { message: "Insufficient permissions", code: "FORBIDDEN" } }, 403);
+    }
+
+    // Verify ownership
+    const ownerId = await getOwnerId(c);
+    if (ownerId !== user.id) {
+      return c.json({ error: { message: "You can only modify your own content", code: "FORBIDDEN" } }, 403);
+    }
+
+    return next();
+  };
+}
+
+export const VALID_ROLES: Role[] = ["admin", "editor", "author", "contributor", "subscriber", "viewer"];
+
+export function isValidRole(role: string): boolean {
+  return VALID_ROLES.includes(role as Role);
+}
