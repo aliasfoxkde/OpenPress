@@ -142,14 +142,14 @@ export function AdminUsers() {
           <div className="text-text-tertiary">Loading users...</div>
         </div>
       ) : (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-surface-secondary">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Name</th>
-                <th className="text-left px-4 py-3 font-medium text-text-tertiary">Email</th>
+                <th className="text-left px-4 py-3 font-medium text-text-tertiary hidden sm:table-cell">Email</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Role</th>
-                <th className="text-left px-4 py-3 font-medium text-text-tertiary">Joined</th>
+                <th className="text-left px-4 py-3 font-medium text-text-tertiary hidden md:table-cell">Joined</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Actions</th>
               </tr>
             </thead>
@@ -169,7 +169,7 @@ export function AdminUsers() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-text-secondary">{user.email}</td>
+                  <td className="px-4 py-3 text-text-secondary hidden sm:table-cell">{user.email}</td>
                   <td className="px-4 py-3">
                     {user.id === currentUser?.id ? (
                       <span className={`text-xs px-2 py-0.5 rounded-full ${ROLE_COLORS[user.role]}`}>
@@ -188,7 +188,7 @@ export function AdminUsers() {
                       </select>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-text-tertiary">{formatDate(user.created_at)}</td>
+                  <td className="px-4 py-3 text-text-tertiary hidden md:table-cell">{formatDate(user.created_at)}</td>
                   <td className="px-4 py-3">
                     {user.id !== currentUser?.id && (
                       <button

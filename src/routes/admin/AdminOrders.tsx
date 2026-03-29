@@ -60,15 +60,15 @@ export default function AdminOrders() {
         <div className="text-center py-12 text-text-tertiary">No orders yet.</div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="overflow-x-auto rounded-lg border border-border">
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-surface-secondary">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Order ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase hidden sm:table-cell">Email</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Total</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Status</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Date</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase hidden md:table-cell">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-surface">
@@ -79,7 +79,7 @@ export default function AdminOrders() {
                         {order.id.slice(0, 8)}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-sm text-text-primary">{order.email}</td>
+                    <td className="px-4 py-3 text-sm text-text-primary hidden sm:table-cell">{order.email}</td>
                     <td className="px-4 py-3 text-sm font-medium text-text-primary">
                       {formatPrice(order.total)} {order.currency}
                     </td>
@@ -88,7 +88,7 @@ export default function AdminOrders() {
                         {order.status}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-sm text-text-tertiary">
+                    <td className="px-4 py-3 text-sm text-text-tertiary hidden md:table-cell">
                       {new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                     </td>
                   </tr>

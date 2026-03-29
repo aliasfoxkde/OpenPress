@@ -216,7 +216,7 @@ export function AdminContent() {
       </div>
 
       {/* Content table */}
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-border rounded-lg overflow-x-auto">
         {loading ? (
           <div className="px-4 py-8 text-center text-text-tertiary text-sm">Loading...</div>
         ) : filtered.length === 0 ? (
