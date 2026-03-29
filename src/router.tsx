@@ -5,6 +5,10 @@ import {
 } from "@tanstack/react-router";
 import { RootLayout } from "./components/layout/RootLayout";
 import { HomePage } from "./routes/HomePage";
+import { StorefrontPage } from "./routes/Storefront";
+import { ProductDetailPage } from "./routes/ProductDetail";
+import { BlogPage } from "./routes/Blog";
+import { BlogPostPage } from "./routes/BlogPost";
 import { AdminPage } from "./routes/admin/AdminPage";
 import { AdminDashboard } from "./routes/admin/AdminDashboard";
 import { AdminContent } from "./routes/admin/AdminContent";
@@ -22,6 +26,30 @@ const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: HomePage,
+});
+
+const shopRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/shop",
+  component: StorefrontPage,
+});
+
+const productRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/shop/$slug",
+  component: ProductDetailPage,
+});
+
+const blogRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/blog",
+  component: BlogPage,
+});
+
+const blogPostRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/blog/$slug",
+  component: BlogPostPage,
 });
 
 const loginRoute = createRoute({
@@ -74,6 +102,10 @@ const adminAIRoute = createRoute({
 
 const routeTree = rootRoute.addChildren([
   homeRoute,
+  shopRoute,
+  productRoute,
+  blogRoute,
+  blogPostRoute,
   loginRoute,
   adminRoute.addChildren([
     adminDashboardRoute,

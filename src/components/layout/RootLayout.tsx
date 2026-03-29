@@ -22,6 +22,22 @@ export function RootLayout() {
               >
                 Home
               </Link>
+              <Link
+                to="/blog"
+                className={cn(
+                  "text-sm text-text-secondary hover:text-text-primary transition-colors",
+                )}
+              >
+                Blog
+              </Link>
+              <Link
+                to="/shop"
+                className={cn(
+                  "text-sm text-text-secondary hover:text-text-primary transition-colors",
+                )}
+              >
+                Shop
+              </Link>
               {!isAdmin && (
                 <Link
                   to="/admin"
