@@ -170,6 +170,19 @@ export function ContentEditor() {
     handleStatusChange(newStatus);
   }, [status, handleStatusChange]);
 
+  // Autosave: debounced 30s save during editing
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => {
+    if (!hasChanges || isCreateMode || !slug) return;
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    autosaveTimerRef.current = setTimeout(() => {
+      void handleSave();
+    }, 30_000);
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+  }, [hasChanges, editorBlocks, title, excerpt, status, isCreateMode, slug, handleSave]);
+
   // Keyboard shortcut: Ctrl+S to save
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -304,7 +317,7 @@ export function ContentEditor() {
       {/* Unsaved indicator */}
       {hasChanges && (
         <div className="fixed bottom-4 right-4 bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-md text-xs shadow-md">
-          Unsaved changes (Ctrl+S to save)
+          Unsaved changes — autosaves in 30s (Ctrl+S to save now)
         </div>
       )}
     </div>

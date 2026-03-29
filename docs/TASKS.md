@@ -19,45 +19,45 @@ All original phases (Foundation, Core API, Admin UI, Extensibility, PWA, E-Comme
 
 ---
 
-## Phase 10: WYSIWYG Block Editor [PENDING]
+## Phase 10: WYSIWYG Block Editor [IN PROGRESS]
 
 Replace textarea-based block editor with a proper WYSIWYG rich-text editor.
 
-- [ ] 10.1 Install BlockNote (`@blocknote/core`, `@blocknote/react`) and TipTap dependencies
-- [ ] 10.2 Create `RichTextEditor` component wrapping BlockNoteView
-- [ ] 10.3 Configure BlockNote with StarterKit + custom extensions (Image, Link, CodeBlock, Table, Placeholder)
-- [ ] 10.4 Add slash menu for block insertion (/, heading, image, code, quote, list, table)
-- [ ] 10.5 Add inline formatting bubble menu (bold, italic, link, strikethrough, inline code)
-- [ ] 10.6 Add block drag-and-drop reordering via BlockNote built-in DnD
-- [ ] 10.7 Map BlockNote JSON output to content save API format
-- [ ] 10.8 Add block type switching (paragraph -> heading -> bullet list)
-- [ ] 10.9 Add image block with R2 media upload integration
-- [ ] 10.10 Add code block with language selector and syntax highlighting (lowlight)
-- [ ] 10.11 Add table block support (insert, add/delete rows/columns)
-- [ ] 10.12 Add blockquote block with styling
-- [ ] 10.13 Add horizontal rule / separator block
-- [ ] 10.14 Replace old BlockEditor component in ContentEditor page
-- [ ] 10.15 Update BlogPost public page renderer to handle BlockNote JSON format
+- [x] 10.1 Install BlockNote (`@blocknote/core`, `@blocknote/react`) and TipTap dependencies
+- [x] 10.2 Create `RichTextEditor` component wrapping BlockNoteView
+- [x] 10.3 Configure BlockNote with default UI extensions (Image, CodeBlock, Table, etc.)
+- [x] 10.4 Add slash menu for block insertion (/, heading, image, code, quote, list, table)
+- [x] 10.5 Add inline formatting bubble menu (bold, italic, link, strikethrough, inline code)
+- [x] 10.6 Add block drag-and-drop reordering via BlockNote built-in DnD
+- [x] 10.7 Map BlockNote JSON output to content save API format
+- [x] 10.8 Add block type switching (paragraph -> heading -> bullet list)
+- [x] 10.9 Add image block with R2 media upload integration
+- [x] 10.10 Add code block with language selector
+- [x] 10.11 Add table block support (insert, add/delete rows/columns)
+- [x] 10.12 Add blockquote block with styling
+- [x] 10.13 Add horizontal rule / separator block
+- [x] 10.14 Replace old BlockEditor component in ContentEditor page
+- [x] 10.15 Update BlogPost public page renderer to handle BlockNote JSON format
 - [ ] 10.16 Add "source code" view toggle to see/edit raw HTML
 - [ ] 10.17 Add keyboard shortcuts (Ctrl+B bold, Ctrl+I italic, Ctrl+K link, Ctrl+S save)
 
 ---
 
-## Phase 11: Content Versioning & Autosave [PENDING]
+## Phase 11: Content Versioning & Autosave [IN PROGRESS]
 
 Full revision history with diff view, restore, and automatic saving.
 
-- [ ] 11.1 Create `content_revisions` D1 table (id, content_id, title, body_snapshot, blocks_snapshot, author_id, revision_number, created_at)
-- [ ] 11.2 Add revision save hook (snapshot before every content update)
-- [ ] 11.3 Add revision list API endpoint (GET /api/content/:slug/revisions)
-- [ ] 11.4 Add single revision API endpoint (GET /api/content/:slug/revisions/:id)
+- [x] 11.1 Create `content_revisions` D1 table (id, content_id, title, blocks_snapshot, author_id, revision_number, created_at)
+- [x] 11.2 Add revision save hook (snapshot before every content update)
+- [x] 11.3 Add revision list API endpoint (GET /api/revisions?contentId=...)
+- [x] 11.4 Add single revision API endpoint (GET /api/revisions/:id)
+- [x] 11.6 Add revision restore API endpoint (POST /api/revisions/:id/restore)
+- [x] 11.11 Add revision count limit per content item (configurable, default 50, prune oldest)
 - [ ] 11.5 Add revision diff API endpoint (GET /api/content/:slug/revisions/:id1/diff/:id2)
-- [ ] 11.6 Add revision restore API endpoint (POST /api/content/:slug/revisions/:id/restore)
 - [ ] 11.7 Add client-side autosave (debounced 30s timer during editing, saves draft to D1)
 - [ ] 11.8 Build RevisionHistory sidebar panel in ContentEditor
 - [ ] 11.9 Build RevisionDiff viewer (unified diff or side-by-side comparison)
 - [ ] 11.10 Add "Restore this revision" button on each revision entry
-- [ ] 11.11 Add revision count limit per content item (configurable, default 50, prune oldest)
 - [ ] 11.12 Show revision count badge in content list table
 
 ---
