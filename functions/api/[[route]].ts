@@ -152,6 +152,38 @@ protectedRoutes.route("/ai", aiRoutes);
 protectedRoutes.route("/revisions", revisions);
 protectedRoutes.route("/users", users);
 
+// Dashboard stats (any authenticated user)
+protectedRoutes.get("/stats", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ data: {} });
+
+  const [content, published, draft, pending, media, users, products, orders, comments] = await Promise.all([
+    db.prepare("SELECT COUNT(*) as count FROM content_items").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM content_items WHERE status = 'published'").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM content_items WHERE status = 'draft'").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM content_items WHERE status = 'pending'").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM media").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM users").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM products").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM orders").first<{ count: number }>(),
+    db.prepare("SELECT COUNT(*) as count FROM comments WHERE status = 'pending'").first<{ count: number }>(),
+  ]);
+
+  return c.json({
+    data: {
+      content_count: content?.count || 0,
+      published_count: published?.count || 0,
+      draft_count: draft?.count || 0,
+      pending_count: pending?.count || 0,
+      media_count: media?.count || 0,
+      user_count: users?.count || 0,
+      product_count: products?.count || 0,
+      order_count: orders?.count || 0,
+      pending_comments: comments?.count || 0,
+    },
+  });
+});
+
 app.route("/api", protectedRoutes);
 
 // Public cart routes (session-based, no auth required)

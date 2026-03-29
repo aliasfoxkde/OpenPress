@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary-50: oklch(0.97 0.01 260);
   --color-primary-100: oklch(0.93 0.03 260);
@@ -33,3 +35,38 @@ body {
   color: var(--color-text-primary);
   background: var(--color-surface);
 }
+
+/* Dark mode overrides */
+.dark {
+  --color-surface: oklch(0.15 0.01 260);
+  --color-surface-secondary: oklch(0.2 0.01 260);
+  --color-surface-tertiary: oklch(0.26 0.01 260);
+  --color-text-primary: oklch(0.92 0.005 260);
+  --color-text-secondary: oklch(0.7 0.01 260);
+  --color-text-tertiary: oklch(0.55 0.01 260);
+  --color-border: oklch(0.3 0.01 260);
+  --color-border-focus: oklch(0.55 0.2 260);
+
+  color-scheme: dark;
+}
+
+/* Dark mode overrides for semantic status colors */
+.dark .bg-green-50 { background-color: oklch(0.25 0.04 145); }
+.dark .bg-green-100 { background-color: oklch(0.28 0.05 145); }
+.dark .text-green-700 { color: oklch(0.75 0.14 145); }
+
+.dark .bg-yellow-50 { background-color: oklch(0.25 0.04 85); }
+.dark .bg-yellow-100 { background-color: oklch(0.28 0.06 85); }
+.dark .text-yellow-700 { color: oklch(0.78 0.14 85); }
+
+.dark .bg-red-50 { background-color: oklch(0.25 0.04 25); }
+.dark .text-red-600 { color: oklch(0.7 0.18 25); }
+.dark .text-red-700 { color: oklch(0.75 0.16 25); }
+
+.dark .bg-orange-50 { background-color: oklch(0.25 0.04 60); }
+.dark .bg-orange-100 { background-color: oklch(0.28 0.06 60); }
+.dark .text-orange-600 { color: oklch(0.7 0.18 60); }
+.dark .text-orange-700 { color: oklch(0.75 0.16 60); }
+
+.dark .bg-blue-50 { background-color: oklch(0.25 0.04 260); }
+.dark .text-blue-700 { color: oklch(0.75 0.14 260); }
