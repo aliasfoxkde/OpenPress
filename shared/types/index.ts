@@ -15,7 +15,7 @@ export interface ContentItem {
 }
 
 export type ContentType = "post" | "page" | "product" | "custom";
-export type ContentStatus = "draft" | "published" | "scheduled" | "archived" | "trash";
+export type ContentStatus = "draft" | "published" | "scheduled" | "archived" | "trash" | "pending";
 
 export interface ContentBlock {
   id: string;
