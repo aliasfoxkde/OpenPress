@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+.wrangler/
+.vercel/
+.solid/
+.output/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+coverage/
+
+# Cache
+.cache/
+.temp/
+.tmp/
+
+# AI / Claude
+.claude/
+CLAUDE.md
+
+# Lock files (keep pnpm-lock.yaml for reproducibility, exclude others)
+# pnpm-lock.yaml is included for reproducible builds
+
+# Wrangler local state
+.wrangler/state/
+.dev.vars

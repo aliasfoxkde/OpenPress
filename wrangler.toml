@@ -1,0 +1,20 @@
+name = "openpress"
+compatibility_date = "2025-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# D1 Database (SQL at the edge)
+[[d1_databases]]
+binding = "DB"
+database_name = "openpress-db"
+database_id = "" # Created via: wrangler d1 create openpress-db
+
+# KV Namespace (caching)
+[[kv_namespaces]]
+binding = "CACHE"
+id = "" # Created via: wrangler kv namespace create CACHE
+
+# R2 Bucket (media storage)
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "openpress-media"
