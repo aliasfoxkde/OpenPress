@@ -3,18 +3,18 @@ compatibility_date = "2025-01-01"
 compatibility_flags = ["nodejs_compat"]
 pages_build_output_dir = "dist"
 
-# D1 Database (SQL at the edge) - create with: wrangler d1 create openpress-db
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "openpress-db"
-# database_id = ""
+# D1 Database (SQL at the edge)
+[[d1_databases]]
+binding = "DB"
+database_name = "openpress-db"
+database_id = "4f17765f-643b-4065-8ecc-74f9da77a8e9"
 
-# KV Namespace (caching) - create with: wrangler kv namespace create CACHE
-# [[kv_namespaces]]
-# binding = "CACHE"
-# id = ""
+# KV Namespace (caching)
+[[kv_namespaces]]
+binding = "CACHE"
+id = "4ee12a2365fc48fc98c720b05b80447f"
 
-# R2 Bucket (media storage) - create with: wrangler r2 bucket create openpress-media
-# [[r2_buckets]]
-# binding = "MEDIA"
-# bucket_name = "openpress-media"
+# R2 Bucket (media storage)
+[[r2_buckets]]
+binding = "MEDIA"
+bucket_name = "openpress-media"
