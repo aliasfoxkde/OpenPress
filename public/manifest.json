@@ -1,0 +1,16 @@
+{
+  "name": "OpenPress",
+  "short_name": "OpenPress",
+  "description": "A modern, edge-native, open-source CMS",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#4F46E5",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
