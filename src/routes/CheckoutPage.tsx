@@ -35,17 +35,20 @@ export function CheckoutPage() {
     async function loadCart() {
       try {
         const res = await api.get<{ data: CartItem[] }>("/cart");
-        if (res.length === 0) {
+        const cartItems = res.data || [];
+        if (cartItems.length === 0) {
           navigate({ to: "/shop" });
           return;
         }
 
         // Fetch product details for each cart item
         const enriched: CheckoutItem[] = [];
-        for (const item of res) {
+        for (const item of cartItems) {
           try {
-            const product = await api.get<ProductInfo>(`/products/${item.product_id}`);
-            enriched.push({ cartItem: item, product });
+            const product = await api.get<{ data: ProductInfo }>(`/api/products/${item.product_id}`);
+            if (product.data) {
+              enriched.push({ cartItem: item, product: product.data });
+            }
           } catch {
             // Skip invalid items
           }

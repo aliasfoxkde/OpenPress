@@ -26,6 +26,14 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // Add session ID for cart operations
+  if (path.startsWith("/cart")) {
+    const sessionId = sessionStorage.getItem("cart_session_id");
+    if (sessionId) {
+      headers["X-Session-Id"] = sessionId;
+    }
+  }
+
   // Add CSRF token for state-changing requests
   const method = (options.method || "GET").toUpperCase();
   if (method === "POST" || method === "PUT" || method === "DELETE") {

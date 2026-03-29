@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
+import { useCartStore } from "../stores/cart";
 
 interface Variant {
   id: string;
@@ -45,20 +46,20 @@ export function ProductDetailPage() {
     if (slug) loadProduct();
   }, [slug]);
 
+  const addToCart = useCartStore((s) => s.addItem);
+
   const handleAddToCart = async () => {
     if (!product) return;
-    try {
-      await api.post("/api/cart/add", {
-        product_id: product.id,
-        quantity: 1,
-      });
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 3000);
-    } catch {
-      // Cart may require session; silently fail gracefully
-      setAddedToCart(true);
-      setTimeout(() => setAddedToCart(false), 3000);
-    }
+    setAddedToCart(true);
+    setTimeout(() => setAddedToCart(false), 3000);
+    await addToCart({
+      product_id: product.id,
+      title: product.title,
+      price: product.price,
+      quantity: 1,
+      sku: product.sku || undefined,
+      featured_image_url: product.featured_image_url || undefined,
+    });
   };
 
   if (loading) {
