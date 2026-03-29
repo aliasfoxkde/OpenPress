@@ -12,6 +12,7 @@ import orders, { cart } from "./lib/orders";
 import aiRoutes from "./lib/ai";
 import revisions from "./lib/revisions";
 import users from "./lib/users";
+import seo from "./lib/seo";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -251,6 +252,9 @@ app.get("/api/content/:slug", async (c) => {
     data: { ...item, blocks: blocks.results, terms: terms.results },
   });
 });
+
+// SEO routes (public - sitemap, RSS, robots, search)
+app.route("/api/seo", seo);
 
 // 404 handler
 app.notFound((c) => {

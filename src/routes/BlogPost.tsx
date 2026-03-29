@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 interface ContentBlock {
   id: string;
@@ -22,6 +23,7 @@ interface ContentItem {
   status: string;
   published_at: string;
   created_at: string;
+  author_name?: string;
   blocks: ContentBlock[];
   meta: Record<string, string>;
 }
@@ -45,6 +47,17 @@ export function BlogPostPage() {
     }
     if (slug) loadPost();
   }, [slug]);
+
+  // SEO meta tags
+  useSEO({
+    title: post?.title,
+    description: post?.excerpt || post?.content?.substring(0, 160),
+    image: post?.featured_image_url || undefined,
+    url: `${window.location.origin}/blog/${slug}`,
+    type: "article",
+    author: post?.author_name,
+    publishedTime: post?.published_at,
+  });
 
   if (loading) {
     return (

@@ -118,21 +118,21 @@ Full checkout flow from cart to payment confirmation.
 
 ---
 
-## Phase 15: SEO & Content Discovery [PENDING]
+## Phase 15: SEO & Content Discovery [IN PROGRESS]
 
 Essential SEO tools and full-text search.
 
-- [ ] 15.1 Create XML sitemap endpoint (GET /sitemap.xml) listing all published content
-- [ ] 15.2 Create RSS 2.0 feed endpoint (GET /feed.xml) with latest 20 posts
-- [ ] 15.3 Add Open Graph meta tags component (og:title, og:description, og:image, og:url, og:type)
-- [ ] 15.4 Add Twitter Card meta tags (twitter:card, twitter:title, twitter:description, twitter:image)
-- [ ] 15.5 Add canonical URL to all public pages
+- [x] 15.1 Create XML sitemap endpoint (GET /api/seo/sitemap.xml) listing all published content
+- [x] 15.2 Create RSS 2.0 feed endpoint (GET /api/seo/feed.xml) with latest 20 posts
+- [x] 15.3 Add Open Graph meta tags component (og:title, og:description, og:image, og:url, og:type)
+- [x] 15.4 Add Twitter Card meta tags (twitter:card, twitter:title, twitter:description, twitter:image)
+- [x] 15.5 Add canonical URL to all public pages
 - [ ] 15.6 Add meta description field to content items (D1 column + API + editor UI)
-- [ ] 15.7 Create robots.txt endpoint (GET /robots.txt)
+- [x] 15.7 Create robots.txt endpoint (GET /api/seo/robots.txt)
 - [ ] 15.8 Build SEO preview panel in ContentEditor (social card preview with og:image)
 - [ ] 15.9 Create FTS5 virtual table for content search (title, content, excerpt)
-- [ ] 15.10 Add search API endpoint (GET /api/search?q=...) with relevance ranking
-- [ ] 15.11 Build search UI component (global search bar in header, results page with highlighting)
+- [x] 15.10 Add search API endpoint (GET /api/seo/search?q=...) with relevance ranking
+- [x] 15.11 Build search UI component (global search bar in header with ⌘K shortcut)
 - [ ] 15.12 Add JSON-LD structured data to public pages (Article, Product, BreadcrumbList schemas)
 
 ---
