@@ -1,10 +1,54 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
 import { requireCapability, isValidRole } from "./security";
+import { hashPassword, verifyPassword } from "./auth";
 
 const users = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-// All user management routes require manage_users capability
+// Password change — accessible to any authenticated user for their own account
+users.put("/:id/password", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const user = c.get("user");
+  if (!user) {
+    return c.json({ error: { message: "Authorization required", code: "UNAUTHORIZED" } }, 401);
+  }
+
+  const targetId = c.req.param("id");
+  if (targetId !== user.id) {
+    return c.json({ error: { message: "You can only change your own password", code: "FORBIDDEN" } }, 403);
+  }
+
+  const body = await c.req.json();
+  const { current_password, new_password } = body;
+
+  if (!current_password || !new_password) {
+    return c.json({ error: { message: "Current password and new password are required", code: "VALIDATION" } }, 400);
+  }
+
+  if (new_password.length < 8) {
+    return c.json({ error: { message: "Password must be at least 8 characters", code: "VALIDATION" } }, 400);
+  }
+
+  const stored = await db.prepare("SELECT password_hash FROM users WHERE id = ?").bind(targetId).first<{ password_hash: string }>();
+  if (!stored) {
+    return c.json({ error: { message: "User not found", code: "NOT_FOUND" } }, 404);
+  }
+
+  const valid = await verifyPassword(current_password, stored.password_hash);
+  if (!valid) {
+    return c.json({ error: { message: "Current password is incorrect", code: "VALIDATION" } }, 401);
+  }
+
+  const newHash = await hashPassword(new_password);
+  const now = new Date().toISOString();
+  await db.prepare("UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?").bind(newHash, now, targetId).run();
+
+  return c.json({ data: { updated: true } });
+});
+
+// All remaining user management routes require manage_users capability
 users.use("*", requireCapability("manage_users"));
 
 // GET / - List all users

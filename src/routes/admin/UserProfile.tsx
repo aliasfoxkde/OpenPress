@@ -38,9 +38,42 @@ export function UserProfile() {
     }
   }
 
-  function handlePasswordChange() {
-    // Redirect to a password change flow — for now, inform the user
-    setMessage({ type: "error", text: "Password change is not yet supported via the admin UI." });
+  // Password change state
+  const [showPasswordForm, setShowPasswordForm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  async function handlePasswordChange() {
+    if (!currentUser) return;
+    if (newPassword.length < 8) {
+      setPasswordMessage({ type: "error", text: "Password must be at least 8 characters." });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordMessage({ type: "error", text: "New passwords do not match." });
+      return;
+    }
+    setChangingPassword(true);
+    setPasswordMessage(null);
+    try {
+      await api.put(`/users/${currentUser.id}/password`, {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setPasswordMessage({ type: "success", text: "Password changed successfully." });
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setShowPasswordForm(false);
+    } catch (err: any) {
+      const msg = err?.response?.data?.error?.message || "Failed to change password.";
+      setPasswordMessage({ type: "error", text: msg });
+    } finally {
+      setChangingPassword(false);
+    }
   }
 
   if (!currentUser) {
@@ -127,12 +160,69 @@ export function UserProfile() {
         {/* Password section */}
         <div className="pt-4 border-t border-border">
           <h2 className="text-lg font-semibold text-text-primary mb-4">Security</h2>
-          <button
-            onClick={handlePasswordChange}
-            className="rounded-md border border-border px-4 py-2 text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
-          >
-            Change Password
-          </button>
+
+          {passwordMessage && (
+            <div className={`mb-3 p-3 rounded-lg text-sm ${
+              passwordMessage.type === "success" ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" : "bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400"
+            }`}>
+              {passwordMessage.text}
+            </div>
+          )}
+
+          {!showPasswordForm ? (
+            <button
+              onClick={() => setShowPasswordForm(true)}
+              className="rounded-md border border-border px-4 py-2 text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
+            >
+              Change Password
+            </button>
+          ) : (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Current Password</label>
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">New Password</label>
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-text-secondary mb-1">Confirm New Password</label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+                />
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => void handlePasswordChange()}
+                  disabled={changingPassword || !currentPassword || !newPassword || !confirmPassword}
+                  className="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+                >
+                  {changingPassword ? "Changing..." : "Update Password"}
+                </button>
+                <button
+                  onClick={() => { setShowPasswordForm(false); setCurrentPassword(""); setNewPassword(""); setConfirmPassword(""); setPasswordMessage(null); }}
+                  className="rounded-md border border-border px-4 py-2 text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

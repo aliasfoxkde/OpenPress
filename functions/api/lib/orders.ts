@@ -70,6 +70,35 @@ orders.get("/", async (c) => {
   });
 });
 
+// Single order detail
+orders.get("/:id", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const id = c.req.param("id");
+  const order = await db.prepare("SELECT * FROM orders WHERE id = ?").bind(id).first();
+  if (!order) return c.json({ error: { message: "Order not found", code: "NOT_FOUND" } }, 404);
+
+  const lineItems = await db.prepare("SELECT * FROM order_items WHERE order_id = ? ORDER BY created_at").bind(id).all();
+
+  return c.json({ data: { ...order, items: lineItems.results } });
+});
+
+// Update order status
+orders.put("/:id", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const id = c.req.param("id");
+  const body = await c.req.json();
+  const { status } = body;
+
+  if (!status) return c.json({ error: { message: "Status is required", code: "VALIDATION" } }, 400);
+
+  await db.prepare("UPDATE orders SET status = ?, updated_at = ? WHERE id = ?").bind(status, new Date().toISOString(), id).run();
+  return c.json({ data: { id, status } });
+});
+
 orders.post("/", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);

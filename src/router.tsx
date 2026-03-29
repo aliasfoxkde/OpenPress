@@ -19,6 +19,7 @@ import { AdminUsers } from "./routes/admin/AdminUsers";
 import AdminAI from "./routes/admin/AdminAI";
 import AdminProducts from "./routes/admin/AdminProducts";
 import AdminOrders from "./routes/admin/AdminOrders";
+import { OrderDetail } from "./routes/admin/OrderDetail";
 import { LoginPage } from "./routes/LoginPage";
 import { CheckoutPage } from "./routes/CheckoutPage";
 import { OrderSuccessPage } from "./routes/OrderSuccessPage";
@@ -151,6 +152,12 @@ const adminOrdersRoute = createRoute({
   component: AdminOrders,
 });
 
+const adminOrderDetailRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/orders/$id",
+  component: OrderDetail,
+});
+
 const adminCommentsRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: "/comments",
@@ -184,6 +191,7 @@ const routeTree = rootRoute.addChildren([
     adminAIRoute,
     adminProductsRoute,
     adminOrdersRoute,
+    adminOrderDetailRoute,
     adminCommentsRoute,
     adminProfileRoute,
   ]),

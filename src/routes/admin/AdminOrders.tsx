@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { Link } from "@tanstack/react-router";
 import { api } from "../../lib/api";
 
 interface Order {
@@ -73,7 +74,11 @@ export default function AdminOrders() {
               <tbody className="divide-y divide-border bg-surface">
                 {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-surface-secondary transition-colors">
-                    <td className="px-4 py-3 text-sm font-mono text-text-secondary">{order.id.slice(0, 8)}...</td>
+                    <td className="px-4 py-3 text-sm font-mono">
+                      <Link to="/admin/orders/$id" params={{ id: order.id }} className="text-primary-600 hover:text-primary-700">
+                        {order.id.slice(0, 8)}
+                      </Link>
+                    </td>
                     <td className="px-4 py-3 text-sm text-text-primary">{order.email}</td>
                     <td className="px-4 py-3 text-sm font-medium text-text-primary">
                       {formatPrice(order.total)} {order.currency}

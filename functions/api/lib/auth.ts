@@ -17,7 +17,7 @@ const REFRESH_TOKEN_EXPIRY = 7 * 24 * 3600; // 7 days
 const PBKDF2_ITERATIONS = 100_000;
 const SALT_LENGTH = 16; // 128-bit salt
 
-async function hashPassword(password: string): Promise<string> {
+export async function hashPassword(password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
   const encoder = new TextEncoder();
   const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, [
@@ -34,7 +34,7 @@ async function hashPassword(password: string): Promise<string> {
   return `pbkdf2:${PBKDF2_ITERATIONS}:${saltHex}:${hashHex}`;
 }
 
-async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+export async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
   // Support legacy SHA-256 hashes for migration
   if (!storedHash.startsWith("pbkdf2:")) {
     const encoder = new TextEncoder();
