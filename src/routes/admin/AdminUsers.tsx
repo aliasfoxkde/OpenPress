@@ -34,8 +34,8 @@ const ROLE_COLORS: Record<UserRole, string> = {
   editor: "bg-blue-100 text-blue-700",
   author: "bg-green-100 text-green-700",
   contributor: "bg-yellow-100 text-yellow-700",
-  subscriber: "bg-gray-100 text-gray-700",
-  viewer: "bg-gray-100 text-gray-500",
+  subscriber: "bg-surface-tertiary text-text-secondary",
+  viewer: "bg-surface-tertiary text-text-tertiary",
 };
 
 export function AdminUsers() {

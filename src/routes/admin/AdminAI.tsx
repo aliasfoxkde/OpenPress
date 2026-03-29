@@ -74,14 +74,14 @@ export default function AdminAI() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">AI Assistant</h1>
-        <span className="inline-flex items-center rounded-full bg-indigo-100 px-3 py-0.5 text-sm font-medium text-indigo-800">
+        <h1 className="text-2xl font-bold text-text-primary">AI Assistant</h1>
+        <span className="inline-flex items-center rounded-full bg-primary-100 px-3 py-0.5 text-sm font-medium text-primary-800">
           Powered by Workers AI
         </span>
       </div>
 
       {/* Tab navigation */}
-      <div className="border-b border-gray-200">
+      <div className="border-b border-border">
         <nav className="-mb-px flex space-x-8">
           {(["generate", "suggest", "summarize", "translate"] as const).map((tab) => (
             <button
@@ -89,8 +89,8 @@ export default function AdminAI() {
               onClick={() => { setActiveTab(tab); setError(""); setOutput(""); }}
               className={`whitespace-nowrap border-b-2 px-1 py-4 text-sm font-medium capitalize ${
                 activeTab === tab
-                  ? "border-indigo-500 text-indigo-600"
-                  : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                  ? "border-primary-500 text-primary-600"
+                  : "border-transparent text-text-tertiary hover:border-border hover:text-text-secondary"
               }`}
             >
               {tab}
@@ -101,7 +101,7 @@ export default function AdminAI() {
 
       {/* Input area */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-text-secondary mb-1">
           {activeTab === "generate" && "Enter your prompt"}
           {activeTab === "suggest" && "Paste content to get suggestions for"}
           {activeTab === "summarize" && "Paste text to summarize"}
@@ -111,7 +111,7 @@ export default function AdminAI() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           rows={6}
-          className="block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 shadow-sm placeholder:text-gray-400 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+          className="block w-full rounded-md border border-border px-3 py-2 text-text-primary shadow-sm placeholder:text-text-tertiary focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus sm:text-sm"
           placeholder={
             activeTab === "generate"
               ? "Write a blog post about..."
@@ -130,7 +130,7 @@ export default function AdminAI() {
           <button
             onClick={handleGenerate}
             disabled={loading}
-            className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+            className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors"
           >
             {loading ? "Generating..." : "Generate"}
           </button>
@@ -138,23 +138,23 @@ export default function AdminAI() {
 
         {activeTab === "suggest" && (
           <>
-            <button onClick={() => handleSuggest("title")} disabled={loading} className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+            <button onClick={() => handleSuggest("title")} disabled={loading} className="inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors">
               Suggest Titles
             </button>
-            <button onClick={() => handleSuggest("excerpt")} disabled={loading} className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+            <button onClick={() => handleSuggest("excerpt")} disabled={loading} className="inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors">
               Suggest Excerpts
             </button>
-            <button onClick={() => handleSuggest("seo")} disabled={loading} className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+            <button onClick={() => handleSuggest("seo")} disabled={loading} className="inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors">
               SEO Meta
             </button>
-            <button onClick={() => handleSuggest("tags")} disabled={loading} className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+            <button onClick={() => handleSuggest("tags")} disabled={loading} className="inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors">
               Suggest Tags
             </button>
           </>
         )}
 
         {activeTab === "summarize" && (
-          <button onClick={handleSummarize} disabled={loading} className="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50">
+          <button onClick={handleSummarize} disabled={loading} className="inline-flex items-center rounded-md bg-primary-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors">
             {loading ? "Summarizing..." : "Summarize"}
           </button>
         )}
@@ -166,7 +166,7 @@ export default function AdminAI() {
                 key={lang}
                 onClick={() => handleTranslate(lang)}
                 disabled={loading}
-                className="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 disabled:opacity-50"
+                className="inline-flex items-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-700 disabled:opacity-50 transition-colors"
               >
                 {lang.toUpperCase()}
               </button>
@@ -184,9 +184,9 @@ export default function AdminAI() {
 
       {/* Output */}
       {output && (
-        <div className="rounded-md border border-gray-200 bg-gray-50 p-4">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">Result</h3>
-          <pre className="whitespace-pre-wrap text-sm text-gray-900">{output}</pre>
+        <div className="rounded-md border border-border bg-surface-secondary p-4">
+          <h3 className="text-sm font-medium text-text-secondary mb-2">Result</h3>
+          <pre className="whitespace-pre-wrap text-sm text-text-primary">{output}</pre>
         </div>
       )}
     </div>

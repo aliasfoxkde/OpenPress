@@ -93,7 +93,7 @@ export function AdminDashboard() {
                     <span className={`text-xs px-2 py-1 rounded-full ${
                       item.status === "published" ? "bg-green-50 text-green-700" :
                       item.status === "draft" ? "bg-yellow-50 text-yellow-700" :
-                      "bg-gray-50 text-gray-700"
+                      "bg-surface-tertiary text-text-secondary"
                     }`}>
                       {item.status}
                     </span>

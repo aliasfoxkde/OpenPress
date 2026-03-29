@@ -56,8 +56,8 @@ export function OrderSuccessPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/2" />
-          <div className="h-40 bg-gray-100 rounded" />
+          <div className="h-8 bg-surface-secondary rounded w-1/2" />
+          <div className="h-40 bg-surface-secondary rounded" />
         </div>
       </div>
     );

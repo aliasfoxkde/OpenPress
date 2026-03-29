@@ -65,11 +65,11 @@ export function ProductDetailPage() {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 animate-pulse">
         <div className="grid md:grid-cols-2 gap-8">
-          <div className="aspect-square bg-gray-200 rounded-xl" />
+          <div className="aspect-square bg-surface-secondary rounded-xl" />
           <div className="space-y-4">
-            <div className="h-8 bg-gray-200 rounded w-3/4" />
-            <div className="h-6 bg-gray-200 rounded w-1/4" />
-            <div className="h-32 bg-gray-200 rounded" />
+            <div className="h-8 bg-surface-secondary rounded w-3/4" />
+            <div className="h-6 bg-surface-secondary rounded w-1/4" />
+            <div className="h-32 bg-surface-secondary rounded" />
           </div>
         </div>
       </div>
@@ -79,9 +79,9 @@ export function ProductDetailPage() {
   if (error || !product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Product Not Found</h1>
-        <p className="mt-2 text-gray-600">{error}</p>
-        <Link to="/shop" className="mt-4 inline-block text-indigo-600 hover:text-indigo-800">
+        <h1 className="text-2xl font-bold text-text-primary">Product Not Found</h1>
+        <p className="mt-2 text-text-secondary">{error}</p>
+        <Link to="/shop" className="mt-4 inline-block text-primary-600 hover:text-primary-700">
           Back to Shop
         </Link>
       </div>
@@ -94,21 +94,21 @@ export function ProductDetailPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <nav className="mb-6 text-sm text-gray-500">
-        <Link to="/" className="hover:text-gray-700">Home</Link>
+      <nav className="mb-6 text-sm text-text-tertiary">
+        <Link to="/" className="hover:text-text-primary">Home</Link>
         <span className="mx-2">/</span>
-        <Link to="/shop" className="hover:text-gray-700">Shop</Link>
+        <Link to="/shop" className="hover:text-text-primary">Shop</Link>
         <span className="mx-2">/</span>
-        <span className="text-gray-900">{product.title}</span>
+        <span className="text-text-primary">{product.title}</span>
       </nav>
 
       <div className="grid md:grid-cols-2 gap-8">
         {/* Image */}
-        <div className="aspect-square rounded-xl overflow-hidden bg-gray-100">
+        <div className="aspect-square rounded-xl overflow-hidden bg-surface-secondary">
           {product.featured_image_url ? (
             <img src={product.featured_image_url} alt={product.title} className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
               <span className="text-6xl opacity-30">📦</span>
             </div>
           )}
@@ -117,15 +117,15 @@ export function ProductDetailPage() {
         {/* Details */}
         <div className="space-y-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">{product.title}</h1>
-            {product.sku && <p className="mt-1 text-sm text-gray-500">SKU: {product.sku}</p>}
+            <h1 className="text-3xl font-bold text-text-primary">{product.title}</h1>
+            {product.sku && <p className="mt-1 text-sm text-text-tertiary">SKU: {product.sku}</p>}
           </div>
 
           <div className="flex items-baseline gap-3">
-            <span className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</span>
+            <span className="text-3xl font-bold text-text-primary">{formatPrice(product.price)}</span>
             {product.compare_at_price && product.compare_at_price > product.price && (
               <>
-                <span className="text-lg text-gray-400 line-through">{formatPrice(product.compare_at_price)}</span>
+                <span className="text-lg text-text-tertiary line-through">{formatPrice(product.compare_at_price)}</span>
                 <span className="text-sm font-semibold text-green-600">
                   Save {Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)}%
                 </span>
@@ -133,17 +133,17 @@ export function ProductDetailPage() {
             )}
           </div>
 
-          {product.excerpt && <p className="text-gray-600">{product.excerpt}</p>}
+          {product.excerpt && <p className="text-text-secondary">{product.excerpt}</p>}
 
           {/* Variants */}
           {product.variants && product.variants.length > 0 && (
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-2">Options</h3>
+              <h3 className="text-sm font-medium text-text-secondary mb-2">Options</h3>
               <div className="flex flex-wrap gap-2">
                 {product.variants.map((v) => (
                   <button
                     key={v.id}
-                    className="rounded-md border border-gray-300 px-4 py-2 text-sm hover:border-indigo-500 hover:text-indigo-600 transition-colors"
+                    className="rounded-md border border-border px-4 py-2 text-sm hover:border-primary-500 hover:text-primary-600 transition-colors"
                   >
                     {v.title} - {formatPrice(v.price)}
                   </button>
@@ -154,7 +154,7 @@ export function ProductDetailPage() {
 
           <button
             onClick={handleAddToCart}
-            className="w-full rounded-lg bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-indigo-500 transition-colors"
+            className="w-full rounded-lg bg-primary-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors"
           >
             {addedToCart ? "Added to Cart!" : "Add to Cart"}
           </button>

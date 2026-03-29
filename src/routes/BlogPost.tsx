@@ -62,11 +62,11 @@ export function BlogPostPage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 animate-pulse">
-        <div className="h-8 bg-gray-200 rounded w-3/4 mb-4" />
-        <div className="h-4 bg-gray-200 rounded w-1/4 mb-8" />
+        <div className="h-8 bg-surface-secondary rounded w-3/4 mb-4" />
+        <div className="h-4 bg-surface-secondary rounded w-1/4 mb-8" />
         <div className="space-y-3">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-4 bg-gray-200 rounded" />
+            <div key={i} className="h-4 bg-surface-secondary rounded" />
           ))}
         </div>
       </div>
@@ -76,9 +76,9 @@ export function BlogPostPage() {
   if (error || !post) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
-        <h1 className="text-2xl font-bold text-gray-900">Post Not Found</h1>
-        <p className="mt-2 text-gray-600">{error}</p>
-        <Link to="/blog" className="mt-4 inline-block text-indigo-600 hover:text-indigo-800">
+        <h1 className="text-2xl font-bold text-text-primary">Post Not Found</h1>
+        <p className="mt-2 text-text-secondary">{error}</p>
+        <Link to="/blog" className="mt-4 inline-block text-primary-600 hover:text-primary-700">
           Back to Blog
         </Link>
       </div>
@@ -87,12 +87,12 @@ export function BlogPostPage() {
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-8">
-      <nav className="mb-6 text-sm text-gray-500">
-        <Link to="/" className="hover:text-gray-700">Home</Link>
+      <nav className="mb-6 text-sm text-text-tertiary">
+        <Link to="/" className="hover:text-text-primary">Home</Link>
         <span className="mx-2">/</span>
-        <Link to="/blog" className="hover:text-gray-700">Blog</Link>
+        <Link to="/blog" className="hover:text-text-primary">Blog</Link>
         <span className="mx-2">/</span>
-        <span className="text-gray-900">{post.title}</span>
+        <span className="text-text-primary">{post.title}</span>
       </nav>
 
       {/* Hero image */}
@@ -103,8 +103,8 @@ export function BlogPostPage() {
       )}
 
       <header className="mb-8">
-        <h1 className="text-4xl font-bold text-gray-900">{post.title}</h1>
-        <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
+        <h1 className="text-4xl font-bold text-text-primary">{post.title}</h1>
+        <div className="mt-4 flex items-center gap-4 text-sm text-text-tertiary">
           <time>
             {new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
               year: "numeric",
@@ -113,9 +113,9 @@ export function BlogPostPage() {
             })}
           </time>
           {post.author_name && (
-            <span className="text-gray-600">by {post.author_name}</span>
+            <span className="text-text-secondary">by {post.author_name}</span>
           )}
-          <span className="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 capitalize">
+          <span className="inline-flex items-center rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-800 capitalize">
             {post.type}
           </span>
         </div>
@@ -162,29 +162,29 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
     case "heading": {
       const level = (data.level as number) || 2;
       const sizeClass = level === 1 ? "text-4xl" : level === 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
-      if (level === 1) return <h1 className={`${sizeClass} font-bold text-gray-900`}>{content}</h1>;
-      if (level === 2) return <h2 className={`${sizeClass} font-bold text-gray-900`}>{content}</h2>;
-      if (level === 3) return <h3 className={`${sizeClass} font-bold text-gray-900`}>{content}</h3>;
-      if (level === 4) return <h4 className={`${sizeClass} font-bold text-gray-900`}>{content}</h4>;
-      return <h2 className={`${sizeClass} font-bold text-gray-900`}>{content}</h2>;
+      if (level === 1) return <h1 className={`${sizeClass} font-bold text-text-primary`}>{content}</h1>;
+      if (level === 2) return <h2 className={`${sizeClass} font-bold text-text-primary`}>{content}</h2>;
+      if (level === 3) return <h3 className={`${sizeClass} font-bold text-text-primary`}>{content}</h3>;
+      if (level === 4) return <h4 className={`${sizeClass} font-bold text-text-primary`}>{content}</h4>;
+      return <h2 className={`${sizeClass} font-bold text-text-primary`}>{content}</h2>;
     }
     case "image":
       return (
         <figure className="rounded-xl overflow-hidden">
           <img src={String(data.url || content)} alt={String(data.alt || "")} className="w-full" />
-          {data.caption && <figcaption className="text-sm text-gray-500 mt-2 text-center">{String(data.caption)}</figcaption>}
+          {data.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(data.caption)}</figcaption>}
         </figure>
       );
     case "quote":
       return (
-        <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-gray-600">
+        <blockquote className="border-l-4 border-primary-300 pl-4 italic text-text-secondary">
           {content}
         </blockquote>
       );
     case "code":
       return (
-        <pre className="rounded-lg bg-gray-900 p-4 overflow-x-auto">
-          <code className="text-sm text-gray-100">{String(data.code || content)}</code>
+        <pre className="rounded-lg bg-text-primary p-4 overflow-x-auto">
+          <code className="text-sm text-surface">{String(data.code || content)}</code>
         </pre>
       );
     case "list": {
@@ -192,7 +192,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       const ordered = data.ordered as boolean;
       const ListTag = ordered ? "ol" : "ul";
       return (
-        <ListTag className={ordered ? "list-decimal pl-6 space-y-1 text-gray-700" : "list-disc pl-6 space-y-1 text-gray-700"}>
+        <ListTag className={ordered ? "list-decimal pl-6 space-y-1 text-text-secondary" : "list-disc pl-6 space-y-1 text-text-secondary"}>
           {items.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
@@ -251,39 +251,39 @@ function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
     case "heading": {
       const level = (props.level as number) || 2;
       const sizeClass = level === 1 ? "text-4xl" : level === 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
-      if (level === 1) return <h1 className={`${sizeClass} font-bold text-gray-900`}>{text}</h1>;
-      if (level === 2) return <h2 className={`${sizeClass} font-bold text-gray-900`}>{text}</h2>;
-      if (level === 3) return <h3 className={`${sizeClass} font-bold text-gray-900`}>{text}</h3>;
-      if (level === 4) return <h4 className={`${sizeClass} font-bold text-gray-900`}>{text}</h4>;
-      return <h2 className={`${sizeClass} font-bold text-gray-900`}>{text}</h2>;
+      if (level === 1) return <h1 className={`${sizeClass} font-bold text-text-primary`}>{text}</h1>;
+      if (level === 2) return <h2 className={`${sizeClass} font-bold text-text-primary`}>{text}</h2>;
+      if (level === 3) return <h3 className={`${sizeClass} font-bold text-text-primary`}>{text}</h3>;
+      if (level === 4) return <h4 className={`${sizeClass} font-bold text-text-primary`}>{text}</h4>;
+      return <h2 className={`${sizeClass} font-bold text-text-primary`}>{text}</h2>;
     }
     case "bulletListItem":
-      return <li className="list-disc ml-6 text-gray-700">{text}</li>;
+      return <li className="list-disc ml-6 text-text-secondary">{text}</li>;
     case "numberedListItem":
-      return <li className="list-decimal ml-6 text-gray-700">{text}</li>;
+      return <li className="list-decimal ml-6 text-text-secondary">{text}</li>;
     case "image":
       return (
         <figure className="rounded-xl overflow-hidden">
           <img src={String(props.url || "")} alt={String(props.alt || "")} className="w-full" />
-          {props.caption && <figcaption className="text-sm text-gray-500 mt-2 text-center">{String(props.caption)}</figcaption>}
+          {props.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(props.caption)}</figcaption>}
         </figure>
       );
     case "codeBlock":
       return (
-        <pre className="rounded-lg bg-gray-900 p-4 overflow-x-auto">
-          <code className="text-sm text-gray-100">{text}</code>
+        <pre className="rounded-lg bg-text-primary p-4 overflow-x-auto">
+          <code className="text-sm text-surface">{text}</code>
         </pre>
       );
     case "quote":
       return (
-        <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-gray-600">
+        <blockquote className="border-l-4 border-primary-300 pl-4 italic text-text-secondary">
           {text}
         </blockquote>
       );
     case "paragraph":
     default:
       if (!text) return <div className="h-4" />; // empty paragraph spacer
-      return <p className="text-gray-700 leading-relaxed">{text}</p>;
+      return <p className="text-text-secondary leading-relaxed">{text}</p>;
   }
 }
 

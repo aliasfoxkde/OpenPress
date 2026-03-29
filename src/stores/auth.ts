@@ -44,6 +44,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       localStorage.setItem("auth_token", body.data.access_token);
       localStorage.setItem("auth_user", JSON.stringify(body.data.user));
+      if (body.data.csrf_token) localStorage.setItem("csrf_token", body.data.csrf_token);
 
       set({
         user: body.data.user,
@@ -60,7 +61,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   register: async (email: string, password: string, name?: string) => {
     set({ isLoading: true });
     try {
-      const res = await api.post<{ data: { user: User; access_token: string; expires_in: number } }>("/api/auth/register", { email, password, name });
+      const res = await api.post<{ data: { user: User; access_token: string; expires_in: number; csrf_token?: string } }>("/api/auth/register", { email, password, name });
       const body = await res.json();
 
       if (!res.ok) {
@@ -69,6 +70,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       localStorage.setItem("auth_token", body.data.access_token);
       localStorage.setItem("auth_user", JSON.stringify(body.data.user));
+      if (body.data.csrf_token) localStorage.setItem("csrf_token", body.data.csrf_token);
 
       set({
         user: body.data.user,
@@ -85,6 +87,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   logout: () => {
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
+    localStorage.removeItem("csrf_token");
     set({ user: null, token: null, isAuthenticated: false });
   },
 

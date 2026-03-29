@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/cn";
 import { api } from "@/lib/api";
 import { ToastProvider } from "@/components/ui/Toast";
+import { useCartStore } from "@/stores/cart";
 
 interface SearchResult {
   id: string;
@@ -17,6 +18,7 @@ export function RootLayout() {
   const routerState = useRouterState();
   const isAdmin = routerState.location.pathname.startsWith("/admin");
   const navigate = useNavigate();
+  const cartItemCount = useCartStore((s) => s.itemCount());
   const [searchOpen, setSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -136,12 +138,17 @@ export function RootLayout() {
                   <Link to="/shop" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors")}>
                     Shop
                   </Link>
-                  <Link to="/checkout" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1")}>
+                  <Link to="/checkout" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 relative")}>
                     Cart
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
                       <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
                     </svg>
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
+                        {cartItemCount > 99 ? "99+" : cartItemCount}
+                      </span>
+                    )}
                   </Link>
                 </>
               )}

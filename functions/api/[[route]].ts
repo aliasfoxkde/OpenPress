@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { logger } from "hono/logger";
 import type { Bindings, Variables } from "./lib/types";
-import { securityHeaders, rateLimit, corsConfig, requireCapability } from "./lib/security";
+import { securityHeaders, rateLimit, corsConfig, requireCapability, csrfProtection, bodySizeLimit, cachePurgeOnMutation } from "./lib/security";
 import auth from "./lib/auth";
 import content from "./lib/content";
 import media from "./lib/media";
@@ -92,6 +92,9 @@ app.route("/api/auth", auth);
 
 // Protected routes - require auth
 const protectedRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+protectedRoutes.use("*", bodySizeLimit(1024 * 1024)); // 1MB JSON body limit
+protectedRoutes.use("*", csrfProtection()); // Stripe webhook bypasses this via separate route
+protectedRoutes.use("*", cachePurgeOnMutation()); // Purge KV cache after content/settings/product mutations
 protectedRoutes.use("*", async (c, next) => {
   const authHeader = c.req.header("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {

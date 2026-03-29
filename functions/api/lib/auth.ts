@@ -143,12 +143,22 @@ auth.post("/register", async (c) => {
     maxAge: REFRESH_TOKEN_EXPIRY / 1000,
   });
 
+  // Generate CSRF token for double-submit cookie pattern
+  const csrfToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+  setCookie(c, "csrf_token", csrfToken, {
+    secure: true,
+    sameSite: "Strict",
+    path: "/",
+    maxAge: ACCESS_TOKEN_EXPIRY,
+  });
+
   return c.json(
     {
       data: {
         user: { id, email, name: name || email.split("@")[0], role: "subscriber" },
         access_token: token,
         expires_in: ACCESS_TOKEN_EXPIRY,
+        csrf_token: csrfToken,
       },
     },
     201,
@@ -198,11 +208,21 @@ auth.post("/login", async (c) => {
     maxAge: REFRESH_TOKEN_EXPIRY / 1000,
   });
 
+  // Generate CSRF token for double-submit cookie pattern
+  const csrfToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+  setCookie(c, "csrf_token", csrfToken, {
+    secure: true,
+    sameSite: "Strict",
+    path: "/",
+    maxAge: ACCESS_TOKEN_EXPIRY,
+  });
+
   return c.json({
     data: {
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       access_token: token,
       expires_in: ACCESS_TOKEN_EXPIRY,
+      csrf_token: csrfToken,
     },
   });
 });

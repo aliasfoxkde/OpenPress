@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { api } from "@/lib/api";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface MediaItem {
   id: string;
@@ -17,6 +18,7 @@ export function AdminMedia() {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   async function fetchMedia() {
     setLoading(true);
@@ -56,10 +58,11 @@ export function AdminMedia() {
     }
   }
 
-  async function handleDelete(id: string) {
-    if (!confirm("Delete this file permanently?")) return;
+  async function confirmDelete() {
+    if (!deleteTarget) return;
     try {
-      await api.delete(`/api/media/${id}`);
+      await api.delete(`/api/media/${deleteTarget}`);
+      setDeleteTarget(null);
       await fetchMedia();
     } catch {
       // ignore
@@ -127,7 +130,7 @@ export function AdminMedia() {
                 <div className="text-xs font-medium text-text-primary truncate">{item.original_name}</div>
                 <div className="text-xs text-text-tertiary mt-0.5">{formatSize(item.size_bytes)}</div>
                 <button
-                  onClick={() => void handleDelete(item.id)}
+                  onClick={() => setDeleteTarget(item.id)}
                   className="text-xs text-red-500 hover:text-red-700 mt-1 opacity-0 group-hover:opacity-100 transition-opacity"
                 >
                   Delete
@@ -137,6 +140,16 @@ export function AdminMedia() {
           ))}
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete File"
+        message="Are you sure you want to delete this file permanently?"
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

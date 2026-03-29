@@ -87,9 +87,9 @@ export function CheckoutPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/3" />
+          <div className="h-8 bg-surface-secondary rounded w-1/3" />
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-20 bg-gray-100 rounded" />
+            <div key={i} className="h-20 bg-surface-secondary rounded" />
           ))}
         </div>
       </div>
@@ -126,7 +126,7 @@ export function CheckoutPage() {
             {product.featured_image_url ? (
               <img src={product.featured_image_url} alt={product.title} className="w-16 h-16 object-cover rounded" />
             ) : (
-              <div className="w-16 h-16 bg-gray-100 rounded flex items-center justify-center text-gray-400 text-xs">
+              <div className="w-16 h-16 bg-surface-secondary rounded flex items-center justify-center text-text-tertiary text-xs">
                 No image
               </div>
             )}

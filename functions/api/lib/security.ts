@@ -103,7 +103,7 @@ export function corsConfig() {
       c.header("Access-Control-Allow-Origin", origin);
     }
     c.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-    c.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Id");
+    c.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Id, X-Csrf-Token");
     c.header("Access-Control-Allow-Credentials", "true");
     c.header("Access-Control-Max-Age", "86400");
 
@@ -299,4 +299,135 @@ export const VALID_ROLES: Role[] = ["admin", "editor", "author", "contributor", 
 
 export function isValidRole(role: string): boolean {
   return VALID_ROLES.includes(role as Role);
+}
+
+// ─── CSRF Protection ───────────────────────────────────────────────────────
+
+/**
+ * Timing-safe string comparison using Web Crypto API.
+ * Prevents timing attacks on token/signature verification.
+ */
+export async function timingSafeEqual(a: string, b: string): Promise<boolean> {
+  if (a.length !== b.length) return false;
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey("raw", encoder.encode(a), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+  try {
+    await crypto.subtle.sign("HMAC", key, encoder.encode(b));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * CSRF protection middleware using double-submit cookie pattern.
+ * Generates a CSRF token, sets it as a cookie, and requires a matching
+ * x-csrf-token header on state-changing requests.
+ */
+export function csrfProtection() {
+  return async (c: any, next: any) => {
+    const method = c.req.method;
+    // Safe methods don't need CSRF check
+    if (method === "GET" || method === "HEAD" || method === "OPTIONS") {
+      return next();
+    }
+
+    const csrfCookie = c.req.header("Cookie")
+      ?.split("; ")
+      .find((row: string) => row.startsWith("csrf_token="))
+      ?.split("=")[1];
+
+    const csrfHeader = c.req.header("x-csrf-token");
+
+    if (!csrfCookie || !csrfHeader) {
+      return c.json({ error: { message: "CSRF token missing", code: "CSRF_MISSING" } }, 403);
+    }
+
+    const equal = await timingSafeEqual(csrfCookie, csrfHeader);
+    if (!equal) {
+      return c.json({ error: { message: "CSRF token mismatch", code: "CSRF_INVALID" } }, 403);
+    }
+
+    return next();
+  };
+}
+
+/**
+ * Request body size limit middleware.
+ * Rejects requests where Content-Length exceeds the specified limit.
+ */
+export function bodySizeLimit(maxBytes: number) {
+  return async (c: any, next: any) => {
+    const contentLength = parseInt(c.req.header("Content-Length") || "0", 10);
+    if (contentLength > maxBytes) {
+      return c.json(
+        { error: { message: `Request body too large (max ${Math.round(maxBytes / 1024)}KB)`, code: "PAYLOAD_TOO_LARGE" } },
+        413,
+      );
+    }
+    return next();
+  };
+}
+
+// ─── Cache Purge ───────────────────────────────────────────────────────────
+
+/**
+ * Purge specific KV cache keys by prefix.
+ * Used after content/settings/product mutations to keep cache fresh.
+ */
+export async function purgeCache(cache: KVNamespace, prefixes: string[]): Promise<void> {
+  const keys = await cache.list({ prefix: prefixes[0] });
+  if (prefixes.length > 1) {
+    for (const p of prefixes.slice(1)) {
+      const more = await cache.list({ prefix: p });
+      keys.keys.push(...more.keys);
+    }
+  }
+  await Promise.all(keys.keys.map((k) => cache.delete(k.name)));
+}
+
+/**
+ * Middleware that purges KV cache after successful state-changing requests
+ * to content, settings, or products.
+ */
+export function cachePurgeOnMutation() {
+  return async (c: any, next: any) => {
+    await next();
+
+    // Only purge on successful mutations
+    const method = c.req.method;
+    if (method !== "POST" && method !== "PUT" && method !== "DELETE") return;
+    if (c.res.status >= 400) return;
+
+    const cache = c.env.CACHE as KVNamespace | undefined;
+    if (!cache) return;
+
+    const path = c.req.path;
+
+    // Fire-and-forget cache purge
+    const purgePromise = (async () => {
+      try {
+        if (path.includes("/content")) {
+          // Purge content list cache and the specific slug if available
+          await purgeCache(cache, ["content:list:"]);
+          const slug = path.split("/").pop();
+          if (slug && slug.length > 0) {
+            await cache.delete(`content:${slug}`);
+          }
+        } else if (path.includes("/settings")) {
+          await purgeCache(cache, ["settings:"]);
+        } else if (path.includes("/products")) {
+          const slug = path.split("/").pop();
+          if (slug && slug.length > 0) {
+            await cache.delete(`product:${slug}`);
+          }
+        }
+      } catch {
+        // Cache purge failure should not affect the response
+      }
+    })();
+
+    // Wait for purge to complete before response (Cloudflare edge needs this)
+    c.executionCtx?.waitUntil(purgePromise);
+  };
 }

@@ -26,6 +26,15 @@ async function request<T>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
+  // Add CSRF token for state-changing requests
+  const method = (options.method || "GET").toUpperCase();
+  if (method === "POST" || method === "PUT" || method === "DELETE") {
+    const csrfToken = localStorage.getItem("csrf_token");
+    if (csrfToken) {
+      headers["X-Csrf-Token"] = csrfToken;
+    }
+  }
+
   const response = await fetch(url, {
     ...options,
     headers,

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 
 interface ContentItem {
   id: string;
@@ -30,6 +31,7 @@ export function AdminContent() {
   const [statusFilter, setStatusFilter] = useState("");
   const [myContentOnly, setMyContentOnly] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState("post");
   const [creating, setCreating] = useState(false);
@@ -84,9 +86,14 @@ export function AdminContent() {
   }
 
   async function handleDelete(slug: string) {
-    if (!confirm("Move to trash?")) return;
+    setDeleteTarget(slug);
+  }
+
+  async function confirmDelete() {
+    if (!deleteTarget) return;
     try {
-      await api.delete(`/api/content/${slug}`);
+      await api.delete(`/api/content/${deleteTarget}`);
+      setDeleteTarget(null);
       await fetchContent();
     } catch {
       // ignore
@@ -109,7 +116,7 @@ export function AdminContent() {
     pending: "bg-orange-50 text-orange-700",
     trash: "bg-red-50 text-red-700",
     scheduled: "bg-blue-50 text-blue-700",
-    archived: "bg-gray-50 text-gray-700",
+    archived: "bg-surface-tertiary text-text-secondary",
   };
 
   const filtered = search
@@ -246,7 +253,7 @@ export function AdminContent() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => void handleToggleStatus(item.slug, item.status)}
-                      className={`text-xs px-2 py-1 rounded-full cursor-pointer ${statusColors[item.status] || "bg-gray-50 text-gray-700"}`}
+                      className={`text-xs px-2 py-1 rounded-full cursor-pointer ${statusColors[item.status] || "bg-surface-tertiary text-text-secondary"}`}
                     >
                       {item.status}
                     </button>
@@ -302,6 +309,16 @@ export function AdminContent() {
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Move to Trash"
+        message="Are you sure you want to move this item to trash?"
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

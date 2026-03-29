@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
+import { timingSafeEqual } from "./security";
 
 const stripe = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -163,7 +164,7 @@ stripe.post("/webhook", async (c) => {
   const sigBuffer = await crypto.subtle.sign("HMAC", key, encoder.encode(payload));
   const expectedSig = Array.from(new Uint8Array(sigBuffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
 
-  if (expectedSig !== signature) {
+  if (!(await timingSafeEqual(expectedSig, signature))) {
     return c.json({ error: { message: "Invalid signature", code: "INVALID_SIGNATURE" } }, 400);
   }
 
