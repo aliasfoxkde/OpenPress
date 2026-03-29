@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { api, ApiError } from "@/lib/api";
+import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import type { UserRole } from "@shared/types";
 
 interface UserRow {
@@ -46,7 +47,8 @@ export function AdminUsers() {
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleting, setDeleting] = useState(false);
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
   const fetchUsers = useCallback(async () => {
@@ -87,18 +89,23 @@ export function AdminUsers() {
     }
   };
 
-  const handleDelete = async (userId: string, userName: string) => {
-    if (!confirm(`Delete user "${userName}"? Their content will be reassigned to you.`)) return;
-    setDeletingId(userId);
+  const handleDelete = (userId: string, userName: string) => {
+    setDeleteTarget({ id: userId, name: userName });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await api.delete(`/users/${userId}`);
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
+      await api.delete(`/users/${deleteTarget.id}`);
+      setUsers((prev) => prev.filter((u) => u.id !== deleteTarget.id));
+      setDeleteTarget(null);
     } catch (e) {
       if (e instanceof ApiError) {
         alert(e.message);
       }
     } finally {
-      setDeletingId(null);
+      setDeleting(false);
     }
   };
 
@@ -192,11 +199,10 @@ export function AdminUsers() {
                   <td className="px-4 py-3">
                     {user.id !== currentUser?.id && (
                       <button
-                        onClick={() => void handleDelete(user.id, user.name)}
-                        disabled={deletingId === user.id}
-                        className="text-xs text-red-500 hover:text-red-700 disabled:opacity-50"
+                        onClick={() => handleDelete(user.id, user.name)}
+                        className="text-xs text-red-500 hover:text-red-700"
                       >
-                        {deletingId === user.id ? "Deleting..." : "Delete"}
+                        Delete
                       </button>
                     )}
                   </td>
@@ -234,6 +240,16 @@ export function AdminUsers() {
           </button>
         </div>
       )}
+
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete User"
+        message={`Delete user "${deleteTarget?.name}"? Their content will be reassigned to you.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={() => void confirmDelete()}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }
