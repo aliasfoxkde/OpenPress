@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
-import { handleSitemap, handleFeed, handleRobots } from "../seo-handlers";
+import { handleSitemap, handleFeed, handleRobots } from "../../lib/seo-handlers";
 
 const seo = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
