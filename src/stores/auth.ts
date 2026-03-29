@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { api } from "../lib/api";
 
 interface User {
   id: string;
@@ -13,48 +14,89 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+  user: (() => {
+    try {
+      const stored = localStorage.getItem("auth_user");
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  })(),
   token: localStorage.getItem("auth_token"),
   isAuthenticated: !!localStorage.getItem("auth_token"),
   isLoading: false,
 
-  login: async (email: string, _password: string) => {
+  login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
-      // Will be implemented when auth API is ready
-      const mockUser: User = {
-        id: "1",
-        email,
-        name: email.split("@")[0],
-        role: "admin",
-      };
-      const mockToken = "mock_token";
+      const res = await api.post<{ data: { user: User; access_token: string; expires_in: number } }>("/api/auth/login", { email, password });
+      const body = await res.json();
 
-      localStorage.setItem("auth_token", mockToken);
+      if (!res.ok) {
+        throw new Error(body.error?.message || "Login failed");
+      }
+
+      localStorage.setItem("auth_token", body.data.access_token);
+      localStorage.setItem("auth_user", JSON.stringify(body.data.user));
+
       set({
-        user: mockUser,
-        token: mockToken,
+        user: body.data.user,
+        token: body.data.access_token,
         isAuthenticated: true,
         isLoading: false,
       });
-    } catch {
+    } catch (err) {
       set({ isLoading: false });
-      throw new Error("Login failed");
+      throw err;
+    }
+  },
+
+  register: async (email: string, password: string, name?: string) => {
+    set({ isLoading: true });
+    try {
+      const res = await api.post<{ data: { user: User; access_token: string; expires_in: number } }>("/api/auth/register", { email, password, name });
+      const body = await res.json();
+
+      if (!res.ok) {
+        throw new Error(body.error?.message || "Registration failed");
+      }
+
+      localStorage.setItem("auth_token", body.data.access_token);
+      localStorage.setItem("auth_user", JSON.stringify(body.data.user));
+
+      set({
+        user: body.data.user,
+        token: body.data.access_token,
+        isAuthenticated: true,
+        isLoading: false,
+      });
+    } catch (err) {
+      set({ isLoading: false });
+      throw err;
     }
   },
 
   logout: () => {
     localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
     set({ user: null, token: null, isAuthenticated: false });
   },
 
   checkAuth: () => {
     const token = localStorage.getItem("auth_token");
-    set({ token, isAuthenticated: !!token });
+    let user: User | null = null;
+    try {
+      const stored = localStorage.getItem("auth_user");
+      user = stored ? JSON.parse(stored) : null;
+    } catch {
+      user = null;
+    }
+    set({ token, user, isAuthenticated: !!token });
   },
 }));
