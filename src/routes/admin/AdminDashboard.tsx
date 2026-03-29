@@ -17,6 +17,7 @@ interface DashboardStats {
 
 interface RecentItem {
   id: string;
+  slug: string;
   title: string;
   status: string;
   type: string;
@@ -34,17 +35,16 @@ export function AdminDashboard() {
     async function load() {
       try {
         const [statsRes, contentRes] = await Promise.all([
-          api.get<DashboardStats>("/stats"),
-          api.get("/content?limit=5&status=all"),
+          api.get<{ data: DashboardStats }>("/stats"),
+          api.get<{ data: RecentItem[] }>("/content?limit=5"),
         ]);
 
-        if (statsRes) {
-          setStats(statsRes);
+        if (statsRes?.data) {
+          setStats(statsRes.data);
         }
 
-        if (contentRes.ok) {
-          const contentData = await contentRes.json();
-          setRecentContent(contentData.data || []);
+        if (contentRes?.data) {
+          setRecentContent(contentRes.data);
         }
       } catch {
         // API not available
@@ -141,7 +141,7 @@ export function AdminDashboard() {
                 {recentContent.map((item) => (
                   <div key={item.id} className="px-6 py-3 flex items-center justify-between">
                     <button
-                      onClick={() => void navigate({ to: "/admin/content/edit", search: { slug: item.id } })}
+                      onClick={() => void navigate({ to: "/admin/content/edit", search: { slug: item.slug } })}
                       className="text-left"
                     >
                       <div className="text-sm font-medium text-text-primary hover:text-primary-600 transition-colors">{item.title}</div>
