@@ -54,6 +54,7 @@ export function ContentEditor() {
   const [selectedTermIds, setSelectedTermIds] = useState<string[]>([]);
   const [seoTitle, setSeoTitle] = useState("");
   const [seoDescription, setSeoDescription] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
 
   // Taxonomy state
   const [categories, setCategories] = useState<Term[]>([]);
@@ -122,6 +123,14 @@ export function ContentEditor() {
       const meta = (currentContent as { meta?: Record<string, string> }).meta;
       setSeoTitle(meta?.seo_title ?? "");
       setSeoDescription(meta?.seo_description ?? "");
+
+      // Sync scheduled_at
+      const itemAny = currentContent.item as Record<string, unknown>;
+      if (currentContent.item.status === "scheduled" && itemAny.scheduled_at) {
+        setScheduledAt(String(itemAny.scheduled_at).slice(0, 16));
+      } else {
+        setScheduledAt("");
+      }
 
       // Sync terms
       const termIds = (currentContent.terms || []).map((t: any) => t.id || t.term_id);
@@ -228,6 +237,7 @@ export function ContentEditor() {
           meta: seoMeta,
           featured_image_url: featuredImageUrl.trim() || undefined,
           term_ids: selectedTermIds.length > 0 ? selectedTermIds : undefined,
+          ...(status === "scheduled" && scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         });
         setHasChanges(false);
         void navigate({ to: "/admin/content/edit", search: { slug: newItem.slug } });
@@ -244,6 +254,7 @@ export function ContentEditor() {
           meta: seoMeta,
           featured_image_url: featuredImageUrl.trim() || undefined,
           term_ids: selectedTermIds,
+          ...(status === "scheduled" && scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         });
         setHasChanges(false);
         // Refresh revisions after save
@@ -254,7 +265,7 @@ export function ContentEditor() {
     }
   }, [
     title, excerpt, status, editorBlocks, isCreateMode, slug,
-    featuredImageUrl, selectedTermIds, createContent, saveContent, navigate,
+    featuredImageUrl, selectedTermIds, scheduledAt, createContent, saveContent, navigate,
   ]);
 
   const handleTogglePublish = useCallback(() => {
@@ -274,7 +285,7 @@ export function ContentEditor() {
     if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
     autosaveTimerRef.current = setTimeout(() => { void handleSave(); }, 30_000);
     return () => { if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current); };
-  }, [hasChanges, editorBlocks, title, excerpt, status, featuredImageUrl, selectedTermIds, isCreateMode, slug, handleSave]);
+  }, [hasChanges, editorBlocks, title, excerpt, status, featuredImageUrl, selectedTermIds, scheduledAt, isCreateMode, slug, handleSave]);
 
   // Ctrl+S
   useEffect(() => {
@@ -346,6 +357,18 @@ export function ContentEditor() {
               <option key={s.value} value={s.value}>{s.label}</option>
             ))}
           </select>
+
+          {/* Schedule datetime picker */}
+          {status === "scheduled" && (
+            <input
+              type="datetime-local"
+              value={scheduledAt}
+              onChange={(e) => { setScheduledAt(e.target.value); markChanged(); }}
+              min={new Date().toISOString().slice(0, 16)}
+              className="text-xs border border-border rounded px-2 py-1.5 bg-surface"
+              title="Schedule publish date/time"
+            />
+          )}
 
           {/* Submit for Review (limited roles) */}
           {isLimitedRole && status === "draft" && (

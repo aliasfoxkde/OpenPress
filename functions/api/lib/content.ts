@@ -4,10 +4,24 @@ import { isValidStatus, isValidContentType } from "./security";
 
 const content = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
+// Helper: auto-publish content whose scheduled_at has passed
+async function publishScheduledContent(db: D1Database) {
+  const now = new Date().toISOString();
+  await db
+    .prepare(
+      "UPDATE content_items SET status = 'published', published_at = COALESCE(published_at, scheduled_at), updated_at = ? WHERE status = 'scheduled' AND scheduled_at IS NOT NULL AND scheduled_at <= ?",
+    )
+    .bind(now, now)
+    .run();
+}
+
 // GET / - List content items with pagination and filters
 content.get("/", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  // Auto-publish any scheduled content whose time has come
+  await publishScheduledContent(db);
 
   const page = Math.max(1, parseInt(c.req.query("page") || "1"));
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "20")));
@@ -38,7 +52,7 @@ content.get("/", async (c) => {
   const [items, countResult] = await Promise.all([
     db
       .prepare(
-        `SELECT id, type, slug, title, excerpt, status, author_id, featured_image_url, published_at, created_at, updated_at FROM content_items ${whereClause} ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
+        `SELECT id, type, slug, title, excerpt, status, author_id, featured_image_url, published_at, scheduled_at, created_at, updated_at FROM content_items ${whereClause} ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
       )
       .bind(...params, limit, offset)
       .all(),
@@ -65,6 +79,10 @@ content.get("/:slug", async (c) => {
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
   const slug = c.req.param("slug");
+
+  // Auto-publish scheduled content
+  await publishScheduledContent(db);
+
   const item = await db.prepare("SELECT * FROM content_items WHERE slug = ?").bind(slug).first();
 
   if (!item) {
@@ -100,7 +118,7 @@ content.post("/", async (c) => {
 
   const user = c.get("user");
   const body = await c.req.json();
-  const { title, type, status, content: bodyContent, excerpt, blocks, term_ids, meta } = body;
+  const { title, type, status, content: bodyContent, excerpt, blocks, term_ids, meta, scheduled_at } = body;
 
   if (!title) {
     return c.json({ error: { message: "Title is required", code: "VALIDATION" } }, 400);
@@ -117,12 +135,13 @@ content.post("/", async (c) => {
   const itemStatus = status || "draft";
   const itemType = type || "post";
   const publishedAt = itemStatus === "published" ? now : null;
+  const scheduledAt = itemStatus === "scheduled" && scheduled_at ? scheduled_at : null;
 
   await db
     .prepare(
-      "INSERT INTO content_items (id, type, slug, title, content, excerpt, status, author_id, published_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO content_items (id, type, slug, title, content, excerpt, status, author_id, featured_image_url, published_at, scheduled_at, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
     )
-    .bind(id, itemType, slug, title, bodyContent || null, excerpt || null, itemStatus, user?.id || null, publishedAt, now, now)
+    .bind(id, itemType, slug, title, bodyContent || null, excerpt || null, itemStatus, user?.id || null, body.featured_image_url || null, publishedAt, scheduledAt, now, now)
     .run();
 
   // Insert blocks if provided
@@ -228,6 +247,13 @@ content.put("/:slug", async (c) => {
       if (col === "status" && body[col] === "published") {
         updates.push("published_at = COALESCE(published_at, ?)");
         params.push(now);
+      }
+      if (col === "status" && body[col] === "scheduled") {
+        updates.push("scheduled_at = ?");
+        params.push(body.scheduled_at || now);
+      }
+      if (col === "status" && body[col] !== "scheduled") {
+        updates.push("scheduled_at = NULL");
       }
     }
   }
