@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/api";
 
 interface ContentItem {
@@ -29,6 +30,7 @@ export function AdminContent() {
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState("post");
   const [creating, setCreating] = useState(false);
+  const navigate = useNavigate();
 
   async function fetchContent(page = 1) {
     setLoading(true);
@@ -62,9 +64,10 @@ export function AdminContent() {
         status: "draft",
       });
       if (res.ok) {
+        const data = await res.json();
         setShowCreate(false);
         setNewTitle("");
-        await fetchContent();
+        void navigate({ to: "/admin/content/edit", search: { slug: data.data?.slug || data.slug } });
       }
     } catch {
       // ignore
@@ -208,7 +211,13 @@ export function AdminContent() {
               {filtered.map((item) => (
                 <tr key={item.id} className="border-t border-border hover:bg-surface-secondary/50 transition-colors">
                   <td className="px-4 py-3">
-                    <div className="font-medium text-text-primary">{item.title}</div>
+                    <Link
+                      to="/admin/content/edit"
+                      search={{ slug: item.slug }}
+                      className="font-medium text-text-primary hover:text-primary-600 transition-colors"
+                    >
+                      {item.title}
+                    </Link>
                     {item.excerpt && (
                       <div className="text-xs text-text-tertiary mt-0.5 truncate max-w-xs">{item.excerpt}</div>
                     )}
@@ -226,12 +235,21 @@ export function AdminContent() {
                     {new Date(item.updated_at).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => void handleDelete(item.slug)}
-                      className="text-xs text-red-500 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex items-center justify-end gap-3">
+                      <Link
+                        to="/admin/content/edit"
+                        search={{ slug: item.slug }}
+                        className="text-xs text-primary-600 hover:text-primary-700 font-medium"
+                      >
+                        Edit
+                      </Link>
+                      <button
+                        onClick={() => void handleDelete(item.slug)}
+                        className="text-xs text-red-500 hover:text-red-700"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
