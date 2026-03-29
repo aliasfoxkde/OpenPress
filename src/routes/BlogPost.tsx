@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useSEO } from "@/hooks/useSEO";
@@ -112,6 +112,9 @@ export function BlogPostPage() {
               day: "numeric",
             })}
           </time>
+          {post.author_name && (
+            <span className="text-gray-600">by {post.author_name}</span>
+          )}
           <span className="inline-flex items-center rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-medium text-indigo-800 capitalize">
             {post.type}
           </span>
@@ -139,6 +142,9 @@ export function BlogPostPage() {
           )}
         </>
       )}
+
+      {/* Comments Section */}
+      <CommentsSection slug={slug} />
     </article>
   );
 }
@@ -279,4 +285,146 @@ function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
       if (!text) return <div className="h-4" />; // empty paragraph spacer
       return <p className="text-gray-700 leading-relaxed">{text}</p>;
   }
+}
+
+// ─── Comments Section ─────────────────────────────────────────────────────
+
+interface Comment {
+  id: string;
+  author_name: string;
+  body: string;
+  parent_id: string | null;
+  reply_count: number;
+  created_at: string;
+}
+
+function CommentsSection({ slug }: { slug: string }) {
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [body, setBody] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      const res = await api.get<{ data: Comment[] }>(`/comments/${slug}`);
+      setComments(res.data || []);
+    } catch {
+      // Silently fail - comments are optional
+    } finally {
+      setLoading(false);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    void fetchComments();
+  }, [fetchComments]);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!name.trim() || !body.trim()) return;
+
+    setSubmitting(true);
+    setMessage(null);
+    try {
+      await api.post(`/comments/${slug}`, {
+        author_name: name.trim(),
+        author_email: email.trim() || undefined,
+        body: body.trim(),
+      });
+      setName("");
+      setEmail("");
+      setBody("");
+      setMessage("Comment submitted for moderation.");
+      void fetchComments();
+    } catch {
+      setMessage("Failed to submit comment.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function formatDate(dateStr: string) {
+    try {
+      return new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+    } catch {
+      return dateStr;
+    }
+  }
+
+  return (
+    <section className="mt-12 pt-8 border-t border-border">
+      <h2 className="text-2xl font-bold text-text-primary mb-6">
+        Comments {comments.length > 0 && `(${comments.length})`}
+      </h2>
+
+      {/* Comment list */}
+      {loading ? (
+        <div className="text-sm text-text-tertiary">Loading comments...</div>
+      ) : comments.length === 0 ? (
+        <p className="text-sm text-text-tertiary mb-6">No comments yet. Be the first to share your thoughts!</p>
+      ) : (
+        <div className="space-y-4 mb-8">
+          {comments
+            .filter((c) => !c.parent_id)
+            .map((comment) => (
+              <div key={comment.id} className="border border-border rounded-lg p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-xs font-bold">
+                    {comment.author_name.charAt(0).toUpperCase()}
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-text-primary">{comment.author_name}</span>
+                    <span className="text-xs text-text-tertiary ml-2">{formatDate(comment.created_at)}</span>
+                  </div>
+                </div>
+                <p className="text-sm text-text-secondary ml-10">{comment.body}</p>
+              </div>
+            ))}
+        </div>
+      )}
+
+      {/* Comment form */}
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h3 className="text-lg font-semibold text-text-primary">Leave a comment</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <input
+            type="text"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Name *"
+            required
+            className="rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+          />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email (optional)"
+            className="rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+          />
+        </div>
+        <textarea
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          placeholder="Write your comment..."
+          required
+          rows={3}
+          className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+        />
+        {message && (
+          <p className="text-sm text-text-tertiary">{message}</p>
+        )}
+        <button
+          type="submit"
+          disabled={submitting || !name.trim() || !body.trim()}
+          className="bg-primary-600 text-white px-4 py-2 rounded-md text-sm hover:bg-primary-700 disabled:opacity-50 transition-colors"
+        >
+          {submitting ? "Submitting..." : "Post Comment"}
+        </button>
+      </form>
+    </section>
+  );
 }

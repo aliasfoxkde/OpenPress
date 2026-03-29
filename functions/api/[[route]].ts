@@ -14,6 +14,8 @@ import revisions from "./lib/revisions";
 import users from "./lib/users";
 import seo from "./lib/seo";
 import stripeRoutes from "./lib/stripe";
+import comments from "./lib/comments";
+import cron from "./lib/cron";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -256,6 +258,12 @@ app.get("/api/content/:slug", async (c) => {
 
 // SEO routes (public - sitemap, RSS, robots, search)
 app.route("/api/seo", seo);
+
+// Comments (public: GET/POST per slug; protected: admin list/moderate)
+app.route("/api/comments", comments);
+
+// Cron endpoints (for Workers Cron Trigger)
+app.route("/api/cron", cron);
 
 // Stripe checkout (protected - create session) and webhook (public)
 app.route("/api/checkout", stripeRoutes);

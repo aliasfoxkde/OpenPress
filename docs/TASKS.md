@@ -181,14 +181,14 @@ Drag-and-drop visual page building (Webflow-like).
 
 ---
 
-## Phase 18: Content Features [PENDING]
+## Phase 18: Content Features [IN PROGRESS]
 
 Essential content management features to match WordPress capabilities.
 
-- [ ] 18.1 Add scheduled publishing (Workers Cron Trigger checks for content with published_at <= now)
+- [x] 18.1 Add scheduled publishing (Workers Cron Trigger checks for content with published_at <= now)
 - [ ] 18.2 Add featured image selector to content editor (media library picker)
-- [ ] 18.3 Create comments D1 table (id, content_id, author_name, author_email, body, status, parent_id, created_at)
-- [ ] 18.4 Add comments API (POST /api/content/:slug/comments, GET /api/comments for admin)
+- [x] 18.3 Create comments D1 table (id, content_id, author_name, author_email, body, status, parent_id, created_at)
+- [x] 18.4 Add comments API (POST /api/comments/:slug, GET /api/comments/:slug, admin list/moderate)
 - [ ] 18.5 Build comment moderation UI in admin (approve/reply/spam/delete)
 - [ ] 18.6 Add custom post types (dynamic content types with custom fields via D1)
 - [ ] 18.7 Build custom post type manager UI (/admin/types)
@@ -197,7 +197,7 @@ Essential content management features to match WordPress capabilities.
 - [ ] 18.10 Add tag input component with autocomplete
 - [ ] 18.11 Add category tree management UI (nested categories)
 - [ ] 18.12 Add content preview (generate shareable preview link for unpublished drafts)
-- [ ] 18.13 Add trash/restore with 30-day auto-cleanup (Workers Cron)
+- [x] 18.13 Add trash/restore with 30-day auto-cleanup (Workers Cron)
 - [ ] 18.14 Add content import/export (JSON format, WordPress XML import)
 - [ ] 18.15 Add sticky posts (pin to top of blog listing)
 - [ ] 18.16 Add password-protected posts
