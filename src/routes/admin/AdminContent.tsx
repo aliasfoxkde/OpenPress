@@ -38,6 +38,11 @@ export function AdminContent() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
 
+  // Bulk selection
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState("");
+  const [bulkLoading, setBulkLoading] = useState(false);
+
   // Non-admin roles see only their own content by default
   const isLimitedRole = user && !["admin", "editor"].includes(user.role);
 
@@ -46,12 +51,9 @@ export function AdminContent() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (statusFilter) params.set("status", statusFilter);
-      const res = await api.get(`/api/content?${params}`);
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.data || []);
-        setPagination(data.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
-      }
+      const res = await api.get<{ data: ContentItem[]; pagination: Pagination }>(`/api/content?${params}`);
+      setItems(res.data || []);
+      setPagination(res.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
     } catch {
       // ignore
     } finally {
@@ -67,17 +69,14 @@ export function AdminContent() {
     if (!newTitle.trim()) return;
     setCreating(true);
     try {
-      const res = await api.post("/api/content", {
+      const res = await api.post<{ data: { slug: string } }>("/api/content", {
         title: newTitle.trim(),
         type: newType,
         status: "draft",
       });
-      if (res.ok) {
-        const data = await res.json();
-        setShowCreate(false);
-        setNewTitle("");
-        void navigate({ to: "/admin/content/edit", search: { slug: data.data?.slug || data.slug } });
-      }
+      setShowCreate(false);
+      setNewTitle("");
+      void navigate({ to: "/admin/content/edit", search: { slug: res.data?.slug } });
     } catch {
       // ignore
     } finally {
@@ -107,6 +106,54 @@ export function AdminContent() {
       await fetchContent();
     } catch {
       // ignore
+    }
+  }
+
+  // Bulk actions
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selected.size === filtered.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map((i) => i.id)));
+    }
+  }
+
+  async function executeBulkAction() {
+    if (!bulkAction || selected.size === 0) return;
+    setBulkLoading(true);
+    try {
+      const ids = Array.from(selected);
+      const promises = ids.map((id) => {
+        const item = items.find((i) => i.id === id);
+        if (!item) return Promise.resolve();
+        switch (bulkAction) {
+          case "publish":
+            return api.put(`/api/content/${item.slug}`, { status: "published" });
+          case "unpublish":
+            return api.put(`/api/content/${item.slug}`, { status: "draft" });
+          case "trash":
+            return api.delete(`/api/content/${item.slug}`);
+          default:
+            return Promise.resolve();
+        }
+      });
+      await Promise.all(promises);
+      setSelected(new Set());
+      setBulkAction("");
+      await fetchContent();
+    } catch {
+      // ignore
+    } finally {
+      setBulkLoading(false);
     }
   }
 
@@ -215,6 +262,38 @@ export function AdminContent() {
         )}
       </div>
 
+      {/* Bulk action bar */}
+      {selected.size > 0 && (
+        <div className="mb-4 flex items-center gap-3 p-3 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+          <span className="text-sm font-medium text-primary-700 dark:text-primary-300">
+            {selected.size} selected
+          </span>
+          <select
+            value={bulkAction}
+            onChange={(e) => setBulkAction(e.target.value)}
+            className="rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none"
+          >
+            <option value="">Bulk Actions...</option>
+            <option value="publish">Publish</option>
+            <option value="unpublish">Unpublish</option>
+            <option value="trash">Move to Trash</option>
+          </select>
+          <button
+            onClick={() => void executeBulkAction()}
+            disabled={!bulkAction || bulkLoading}
+            className="rounded-md bg-primary-600 text-white px-3 py-1.5 text-sm hover:bg-primary-700 disabled:opacity-50 transition-colors"
+          >
+            {bulkLoading ? "Applying..." : "Apply"}
+          </button>
+          <button
+            onClick={() => { setSelected(new Set()); setBulkAction(""); }}
+            className="text-sm text-text-secondary hover:text-text-primary"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {/* Content table */}
       <div className="border border-border rounded-lg overflow-x-auto">
         {loading ? (
@@ -227,6 +306,15 @@ export function AdminContent() {
           <table className="w-full text-sm">
             <thead className="bg-surface-secondary">
               <tr>
+                <th className="text-left px-4 py-3 font-medium text-text-tertiary w-10">
+                  <input
+                    type="checkbox"
+                    checked={selected.size === filtered.length && filtered.length > 0}
+                    onChange={toggleSelectAll}
+                    className="rounded border-border"
+                    title="Select all"
+                  />
+                </th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Title</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary hidden sm:table-cell">Type</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Status</th>
@@ -236,7 +324,15 @@ export function AdminContent() {
             </thead>
             <tbody>
               {filtered.map((item) => (
-                <tr key={item.id} className="border-t border-border hover:bg-surface-secondary/50 transition-colors">
+                <tr key={item.id} className={`border-t border-border hover:bg-surface-secondary/50 transition-colors ${selected.has(item.id) ? "bg-primary-50/50 dark:bg-primary-900/10" : ""}`}>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(item.id)}
+                      onChange={() => toggleSelect(item.id)}
+                      className="rounded border-border"
+                    />
+                  </td>
                   <td className="px-4 py-3">
                     <Link
                       to="/admin/content/edit"
