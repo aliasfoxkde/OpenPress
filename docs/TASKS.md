@@ -226,21 +226,21 @@ API completeness, extensibility, and developer experience.
 
 ---
 
-## Phase 20: Performance & Polish [PENDING]
+## Phase 20: Performance & Polish [IN PROGRESS]
 
 Edge optimization, UI polish, and production readiness.
 
-- [ ] 20.1 Implement KV cache for published content (stale-while-revalidate, 5-min TTL)
+- [x] 20.1 Implement KV cache for published content (stale-while-revalidate, 5-min TTL)
 - [ ] 20.2 Add cache purging on content/media/settings updates
 - [ ] 20.3 Add lazy loading for images (native loading=lazy + intersection observer for below-fold)
 - [ ] 20.4 Optimize bundle size (route-based code splitting, tree shaking)
 - [ ] 20.5 Add loading skeletons to all pages (content list, product list, blog list)
-- [ ] 20.6 Add error boundaries to all route components
-- [ ] 20.7 Build proper 404 Not Found page with navigation links
+- [x] 20.6 Add error boundaries to all route components
+- [x] 20.7 Build proper 404 Not Found page with navigation links
 - [ ] 20.8 Improve mobile responsiveness across all admin pages
 - [ ] 20.9 Add keyboard shortcuts panel in admin (Ctrl+K command palette)
 - [ ] 20.10 Add dark mode support (respect prefers-color-scheme, add toggle)
-- [ ] 20.11 Add toast notification component for success/error feedback
+- [x] 20.11 Add toast notification component for success/error feedback
 - [ ] 20.12 Add confirm dialog component (replace all native confirm() calls)
 - [ ] 20.13 Increase test coverage to 80%+ for API routes
 - [ ] 20.14 Add React component tests for critical UI components

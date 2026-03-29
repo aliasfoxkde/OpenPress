@@ -196,13 +196,22 @@ app.get("/api/products/:id", async (c) => {
 
 // Public read endpoints (no auth required)
 app.get("/api/content", async (c) => {
-  // Re-use content list for public access
   const db = c.env.DB;
+  const cache = c.env.CACHE;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
   const page = Math.max(1, parseInt(c.req.query("page") || "1"));
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "20")));
   const offset = (page - 1) * limit;
+
+  // Try KV cache for page 1
+  const cacheKey = `content:list:page=${page}:limit=${limit}`;
+  if (cache && page === 1) {
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      try { return c.json(JSON.parse(cached)); } catch { /* cache miss */ }
+    }
+  }
 
   const [items, countResult] = await Promise.all([
     db
@@ -214,7 +223,7 @@ app.get("/api/content", async (c) => {
     db.prepare("SELECT COUNT(*) as total FROM content_items WHERE status = 'published'").first<{ total: number }>(),
   ]);
 
-  return c.json({
+  const response = c.json({
     data: items.results,
     pagination: {
       page,
@@ -223,13 +232,31 @@ app.get("/api/content", async (c) => {
       totalPages: Math.ceil((countResult?.total || 0) / limit),
     },
   });
+
+  // Cache page 1 for 5 minutes
+  if (cache && page === 1) {
+    const body = JSON.stringify({ data: items.results, pagination: { page, limit, total: countResult?.total || 0, totalPages: Math.ceil((countResult?.total || 0) / limit) } });
+    await cache.put(cacheKey, body, { expirationTtl: 300 });
+  }
+
+  return response;
 });
 
 app.get("/api/content/:slug", async (c) => {
   const db = c.env.DB;
+  const cache = c.env.CACHE;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
   const slug = c.req.param("slug");
+
+  // Try KV cache
+  const cacheKey = `content:${slug}`;
+  if (cache) {
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      try { return c.json(JSON.parse(cached)); } catch { /* cache miss */ }
+    }
+  }
   const item = await db
     .prepare(
       "SELECT ci.*, u.name as author_name FROM content_items ci LEFT JOIN users u ON ci.author_id = u.id WHERE ci.slug = ? AND ci.status = 'published'"
@@ -251,9 +278,17 @@ app.get("/api/content/:slug", async (c) => {
       .all(),
   ]);
 
-  return c.json({
+  const response = c.json({
     data: { ...item, blocks: blocks.results, terms: terms.results },
   });
+
+  // Cache for 5 minutes
+  if (cache) {
+    const body = JSON.stringify({ data: { ...item, blocks: blocks.results, terms: terms.results } });
+    await cache.put(cacheKey, body, { expirationTtl: 300 });
+  }
+
+  return response;
 });
 
 // SEO routes (public - sitemap, RSS, robots, search)

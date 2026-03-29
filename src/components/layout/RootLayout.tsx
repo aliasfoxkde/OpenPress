@@ -2,6 +2,7 @@ import { Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-route
 import { useState, useRef, useEffect, useCallback } from "react";
 import { cn } from "@/lib/cn";
 import { api } from "@/lib/api";
+import { ToastProvider } from "@/components/ui/Toast";
 
 interface SearchResult {
   id: string;
@@ -65,6 +66,7 @@ export function RootLayout() {
   }, [query, doSearch]);
 
   return (
+    <ToastProvider>
     <div className="min-h-screen bg-surface">
       <header className="border-b border-border bg-surface sticky top-0 z-50">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -155,5 +157,6 @@ export function RootLayout() {
       </header>
       <Outlet />
     </div>
+    </ToastProvider>
   );
 }

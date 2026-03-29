@@ -22,6 +22,7 @@ import AdminOrders from "./routes/admin/AdminOrders";
 import { LoginPage } from "./routes/LoginPage";
 import { CheckoutPage } from "./routes/CheckoutPage";
 import { OrderSuccessPage } from "./routes/OrderSuccessPage";
+import { NotFoundPage } from "./routes/NotFoundPage";
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -73,6 +74,12 @@ const orderSuccessRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/order/success",
   component: OrderSuccessPage,
+});
+
+const notFoundRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/404",
+  component: NotFoundPage,
 });
 
 const adminRoute = createRoute({
@@ -144,6 +151,7 @@ const routeTree = rootRoute.addChildren([
   loginRoute,
   checkoutRoute,
   orderSuccessRoute,
+  notFoundRoute,
   adminRoute.addChildren([
     adminDashboardRoute,
     adminContentRoute,
