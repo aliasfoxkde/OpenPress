@@ -11,6 +11,7 @@ import { AdminContent } from "./routes/admin/AdminContent";
 import { AdminMedia } from "./routes/admin/AdminMedia";
 import { AdminSettings } from "./routes/admin/AdminSettings";
 import { AdminUsers } from "./routes/admin/AdminUsers";
+import AdminAI from "./routes/admin/AdminAI";
 import { LoginPage } from "./routes/LoginPage";
 
 const rootRoute = createRootRoute({
@@ -65,6 +66,12 @@ const adminUsersRoute = createRoute({
   component: AdminUsers,
 });
 
+const adminAIRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/ai",
+  component: AdminAI,
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   loginRoute,
@@ -74,6 +81,7 @@ const routeTree = rootRoute.addChildren([
     adminMediaRoute,
     adminSettingsRoute,
     adminUsersRoute,
+    adminAIRoute,
   ]),
 ]);
 
