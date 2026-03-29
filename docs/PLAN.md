@@ -1,191 +1,127 @@
-# Project Plan - {{PROJECT_NAME}}
+# OpenPress - Project Plan
 
-**Version**: 1.0.0
-**Last Updated**: {{DATE}}
-**Status**: {{DRAFT|APPROVED}}
-
----
-
-## Pre-Planning Research
-
-### Research Questions
-
-1. What problem are we solving?
-   {{RESEARCH_Q1}}
-
-2. Who are we solving it for?
-   {{RESEARCH_Q2}}
-
-3. What similar solutions exist?
-   {{RESEARCH_Q3}}
-
-4. What makes our solution unique?
-   {{RESEARCH_Q4}}
-
-### Research Findings
-
-{{RESEARCH_FINDINGS}}
-
-### Technology Options
-
-| Option | Pros | Cons | Recommendation |
-|--------|------|------|----------------|
-| {{OPTION_1}} | {{PROS}} | {{CONS}} | {{RECOMMENDATION}} |
-| {{OPTION_2}} | {{PROS}} | {{CONS}} | {{RECOMMENDATION}} |
+**Version**: 0.1.0
+**Last Updated**: 2026-03-29
+**Status**: Active Development
 
 ---
 
-## Architecture Overview
+## Vision
 
-### System Architecture
+OpenPress is a reimagining of WordPress as an open-source, edge-native web platform built on Cloudflare's global network. It combines a modern React frontend with serverless edge functions, SQLite at the edge via D1, R2 media storage, and Workers AI integration — all within Cloudflare's free tier ($0 cost).
+
+## Architecture
 
 ```
-{{ARCHITECTURE_DIAGRAM}}
+Browser (React SPA)  →  Cloudflare Pages Functions (Hono)  →  D1 + R2 + KV + Workers AI
+                                               ↕
+                                     Plugin/Theme Runtime (JS Hooks)
 ```
 
 ### Technology Stack
 
-- **Frontend**: {{FRONTEND_CHOICE}}
-- **Backend**: {{BACKEND_CHOICE}}
-- **Database**: {{DATABASE_CHOICE}}
-- **Infrastructure**: {{INFRASTRUCTURE_CHOICE}}
-
-### Justification
-
-{{TECH_JUSTIFICATION}}
-
----
-
-## Development Approach
-
-### Methodology
-
-We will use {{METHODOLOGY}} (Agile/Scrum/Kanban) with the following approach:
-
-1. **Sprint Length**: {{SPRINT_LENGTH}}
-2. **Planning**: {{PLANNING_APPROACH}}
-3. **Testing**: {{TESTING_APPROACH}}
-4. **Deployment**: {{DEPLOYMENT_APPROACH}}
-
-### Quality Standards
-
-- Code coverage: {{COVERAGE_TARGET}}%
-- Linting: {{LINTING_STANDARD}}
-- Documentation: {{DOC_STANDARD}}
-- Testing: {{TESTING_STANDARD}}
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | Vite 6 + React 19 + TanStack Router v1.120 | CSR-first SPA |
+| Styling | Tailwind CSS v4 | Utility-first CSS |
+| State | Zustand v5 | Client state management |
+| API | Hono v4 on Cloudflare Pages Functions | Edge API routes |
+| Database | Cloudflare D1 (SQLite at edge) | Persistent storage |
+| Media | Cloudflare R2 | Object storage (zero egress) |
+| Cache | Cloudflare KV | Sub-ms key-value reads |
+| AI | Cloudflare Workers AI | Content generation, embeddings |
+| Auth | JWT (jose) + SHA-256 | Stateless edge authentication |
+| Testing | Vitest 3 + happy-dom | Unit/integration tests |
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Foundation (Week 1-2)
+### Phase 1: Foundation
+- Project scaffolding (Vite, React, TanStack Router, Tailwind)
+- Cloudflare Pages Functions API with Hono
+- D1 database schema (12 tables)
+- Shared TypeScript types
+- Vitest testing framework
+- Documentation structure
+- Initial deployment to Cloudflare Pages
 
-**Goals**: Set up project infrastructure
+### Phase 2: Core API
+- Content CRUD API endpoints (pages, posts, custom types)
+- JWT authentication system (register, login, refresh)
+- Media upload API (R2-backed)
+- Taxonomy and metadata API
+- Settings API with KV cache
 
-**Tasks**:
-- Initialize repository
-- Set up CI/CD
-- Create documentation structure
-- Set up development environment
+### Phase 3: Admin UI
+- Frontend layout and navigation
+- Login/register/profile flow
+- Admin dashboard with live stats
+- Block-based content editor
+- Media manager with drag-drop upload
+- Settings management
 
-**Deliverables**:
-- Working repository
-- CI/CD pipeline
-- Documentation templates
+### Phase 4: Extensibility
+- Plugin system (WordPress-inspired hooks/filters/actions)
+- Theme system (CSS variable injection, component registry)
 
-### Phase 2: Core Features (Week 3-6)
+### Phase 5: PWA
+- Service worker (cache-first static, network-first API)
+- Web app manifest
+- Offline support
 
-**Goals**: Implement core functionality
+### Phase 6: E-Commerce
+- Products, variants, cart, orders schema
+- Product CRUD API (admin + public)
+- Shopping cart (session-based)
+- Order creation with line items
+- Schema migrated to D1
 
-**Tasks**:
-- Implement {{FEATURE_1}}
-- Implement {{FEATURE_2}}
-- Implement {{FEATURE_3}}
+### Phase 7: AI Integration
+- Workers AI endpoints (generate, summarize, suggest, translate, embed)
+- AI admin page with tabbed interface
+- Content suggestions (titles, excerpts, SEO meta, tags)
+- Translation support (10 languages)
+- Text embeddings for semantic search
 
-**Deliverables**:
-- Working core features
-- Unit tests
-- API documentation
+### Phase 8: Public Storefront
+- Product catalog page with price formatting
+- Product detail page with variants and add-to-cart
+- Blog listing with pagination
+- Single post page with block rendering
+- Navigation bar with Shop/Blog links
 
-### Phase 3: Enhancement (Week 7-8)
-
-**Goals**: Add advanced features
-
-**Tasks**:
-- Implement {{ADVANCED_FEATURE_1}}
-- Implement {{ADVANCED_FEATURE_2}}
-- Performance optimization
-
-**Deliverables**:
-- Enhanced features
-- Performance benchmarks
-- E2E tests
-
-### Phase 4: Deployment (Week 9-10)
-
-**Goals**: Deploy to production
-
-**Tasks**:
-- Set up production environment
-- Configure monitoring
-- Deploy application
-- Create runbooks
-
-**Deliverables**:
-- Production deployment
-- Monitoring dashboard
-- Deployment runbooks
-
----
-
-## Risk Management
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| {{RISK_1}} | {{HIGH|MED|LOW}} | {{MITIGATION}} |
-| {{RISK_2}} | {{HIGH|MED|LOW}} | {{MITIGATION}} |
+### Phase 9: Documentation & Polish
+- Updated PLAN.md, TASKS.md, PROGRESS.md
+- README with setup instructions
 
 ---
 
-## Success Metrics
+## Key Decisions
 
-### Technical Metrics
-- Performance: {{PERFORMANCE_METRIC}}
-- Reliability: {{RELIABILITY_METRIC}}
-- Scalability: {{SCALABILITY_METRIC}}
-
-### Business Metrics
-- User Adoption: {{ADOPTION_METRIC}}
-- User Satisfaction: {{SATISFACTION_METRIC}}
-- Time to Value: {{TIME_TO_VALUE}}
+1. **CSR-first over SSR** — Cloudflare Pages Functions serve the SPA, API runs at edge
+2. **JWT over Durable Objects** — Stateless auth, no server-side sessions, $0 cost
+3. **Single package, not monorepo** — Cloudflare Pages Functions requires `functions/` at root
+4. **Hono over itty-router** — Richer middleware ecosystem, better TypeScript support
+5. **Workers AI for free** — Cloudflare provides free tier AI inference
+6. **No Durable Objects** — Budget constraint, $0 cost requirement
 
 ---
 
-## Timeline
+## Deployment
 
-```
-{{TIMELINE_DIAGRAM}}
-```
-
----
-
-## Dependencies
-
-### External Dependencies
-{{EXTERNAL_DEPS}}
-
-### Internal Dependencies
-{{INTERNAL_DEPS}}
+- **Platform**: Cloudflare Pages
+- **URL**: https://openpress.pages.dev
+- **Database**: D1 (`openpress-db`, ID: `4f17765f-643b-4065-8ecc-74f9da77a8e9`)
+- **Media**: R2 bucket (`openpress-media`)
+- **Cache**: KV namespace (ID: `4ee12a2365fc48fc98c720b05b80447f`)
+- **Deploy command**: `pnpm build && npx wrangler pages deploy dist --project-name=openpress`
 
 ---
 
-## Appendix
+## Constraints
 
-### Assumptions
-{{ASSUMPTIONS}}
-
-### Constraints
-{{CONSTRAINTS}}
-
-### Open Questions
-{{OPEN_QUESTIONS}}
+- **$0 budget** — Everything on Cloudflare free tier
+- **No Durable Objects** — Use JWT for auth, KV for caching
+- **Edge-only** — No persistent server processes
+- **SQLite at edge** — D1 limitations (no full-text search, limited joins)

@@ -1,228 +1,119 @@
-# Task List - {{PROJECT_NAME}}
+# OpenPress - Task List
 
-**Version**: 1.0.0
-**Last Updated**: {{DATE}}
+**Version**: 0.1.0
+**Last Updated**: 2026-03-29
 
 ---
 
-## Task Status Legend
+## Task Status
 
+- [x] Completed
 - [ ] Pending
 - [~] In Progress
-- [x] Completed
-- [!] Blocked
-- [-] Cancelled
 
 ---
 
-## Phase 1: Foundation {{PHASE_STATUS}}
+## Phase 1: Foundation [COMPLETED]
 
-### 1.1 Project Setup
-
-- [ ] Initialize Git repository
-- [ ] Create GitHub repository
-- [ ] Set up Claude Code symbolic link
-- [ ] Configure .gitignore
-- [ ] Create initial README.md
-- [ ] Set up LICENSE file
-- [ ] Configure GitHub templates (CODEOWNERS, dependabot, etc.)
-
-**Estimated Time**: 1-2 hours
-**Dependencies**: None
-**Priority**: Critical
+- [x] 1.1 Project scaffolding (Vite, React, TanStack Router, Tailwind CSS v4)
+- [x] 1.2 Cloudflare Pages Functions API with Hono
+- [x] 1.3 D1 Database schema and migrations
+- [x] 1.4 Frontend app shell (Vite + React + TanStack Router)
+- [x] 1.5 Shared TypeScript types and utilities
+- [x] 1.6 Vitest testing framework and initial tests
+- [x] 1.7 Documentation structure (PLAN.md, TASKS.md, PROGRESS.md)
+- [x] 1.8 Deploy to Cloudflare Pages via Wrangler
 
 ---
 
-### 1.2 Documentation Structure
+## Phase 2: Core API [COMPLETED]
 
-- [ ] Create docs/ directory structure
-- [ ] Create PRD.md (Product Requirements Document)
-- [ ] Create TASKS.md (this file)
-- [ ] Create PLAN.md (project plan)
-- [ ] Create PROGRESS.md (progress tracking)
-- [ ] Create CHANGELOG.md
-- [ ] Create USAGE.md
-- [ ] Create CONTRIBUTE.md
-
-**Estimated Time**: 2-3 hours
-**Dependencies**: 1.1
-**Priority**: High
+- [x] 2.1 Content CRUD API endpoints
+- [x] 2.2 Authentication system (JWT + D1)
+- [x] 2.3 Media upload API (R2 + image processing)
+- [x] 2.4 Taxonomy and metadata API
 
 ---
 
-## Phase 2: Planning & Research {{PHASE_STATUS}}
+## Phase 3: Admin UI [COMPLETED]
 
-### 2.1 Pre-Planning Research
-
-- [ ] Research similar projects
-- [ ] Analyze technical options
-- [ ] Document architectural decisions
-- [ ] Create technology stack justification
-
-**Estimated Time**: 4-8 hours
-**Dependencies**: 1.2
-**Priority**: High
+- [x] 3.1 Frontend layout and navigation
+- [x] 3.2 Auth flow UI (login/register/profile)
+- [x] 3.3 Admin dashboard with live stats
+- [x] 3.4 Block-based content editor
+- [x] 3.5 Media manager UI
 
 ---
 
-### 2.2 Requirements Analysis
+## Phase 4: Extensibility [COMPLETED]
 
-- [ ] Gather user requirements
-- [ ] Define functional requirements
-- [ ] Define non-functional requirements
-- [ ] Create user stories
-- [ ] Define success criteria
-
-**Estimated Time**: 4-6 hours
-**Dependencies**: 2.1
-**Priority**: High
+- [x] 4.1 Plugin system (hooks, filters, actions)
+- [x] 4.2 Theme system (CSS variables, component registry)
 
 ---
 
-## Phase 3: Architecture & Design {{PHASE_STATUS}}
+## Phase 5: PWA [COMPLETED]
 
-### 3.1 System Architecture
-
-- [ ] Design system architecture
-- [ ] Create data model
-- [ ] Design API contracts
-- [ ] Define component structure
-- [ ] Create architecture diagrams
-
-**Estimated Time**: 8-12 hours
-**Dependencies**: 2.2
-**Priority**: High
+- [x] 5.1 Service worker and offline support
 
 ---
 
-### 3.2 Database Design
+## Phase 6: E-Commerce [COMPLETED]
 
-- [ ] Design database schema
-- [ ] Create entity relationships
-- [ ] Define indexes and constraints
-- [ ] Plan migrations
-
-**Estimated Time**: 4-6 hours
-**Dependencies**: 3.1
-**Priority**: High
+- [x] 6.1 Products, cart, and orders API
+- [x] 6.2 E-commerce schema migrated to D1
 
 ---
 
-## Phase 4: Implementation {{PHASE_STATUS}}
+## Phase 7: AI Integration [COMPLETED]
 
-### 4.1 Core Features
-
-- [ ] {{FEATURE_1}}
-  - [ ] Subtask 1
-  - [ ] Subtask 2
-  - [ ] Tests
-- [ ] {{FEATURE_2}}
-  - [ ] Subtask 1
-  - [ ] Subtask 2
-  - [ ] Tests
-- [ ] {{FEATURE_3}}
-  - [ ] Subtask 1
-  - [ ] Subtask 2
-  - [ ] Tests
-
-**Estimated Time**: {{TIME_ESTIMATE}}
-**Dependencies**: 3.1, 3.2
-**Priority**: High
+- [x] 7.1 Workers AI endpoints (generate, summarize, suggest, translate, embed)
+- [x] 7.2 AI admin page (tabbed UI)
 
 ---
 
-## Phase 5: Testing {{PHASE_STATUS}}
+## Phase 8: Public Storefront [COMPLETED]
 
-### 5.1 Unit Tests
-
-- [ ] Achieve 80%+ code coverage
-- [ ] Test all critical paths
-- [ ] Test edge cases
-- [ ] Test error handling
-
-**Estimated Time**: {{TIME_ESTIMATE}}
-**Dependencies**: 4.1
-**Priority**: High
+- [x] 8.1 Product catalog page
+- [x] 8.2 Product detail page with variants
+- [x] 8.3 Blog listing page with pagination
+- [x] 8.4 Single post page with block rendering
+- [x] 8.5 Navigation links (Shop, Blog)
 
 ---
 
-### 5.2 Integration Tests
+## Phase 9: Documentation & Polish [IN PROGRESS]
 
-- [ ] Test API endpoints
-- [ ] Test database operations
-- [ ] Test external integrations
-- [ ] Test data flow
-
-**Estimated Time**: {{TIME_ESTIMATE}}
-**Dependencies**: 5.1
-**Priority**: High
+- [x] 9.1 Update PLAN.md with actual project details
+- [x] 9.2 Update TASKS.md with completed work
+- [~] 9.3 Update PROGRESS.md with session log
+- [ ] 9.4 Update README.md with setup instructions
 
 ---
 
-### 5.3 E2E Tests
+## Future Enhancements
 
-- [ ] Test critical user flows
-- [ ] Test authentication/authorization
-- [ ] Test error scenarios
-- [ ] Test performance
-
-**Estimated Time**: {{TIME_ESTIMATE}}
-**Dependencies**: 5.2
-**Priority**: Medium
-
----
-
-## Phase 6: Deployment {{PHASE_STATUS}}
-
-### 6.1 CI/CD Setup
-
-- [ ] Configure GitHub Actions
-- [ ] Set up automated testing
-- [ ] Set up automated deployment
-- [ ] Configure staging environment
-
-**Estimated Time**: 4-6 hours
-**Dependencies**: 5.3
-**Priority**: Medium
-
----
-
-### 6.2 Production Deployment
-
-- [ ] Deploy to production
-- [ ] Configure monitoring
-- [ ] Set up alerts
-- [ ] Document deployment process
-
-**Estimated Time**: 2-4 hours
-**Dependencies**: 6.1
-**Priority**: Medium
-
----
-
-## Bug Fixes & Improvements
-
-### Bugs
-- [ ] {{BUG_1}}
-- [ ] {{BUG_2}}
-
-### Improvements
-- [ ] {{IMPROVEMENT_1}}
-- [ ] {{IMPROVEMENT_2}}
-
----
-
-## Notes
-
-{{NOTES_SECTION}}
+- [ ] Stripe/payment integration for checkout
+- [ ] Full-text search with D1 FTS5
+- [ ] Email notifications (Cloudflare Email Workers)
+- [ ] Image transformation via Cloudflare Images
+- [ ] Multi-site support
+- [ ] GraphQL API layer
+- [ ] WebSocket real-time editing
+- [ ] SEO sitemap generator
+- [ ] RSS feed generation
+- [ ] Content versioning/diff
+- [ ] Role-based access control (editor, author, subscriber)
+- [ ] Analytics dashboard (Cloudflare Analytics API)
+- [ ] CDN cache purging UI
 
 ---
 
 ## Progress Summary
 
-- **Total Tasks**: {{TOTAL_TASKS}}
-- **Completed**: {{COMPLETED_TASKS}}
-- **In Progress**: {{IN_PROGRESS_TASKS}}
-- **Pending**: {{PENDING_TASKS}}
-- **Blocked**: {{BLOCKED_TASKS}}
-- **Completion**: {{COMPLETION_PERCENTAGE}}%
+- **Total Phases**: 9
+- **Completed**: 8
+- **In Progress**: 1
+- **Tests**: 10 passing
+- **API Routes**: 30+ endpoints
+- **Database Tables**: 17
