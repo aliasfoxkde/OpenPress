@@ -10,6 +10,7 @@ import settings from "./lib/settings";
 import products from "./lib/products";
 import orders, { cart } from "./lib/orders";
 import aiRoutes from "./lib/ai";
+import revisions from "./lib/revisions";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -114,6 +115,7 @@ protectedRoutes.route("/settings", settings);
 protectedRoutes.route("/products", products);
 protectedRoutes.route("/orders", orders);
 protectedRoutes.route("/ai", aiRoutes);
+protectedRoutes.route("/revisions", revisions);
 
 app.route("/api", protectedRoutes);
 

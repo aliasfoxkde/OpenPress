@@ -181,6 +181,39 @@ content.put("/:slug", async (c) => {
   const body = await c.req.json();
   const now = new Date().toISOString();
   const id = existing.id as string;
+  const user = c.get("user");
+
+  // Snapshot current state as revision BEFORE updating
+  if (body.blocks && Array.isArray(body.blocks)) {
+    const currentTitle = await db
+      .prepare("SELECT title FROM content_items WHERE id = ?")
+      .bind(id)
+      .first<{ title: string }>();
+    const currentBlocks = await db
+      .prepare("SELECT * FROM content_blocks WHERE content_id = ? ORDER BY sort_order")
+      .bind(id)
+      .all();
+    const lastRev = await db
+      .prepare("SELECT MAX(revision_number) as max_rev FROM content_revisions WHERE content_id = ?")
+      .bind(id)
+      .first<{ max_rev: number | null }>();
+    const revNum = (lastRev?.max_rev || 0) + 1;
+    await db
+      .prepare(
+        "INSERT INTO content_revisions (id, content_id, title, blocks_snapshot, meta_snapshot, author_id, revision_number, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+      )
+      .bind(
+        crypto.randomUUID(),
+        id,
+        currentTitle?.title || "",
+        JSON.stringify(currentBlocks.results),
+        "{}",
+        user?.id || null,
+        revNum,
+        now,
+      )
+      .run();
+  }
 
   // Build update query with allowlisted columns
   const ALLOWED_COLUMNS = ["title", "content", "excerpt", "status", "featured_image_url"] as const;
