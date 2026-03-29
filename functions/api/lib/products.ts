@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
+import { isValidProductStatus } from "./security";
 
 const products = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -62,6 +63,9 @@ products.post("/", async (c) => {
   if (!title || price == null) {
     return c.json({ error: { message: "Title and price are required", code: "VALIDATION" } }, 400);
   }
+  if (typeof price !== "number" || price < 0 || price > 99999999) {
+    return c.json({ error: { message: "Price must be a number between 0 and 99999999", code: "VALIDATION" } }, 400);
+  }
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
@@ -92,14 +96,18 @@ products.put("/:id", async (c) => {
   const body = await c.req.json();
   const now = new Date().toISOString();
 
+  // Build update with allowlisted columns
+  const ALLOWED_COLUMNS = ["price", "compare_at_price", "inventory", "sku", "status"] as const;
   const updates: string[] = [];
   const params: unknown[] = [];
 
-  if (body.price !== undefined) { updates.push("price = ?"); params.push(body.price); }
-  if (body.compare_at_price !== undefined) { updates.push("compare_at_price = ?"); params.push(body.compare_at_price); }
-  if (body.inventory !== undefined) { updates.push("inventory = ?"); params.push(body.inventory); }
-  if (body.sku !== undefined) { updates.push("sku = ?"); params.push(body.sku); }
-  if (body.status !== undefined) { updates.push("status = ?"); params.push(body.status); }
+  for (const col of ALLOWED_COLUMNS) {
+    if (body[col] !== undefined) {
+      if (col === "status" && !isValidProductStatus(body[col])) continue;
+      updates.push(`${col} = ?`);
+      params.push(body[col]);
+    }
+  }
 
   if (updates.length > 0) {
     updates.push("updated_at = ?");

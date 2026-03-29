@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
+import { isValidStatus, isValidContentType } from "./security";
 
 const content = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -15,21 +16,24 @@ content.get("/", async (c) => {
   const status = c.req.query("status");
   const search = c.req.query("search");
 
-  let whereClause = "WHERE 1=1";
+  // Validate inputs against allowlists
+  const conditions: string[] = ["1=1"];
   const params: unknown[] = [];
 
-  if (type) {
-    whereClause += " AND type = ?";
+  if (type && isValidContentType(type)) {
+    conditions.push("type = ?");
     params.push(type);
   }
-  if (status) {
-    whereClause += " AND status = ?";
+  if (status && isValidStatus(status)) {
+    conditions.push("status = ?");
     params.push(status);
   }
-  if (search) {
-    whereClause += " AND (title LIKE ? OR content LIKE ?)";
+  if (search && search.length <= 200) {
+    conditions.push("(title LIKE ? OR content LIKE ?)");
     params.push(`%${search}%`, `%${search}%`);
   }
+
+  const whereClause = `WHERE ${conditions.join(" AND ")}`;
 
   const [items, countResult] = await Promise.all([
     db
@@ -178,22 +182,22 @@ content.put("/:slug", async (c) => {
   const now = new Date().toISOString();
   const id = existing.id as string;
 
-  // Build update query dynamically
+  // Build update query with allowlisted columns
+  const ALLOWED_COLUMNS = ["title", "content", "excerpt", "status", "featured_image_url"] as const;
   const updates: string[] = [];
   const params: unknown[] = [];
 
-  if (body.title !== undefined) { updates.push("title = ?"); params.push(body.title); }
-  if (body.content !== undefined) { updates.push("content = ?"); params.push(body.content); }
-  if (body.excerpt !== undefined) { updates.push("excerpt = ?"); params.push(body.excerpt); }
-  if (body.status !== undefined) {
-    updates.push("status = ?");
-    params.push(body.status);
-    if (body.status === "published") {
-      updates.push("published_at = COALESCE(published_at, ?)");
-      params.push(now);
+  for (const col of ALLOWED_COLUMNS) {
+    if (body[col] !== undefined) {
+      if (col === "status" && !isValidStatus(body[col])) continue;
+      updates.push(`${col} = ?`);
+      params.push(body[col]);
+      if (col === "status" && body[col] === "published") {
+        updates.push("published_at = COALESCE(published_at, ?)");
+        params.push(now);
+      }
     }
   }
-  if (body.featured_image_url !== undefined) { updates.push("featured_image_url = ?"); params.push(body.featured_image_url); }
 
   if (updates.length > 0) {
     updates.push("updated_at = ?");

@@ -5,35 +5,77 @@ import type { Bindings, Variables } from "./types";
 
 const auth = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-const JWT_SECRET = "openpress-secret-key-2026-change-me-in-production";
+// JWT secret - in production, set via `wrangler secret put JWT_SECRET`
+function getJwtSecret(c: any): string {
+  return c.env?.JWT_SECRET || "openpress-secret-key-2026-change-me-in-production";
+}
+
 const ACCESS_TOKEN_EXPIRY = 3600; // 1 hour
 const REFRESH_TOKEN_EXPIRY = 7 * 24 * 3600; // 7 days
 
-// Password hashing using Web Crypto API
+// Password hashing using PBKDF2 (100k iterations, SHA-256)
+const PBKDF2_ITERATIONS = 100_000;
+const SALT_LENGTH = 16; // 128-bit salt
+
 async function hashPassword(password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(SALT_LENGTH));
   const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, [
+    "deriveBits",
+  ]);
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
+    keyMaterial,
+    256,
+  );
+  const hashBytes = new Uint8Array(derivedBits);
+  const saltHex = Array.from(salt, (b) => b.toString(16).padStart(2, "0")).join("");
+  const hashHex = Array.from(hashBytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `pbkdf2:${PBKDF2_ITERATIONS}:${saltHex}:${hashHex}`;
 }
 
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
+async function verifyPassword(password: string, storedHash: string): Promise<boolean> {
+  // Support legacy SHA-256 hashes for migration
+  if (!storedHash.startsWith("pbkdf2:")) {
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest("SHA-256", encoder.encode(password));
+    const computedHash = Array.from(new Uint8Array(hashBuffer), (b) => b.toString(16).padStart(2, "0")).join(
+      "",
+    );
+    return computedHash === storedHash;
+  }
+
+  const [, , saltHex, expectedHashHex] = storedHash.split(":");
+  const salt = Uint8Array.from({ length: saltHex!.length / 2 }, (_, i) =>
+    parseInt(saltHex!.substring(i * 2, i * 2 + 2), 16),
+  );
   const encoder = new TextEncoder();
-  const data = encoder.encode(password);
-  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  const computedHash = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-  return computedHash === hash;
+  const keyMaterial = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, [
+    "deriveBits",
+  ]);
+  const derivedBits = await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt, iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
+    keyMaterial,
+    256,
+  );
+  const computedHashHex = Array.from(new Uint8Array(derivedBits), (b) =>
+    b.toString(16).padStart(2, "0"),
+  ).join("");
+  return computedHashHex === expectedHashHex;
 }
 
 // Generate JWT access token
-async function generateAccessToken(userId: string, email: string, role: string): Promise<string> {
+async function generateAccessToken(
+  userId: string,
+  email: string,
+  role: string,
+  secret: string,
+): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   return await sign(
     { alg: "HS256", typ: "JWT" },
     { sub: userId, email, role, iat: now, exp: now + ACCESS_TOKEN_EXPIRY },
-    JWT_SECRET,
+    secret,
   );
 }
 
@@ -55,8 +97,17 @@ auth.post("/register", async (c) => {
   if (!email || !password) {
     return c.json({ error: { message: "Email and password required", code: "VALIDATION" } }, 400);
   }
-  if (password.length < 8) {
-    return c.json({ error: { message: "Password must be at least 8 characters", code: "VALIDATION" } }, 400);
+  // Validate email format
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email) || email.length > 254) {
+    return c.json({ error: { message: "Invalid email format", code: "VALIDATION" } }, 400);
+  }
+  // Password strength: min 8 chars, at least one uppercase, one lowercase, one number
+  if (password.length < 8 || password.length > 128) {
+    return c.json({ error: { message: "Password must be between 8 and 128 characters", code: "VALIDATION" } }, 400);
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    return c.json({ error: { message: "Password must contain uppercase, lowercase, and a number", code: "VALIDATION" } }, 400);
   }
 
   const existing = await db.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
@@ -75,7 +126,7 @@ auth.post("/register", async (c) => {
     .bind(id, email, name || email.split("@")[0], passwordHash, "admin", now, now)
     .run();
 
-  const token = await generateAccessToken(id, email, "admin");
+  const token = await generateAccessToken(id, email, "admin", getJwtSecret(c));
   const refreshToken = generateRefreshToken();
   const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
 
@@ -129,7 +180,7 @@ auth.post("/login", async (c) => {
     return c.json({ error: { message: "Invalid credentials", code: "INVALID_CREDENTIALS" } }, 401);
   }
 
-  const token = await generateAccessToken(user.id, user.email, user.role);
+  const token = await generateAccessToken(user.id, user.email, user.role, getJwtSecret(c));
   const refreshToken = generateRefreshToken();
   const now = new Date().toISOString();
   const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
@@ -178,7 +229,7 @@ auth.post("/refresh", async (c) => {
     return c.json({ error: { message: "Invalid or expired refresh token", code: "INVALID_TOKEN" } }, 401);
   }
 
-  const accessToken = await generateAccessToken(session.user_id, session.email, session.role);
+  const accessToken = await generateAccessToken(session.user_id, session.email, session.role, getJwtSecret(c));
 
   return c.json({
     data: {

@@ -1,5 +1,6 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
+import { validateFileUpload, sanitizeFilename } from "./security";
 
 const media = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -13,13 +14,8 @@ media.get("/", async (c) => {
   const offset = (page - 1) * limit;
   const mime_type = c.req.query("type");
 
-  let whereClause = "";
-  const params: unknown[] = [];
-
-  if (mime_type) {
-    whereClause = "WHERE mime_type LIKE ?";
-    params.push(`${mime_type}%`);
-  }
+  const whereClause = mime_type ? "WHERE mime_type LIKE ?" : "";
+  const params: unknown[] = mime_type ? [`${mime_type}%`] : [];
 
   const [items, countResult] = await Promise.all([
     db
@@ -67,8 +63,15 @@ media.post("/", async (c) => {
     return c.json({ error: { message: "No file provided", code: "VALIDATION" } }, 400);
   }
 
+  // Validate file upload
+  const validation = validateFileUpload(file);
+  if (!validation.valid) {
+    return c.json({ error: { message: validation.error, code: "VALIDATION" } }, 400);
+  }
+
   const id = crypto.randomUUID();
-  const ext = file.name.split(".").pop() || "bin";
+  const safeName = sanitizeFilename(file.name);
+  const ext = safeName.split(".").pop() || "bin";
   const r2Key = `${id}.${ext}`;
   const now = new Date().toISOString();
 

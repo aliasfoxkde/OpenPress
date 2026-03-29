@@ -1,0 +1,176 @@
+import { Hono } from "hono";
+import type { Bindings, Variables } from "./types";
+
+/**
+ * Security headers middleware.
+ * Adds standard security headers to all responses.
+ */
+export function securityHeaders() {
+  return async (_c: any, next: any) => {
+    await next();
+    _c.header("X-Content-Type-Options", "nosniff");
+    _c.header("X-Frame-Options", "DENY");
+    _c.header("X-XSS-Protection", "0");
+    _c.header("Referrer-Policy", "strict-origin-when-cross-origin");
+    _c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    _c.header(
+      "Content-Security-Policy",
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';",
+    );
+  };
+}
+
+/**
+ * Rate limiting middleware using KV.
+ * Tracks request counts per IP with configurable window.
+ */
+export function rateLimit(options: { windowMs?: number; maxRequests?: number; keyPrefix?: string } = {}) {
+  const windowMs = options.windowMs || 60_000; // 1 minute
+  const maxRequests = options.maxRequests || 100;
+  const keyPrefix = options.keyPrefix || "rl:";
+
+  return async (c: any, next: any) => {
+    const cache = c.env?.CACHE as KVNamespace | undefined;
+    if (!cache) {
+      // No KV = no rate limiting, allow through
+      return next();
+    }
+
+    const ip = c.req.header("CF-Connecting-IP") || c.req.header("X-Forwarded-For") || "unknown";
+    const key = `${keyPrefix}${ip}`;
+    const now = Date.now();
+    const windowStart = now - windowMs;
+
+    try {
+      const raw = await cache.get(key);
+      const requests: number[] = raw ? JSON.parse(raw) : [];
+
+      // Filter to only requests within the window
+      const recent = requests.filter((t) => t > windowStart);
+
+      if (recent.length >= maxRequests) {
+        return c.json(
+          { error: { message: "Too many requests. Please try again later.", code: "RATE_LIMITED" } },
+          429,
+          {
+            "Retry-After": String(Math.ceil((recent[0]! + windowMs - now) / 1000)),
+            "X-RateLimit-Limit": String(maxRequests),
+            "X-RateLimit-Remaining": "0",
+          },
+        );
+      }
+
+      // Record this request
+      recent.push(now);
+      await cache.put(key, JSON.stringify(recent), { expirationTtl: Math.ceil(windowMs / 1000) + 1 });
+
+      c.header("X-RateLimit-Limit", String(maxRequests));
+      c.header("X-RateLimit-Remaining", String(maxRequests - recent.length));
+    } catch {
+      // KV error = allow through
+    }
+
+    return next();
+  };
+}
+
+/**
+ * Stricter rate limit for auth endpoints.
+ */
+export function authRateLimit() {
+  return rateLimit({ windowMs: 15 * 60_000, maxRequests: 10, keyPrefix: "auth-rl:" });
+}
+
+/**
+ * CORS configuration with origin restriction.
+ */
+export function corsConfig() {
+  return async (c: any, next: any) => {
+    const origin = c.req.header("Origin") || "";
+    const allowedOrigins = [
+      "https://openpress.pages.dev",
+      "http://localhost:5173",
+      "http://localhost:8788",
+    ];
+
+    // Allow any *.pages.dev subdomain for preview deployments
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      origin.endsWith(".openpress.pages.dev") ||
+      origin.endsWith(".pages.dev");
+
+    if (isAllowed && origin) {
+      c.header("Access-Control-Allow-Origin", origin);
+    }
+    c.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    c.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Id");
+    c.header("Access-Control-Allow-Credentials", "true");
+    c.header("Access-Control-Max-Age", "86400");
+
+    if (c.req.method === "OPTIONS") {
+      return c.text("", 204);
+    }
+
+    return next();
+  };
+}
+
+/**
+ * Input sanitization helpers.
+ */
+export const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/gif",
+  "image/webp",
+  "image/svg+xml",
+  "image/avif",
+];
+
+export const ALLOWED_FILE_TYPES = [
+  ...ALLOWED_IMAGE_TYPES,
+  "application/pdf",
+  "video/mp4",
+  "video/webm",
+  "audio/mpeg",
+  "audio/ogg",
+  "audio/wav",
+];
+
+export const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+
+export function sanitizeFilename(filename: string): string {
+  return filename
+    .replace(/[^a-zA-Z0-9._-]/g, "_")
+    .replace(/\.{2,}/g, ".")
+    .substring(0, 255);
+}
+
+export function validateFileUpload(file: File): { valid: boolean; error?: string } {
+  if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+    return { valid: false, error: `File type ${file.type} is not allowed` };
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return { valid: false, error: `File size exceeds ${MAX_FILE_SIZE / 1024 / 1024}MB limit` };
+  }
+  return { valid: true };
+}
+
+/**
+ * Allowed status values for content items.
+ */
+export const ALLOWED_CONTENT_STATUSES = ["draft", "published", "scheduled", "trash", "archived"] as const;
+export const ALLOWED_CONTENT_TYPES = ["post", "page", "product"] as const;
+export const ALLOWED_PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
+
+export function isValidStatus(status: string): boolean {
+  return (ALLOWED_CONTENT_STATUSES as readonly string[]).includes(status);
+}
+
+export function isValidContentType(type: string): boolean {
+  return (ALLOWED_CONTENT_TYPES as readonly string[]).includes(type);
+}
+
+export function isValidProductStatus(status: string): boolean {
+  return (ALLOWED_PRODUCT_STATUSES as readonly string[]).includes(status);
+}

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import type { Bindings, Variables } from "./lib/types";
+import { securityHeaders, rateLimit, corsConfig } from "./lib/security";
 import auth from "./lib/auth";
 import content from "./lib/content";
 import media from "./lib/media";
@@ -13,8 +13,10 @@ import aiRoutes from "./lib/ai";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-// Middleware
-app.use("*", cors());
+// Security middleware
+app.use("*", corsConfig());
+app.use("*", securityHeaders());
+app.use("*", rateLimit({ windowMs: 60_000, maxRequests: 100 }));
 app.use("*", logger());
 
 // Health check (public)
