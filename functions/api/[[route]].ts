@@ -7,6 +7,8 @@ import content from "./lib/content";
 import media from "./lib/media";
 import taxonomies from "./lib/taxonomies";
 import settings from "./lib/settings";
+import products from "./lib/products";
+import orders, { cart } from "./lib/orders";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -105,8 +107,53 @@ protectedRoutes.route("/content", content);
 protectedRoutes.route("/media", media);
 protectedRoutes.route("/taxonomies", taxonomies);
 protectedRoutes.route("/settings", settings);
+protectedRoutes.route("/products", products);
+protectedRoutes.route("/orders", orders);
 
 app.route("/api", protectedRoutes);
+
+// Public cart routes (session-based, no auth required)
+app.route("/api/cart", cart);
+
+// Public product listing (no auth required)
+app.get("/api/products", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const page = Math.max(1, parseInt(c.req.query("page") || "1"));
+  const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "20")));
+  const offset = (page - 1) * limit;
+
+  const [items, countResult] = await Promise.all([
+    db.prepare(
+      `SELECT p.*, ci.title, ci.slug, ci.excerpt, ci.featured_image_url
+       FROM products p JOIN content_items ci ON p.content_id = ci.id
+       WHERE p.status = 'active' ORDER BY p.updated_at DESC LIMIT ? OFFSET ?`
+    ).bind(limit, offset).all(),
+    db.prepare("SELECT COUNT(*) as total FROM products WHERE status = 'active'").first<{ total: number }>(),
+  ]);
+
+  return c.json({
+    data: items.results,
+    pagination: { page, limit, total: countResult?.total || 0, totalPages: Math.ceil((countResult?.total || 0) / limit) },
+  });
+});
+
+app.get("/api/products/:id", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const id = c.req.param("id");
+  const product = await db.prepare(
+    `SELECT p.*, ci.title, ci.slug, ci.content, ci.excerpt, ci.featured_image_url
+     FROM products p JOIN content_items ci ON p.content_id = ci.id WHERE p.id = ? OR p.sku = ?`
+  ).bind(id, id).first();
+
+  if (!product) return c.json({ error: { message: "Product not found", code: "NOT_FOUND" } }, 404);
+
+  const variants = await db.prepare("SELECT * FROM product_variants WHERE product_id = ? ORDER BY sort_order").bind(product.id as string).all();
+  return c.json({ data: { ...product, variants: variants.results } });
+});
 
 // Public read endpoints (no auth required)
 app.get("/api/content", async (c) => {
