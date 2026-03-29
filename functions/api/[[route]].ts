@@ -203,7 +203,7 @@ app.get("/api/content", async (c) => {
   const [items, countResult] = await Promise.all([
     db
       .prepare(
-        "SELECT id, type, slug, title, excerpt, status, author_id, featured_image_url, published_at, created_at, updated_at FROM content_items WHERE status = 'published' ORDER BY published_at DESC LIMIT ? OFFSET ?",
+        "SELECT ci.id, ci.type, ci.slug, ci.title, ci.excerpt, ci.status, ci.author_id, ci.featured_image_url, ci.published_at, ci.created_at, ci.updated_at, u.name as author_name FROM content_items ci LEFT JOIN users u ON ci.author_id = u.id WHERE ci.status = 'published' ORDER BY ci.published_at DESC LIMIT ? OFFSET ?",
       )
       .bind(limit, offset)
       .all(),
@@ -227,7 +227,9 @@ app.get("/api/content/:slug", async (c) => {
 
   const slug = c.req.param("slug");
   const item = await db
-    .prepare("SELECT * FROM content_items WHERE slug = ? AND status = 'published'")
+    .prepare(
+      "SELECT ci.*, u.name as author_name FROM content_items ci LEFT JOIN users u ON ci.author_id = u.id WHERE ci.slug = ? AND ci.status = 'published'"
+    )
     .bind(slug)
     .first();
 

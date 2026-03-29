@@ -159,7 +159,7 @@ export function validateFileUpload(file: File): { valid: boolean; error?: string
 /**
  * Allowed status values for content items.
  */
-export const ALLOWED_CONTENT_STATUSES = ["draft", "published", "scheduled", "trash", "archived"] as const;
+export const ALLOWED_CONTENT_STATUSES = ["draft", "published", "scheduled", "trash", "archived", "pending"] as const;
 export const ALLOWED_CONTENT_TYPES = ["post", "page", "product"] as const;
 export const ALLOWED_PRODUCT_STATUSES = ["draft", "active", "archived"] as const;
 

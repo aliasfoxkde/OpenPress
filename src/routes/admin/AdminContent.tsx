@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/api";
+import { useAuthStore } from "@/stores/auth";
 
 interface ContentItem {
   id: string;
@@ -9,6 +10,7 @@ interface ContentItem {
   title: string;
   status: string;
   excerpt?: string;
+  author_id?: string;
   updated_at: string;
   created_at: string;
 }
@@ -26,11 +28,16 @@ export function AdminContent() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [myContentOnly, setMyContentOnly] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState("post");
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+
+  // Non-admin roles see only their own content by default
+  const isLimitedRole = user && !["admin", "editor"].includes(user.role);
 
   async function fetchContent(page = 1) {
     setLoading(true);
@@ -99,6 +106,7 @@ export function AdminContent() {
   const statusColors: Record<string, string> = {
     published: "bg-green-50 text-green-700",
     draft: "bg-yellow-50 text-yellow-700",
+    pending: "bg-orange-50 text-orange-700",
     trash: "bg-red-50 text-red-700",
     scheduled: "bg-blue-50 text-blue-700",
     archived: "bg-gray-50 text-gray-700",
@@ -184,8 +192,20 @@ export function AdminContent() {
           <option value="">All Statuses</option>
           <option value="published">Published</option>
           <option value="draft">Draft</option>
+          <option value="pending">Pending Review</option>
           <option value="trash">Trash</option>
         </select>
+        {isLimitedRole && (
+          <label className="flex items-center gap-2 text-sm text-text-secondary">
+            <input
+              type="checkbox"
+              checked={myContentOnly}
+              onChange={(e) => setMyContentOnly(e.target.checked)}
+              className="rounded border-border"
+            />
+            My content only
+          </label>
+        )}
       </div>
 
       {/* Content table */}

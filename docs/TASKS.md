@@ -72,10 +72,10 @@ WordPress-like role system with granular capabilities.
 - [x] 12.4 Apply capability checks to all API routes (content CRUD, media, settings, users, products, orders)
 - [x] 12.5 Add user management API endpoints (GET /api/users, PUT /api/users/:id/role, DELETE /api/users/:id)
 - [x] 12.6 Build AdminUsers page (user list table, role dropdown, delete button)
-- [ ] 12.7 Add "Pending Review" workflow (contributors submit, editors review/publish)
-- [ ] 12.8 Add author_name display on public blog posts
+- [x] 12.7 Add "Pending Review" workflow (contributors submit, editors review/publish)
+- [x] 12.8 Add author_name display on public blog posts
 - [x] 12.9 Restrict admin navigation items based on current user role
-- [ ] 12.10 Add "My Content" filter (show only current user's content for authors/contributors)
+- [x] 12.10 Add "My Content" filter (show only current user's content for authors/contributors)
 - [ ] 12.11 Add user profile page (name, email, password change, avatar)
 
 ---
