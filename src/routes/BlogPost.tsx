@@ -3,6 +3,18 @@ import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useSEO } from "@/hooks/useSEO";
 
+/** Strip dangerous elements/attributes from HTML to prevent XSS */
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?>/gi, "")
+    .replace(/ on\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/ on\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/<form[\s\S]*?<\/form>/gi, "");
+}
+
 interface ContentBlock {
   id: string;
   block_type: string;
@@ -127,7 +139,7 @@ export function BlogPostPage() {
       ) : (
         <>
           {post.content && (
-            <div className="prose prose-lg prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+            <div className="prose prose-lg prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(post.content) }} />
           )}
 
           {/* Legacy Blocks */}
@@ -157,7 +169,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
   switch (block.block_type) {
     case "text":
       return (
-        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
       );
     case "heading": {
       const level = (data.level as number) || 2;
@@ -201,7 +213,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
     }
     default:
       return (
-        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
+        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
       );
   }
 }
