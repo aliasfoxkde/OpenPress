@@ -20,14 +20,17 @@
     "db:migrate:local": "wrangler d1 execute openpress-db --local --file=./schema/001_initial.sql"
   },
   "dependencies": {
+    "@blocknote/core": "^0.47.3",
+    "@blocknote/react": "^0.47.3",
+    "@blocknote/server-util": "^0.47.3",
+    "@tanstack/react-router": "^1.120.0",
+    "clsx": "^2.1.0",
     "hono": "^4.7.0",
     "jose": "^6.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "@tanstack/react-router": "^1.120.0",
-    "zustand": "^5.0.0",
-    "clsx": "^2.1.0",
-    "tailwind-merge": "^3.0.0"
+    "tailwind-merge": "^3.0.0",
+    "zustand": "^5.0.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20250303.0",

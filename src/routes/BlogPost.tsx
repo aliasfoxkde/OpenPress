@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
 
@@ -7,6 +7,7 @@ interface ContentBlock {
   block_type: string;
   content: string;
   sort_order: number;
+  data: Record<string, unknown>;
   attributes: string;
 }
 
@@ -22,6 +23,7 @@ interface ContentItem {
   published_at: string;
   created_at: string;
   blocks: ContentBlock[];
+  meta: Record<string, string>;
 }
 
 export function BlogPostPage() {
@@ -104,61 +106,164 @@ export function BlogPostPage() {
       </header>
 
       {/* Content */}
-      {post.content && (
-        <div className="prose prose-lg prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
-      )}
+      {post.meta?.blocknote_json ? (
+        <BlockNoteRenderer json={post.meta.blocknote_json} />
+      ) : (
+        <>
+          {post.content && (
+            <div className="prose prose-lg prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: post.content }} />
+          )}
 
-      {/* Blocks */}
-      {post.blocks && post.blocks.length > 0 && (
-        <div className="mt-8 space-y-6">
-          {post.blocks
-            .sort((a, b) => a.sort_order - b.sort_order)
-            .map((block) => (
-              <BlockRenderer key={block.id} block={block} />
-            ))}
-        </div>
+          {/* Legacy Blocks */}
+          {post.blocks && post.blocks.length > 0 && (
+            <div className="mt-8 space-y-6">
+              {post.blocks
+                .sort((a, b) => a.sort_order - b.sort_order)
+                .map((block) => (
+                  <BlockRenderer key={block.id} block={block} />
+                ))}
+            </div>
+          )}
+        </>
       )}
     </article>
   );
 }
 
 function BlockRenderer({ block }: { block: ContentBlock }) {
+  // Use block.data if available (newer format), fall back to content/attributes
+  const data = block.data || {};
+  const content = block.content || String(data.text || data.code || "");
+
   switch (block.block_type) {
     case "text":
       return (
-        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: block.content }} />
+        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
       );
-    case "heading":
-      return <h2 className="text-2xl font-bold text-gray-900">{block.content}</h2>;
+    case "heading": {
+      const level = (data.level as number) || 2;
+      const sizeClass = level === 1 ? "text-4xl" : level === 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
+      if (level === 1) return <h1 className={`${sizeClass} font-bold text-gray-900`}>{content}</h1>;
+      if (level === 2) return <h2 className={`${sizeClass} font-bold text-gray-900`}>{content}</h2>;
+      if (level === 3) return <h3 className={`${sizeClass} font-bold text-gray-900`}>{content}</h3>;
+      if (level === 4) return <h4 className={`${sizeClass} font-bold text-gray-900`}>{content}</h4>;
+      return <h2 className={`${sizeClass} font-bold text-gray-900`}>{content}</h2>;
+    }
     case "image":
       return (
         <figure className="rounded-xl overflow-hidden">
-          <img src={block.content} alt="" className="w-full" />
+          <img src={String(data.url || content)} alt={String(data.alt || "")} className="w-full" />
+          {data.caption && <figcaption className="text-sm text-gray-500 mt-2 text-center">{String(data.caption)}</figcaption>}
         </figure>
       );
     case "quote":
       return (
         <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-gray-600">
-          {block.content}
+          {content}
         </blockquote>
       );
     case "code":
       return (
         <pre className="rounded-lg bg-gray-900 p-4 overflow-x-auto">
-          <code className="text-sm text-gray-100">{block.content}</code>
+          <code className="text-sm text-gray-100">{String(data.code || content)}</code>
         </pre>
       );
-    case "list":
+    case "list": {
+      const items = (data.items as string[]) || content.split("\n");
+      const ordered = data.ordered as boolean;
+      const ListTag = ordered ? "ol" : "ul";
       return (
-        <ul className="list-disc pl-6 space-y-1 text-gray-700">
-          {block.content.split("\n").map((item, i) => (
+        <ListTag className={ordered ? "list-decimal pl-6 space-y-1 text-gray-700" : "list-disc pl-6 space-y-1 text-gray-700"}>
+          {items.map((item, i) => (
             <li key={i}>{item}</li>
           ))}
-        </ul>
+        </ListTag>
       );
+    }
     default:
       return (
-        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: block.content }} />
+        <div className="prose prose-gray max-w-none" dangerouslySetInnerHTML={{ __html: content }} />
       );
+  }
+}
+
+/** Renders BlockNote JSON blocks for public blog display */
+function BlockNoteRenderer({ json }: { json: string }) {
+  let blocks: BlockNoteBlock[];
+  try {
+    blocks = JSON.parse(json);
+  } catch {
+    return <div className="text-red-500">Failed to parse content</div>;
+  }
+
+  if (!Array.isArray(blocks)) return null;
+
+  return (
+    <div className="space-y-4">
+      {blocks.map((block, i) => (
+        <BlockNoteBlockRenderer key={block.id || i} block={block} />
+      ))}
+    </div>
+  );
+}
+
+interface BlockNoteBlock {
+  id?: string;
+  type?: string;
+  props?: Record<string, unknown>;
+  content?: Array<{ type: string; text?: string; styles?: Record<string, unknown> }>;
+  children?: BlockNoteBlock[];
+}
+
+function extractText(content?: BlockNoteBlock["content"]): string {
+  if (!content || !Array.isArray(content)) return "";
+  return content
+    .filter((c): c is { type: string; text: string } => typeof c === "object" && "text" in c)
+    .map((c) => c.text)
+    .join("");
+}
+
+function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
+  const type = block.type || "paragraph";
+  const text = extractText(block.content);
+  const props = block.props || {};
+
+  switch (type) {
+    case "heading": {
+      const level = (props.level as number) || 2;
+      const sizeClass = level === 1 ? "text-4xl" : level === 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
+      if (level === 1) return <h1 className={`${sizeClass} font-bold text-gray-900`}>{text}</h1>;
+      if (level === 2) return <h2 className={`${sizeClass} font-bold text-gray-900`}>{text}</h2>;
+      if (level === 3) return <h3 className={`${sizeClass} font-bold text-gray-900`}>{text}</h3>;
+      if (level === 4) return <h4 className={`${sizeClass} font-bold text-gray-900`}>{text}</h4>;
+      return <h2 className={`${sizeClass} font-bold text-gray-900`}>{text}</h2>;
+    }
+    case "bulletListItem":
+      return <li className="list-disc ml-6 text-gray-700">{text}</li>;
+    case "numberedListItem":
+      return <li className="list-decimal ml-6 text-gray-700">{text}</li>;
+    case "image":
+      return (
+        <figure className="rounded-xl overflow-hidden">
+          <img src={String(props.url || "")} alt={String(props.alt || "")} className="w-full" />
+          {props.caption && <figcaption className="text-sm text-gray-500 mt-2 text-center">{String(props.caption)}</figcaption>}
+        </figure>
+      );
+    case "codeBlock":
+      return (
+        <pre className="rounded-lg bg-gray-900 p-4 overflow-x-auto">
+          <code className="text-sm text-gray-100">{text}</code>
+        </pre>
+      );
+    case "quote":
+      return (
+        <blockquote className="border-l-4 border-indigo-300 pl-4 italic text-gray-600">
+          {text}
+        </blockquote>
+      );
+    case "paragraph":
+    default:
+      if (!text) return <div className="h-4" />; // empty paragraph spacer
+      return <p className="text-gray-700 leading-relaxed">{text}</p>;
   }
 }

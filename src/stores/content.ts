@@ -103,6 +103,7 @@ interface ContentState {
     type?: string;
     status?: ContentStatus;
     blocks?: { block_type: BlockType; data: Record<string, unknown> }[];
+    meta?: Record<string, string>;
   }) => Promise<ContentItem>;
   saveContent: (
     slug: string,
@@ -112,6 +113,7 @@ interface ContentState {
       status?: ContentStatus;
       featured_image_url?: string;
       blocks?: { block_type: BlockType; data: Record<string, unknown> }[];
+      meta?: Record<string, string>;
     },
   ) => Promise<void>;
   clearCurrent: () => void;

@@ -206,6 +206,17 @@ content.put("/:slug", async (c) => {
     await db.prepare(`UPDATE content_items SET ${updates.join(", ")} WHERE id = ?`).bind(...params).run();
   }
 
+  // Update meta if provided
+  if (body.meta && typeof body.meta === "object") {
+    for (const [key, value] of Object.entries(body.meta)) {
+      if (typeof key !== "string" || key.length > 100) continue;
+      await db
+        .prepare("INSERT OR REPLACE INTO content_meta (content_id, meta_key, meta_value) VALUES (?, ?, ?)")
+        .bind(id, key, String(value))
+        .run();
+    }
+  }
+
   // Update blocks if provided
   if (body.blocks && Array.isArray(body.blocks)) {
     await db.prepare("DELETE FROM content_blocks WHERE content_id = ?").bind(id).run();

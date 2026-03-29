@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useContentStore } from "@/stores/content";
-import { BlockEditor } from "@/components/editor/BlockEditor";
-import type { BlockType, ContentStatus } from "@openpress/shared";
+import { RichTextEditor, blockNoteToLegacyBlocks, legacyBlocksToBlockNote } from "@/components/editor/RichTextEditor";
+import type { ContentStatus } from "@shared/types";
 
 const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
   { value: "draft", label: "Draft" },
@@ -26,11 +26,6 @@ export function ContentEditor() {
     createContent,
     saveContent,
     clearCurrent,
-    addBlock,
-    updateBlockData,
-    updateBlockType,
-    removeBlock,
-    reorderBlocks,
   } = useContentStore();
 
   // Local state for title/excerpt edits
@@ -38,6 +33,11 @@ export function ContentEditor() {
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState<ContentStatus>("draft");
   const [hasChanges, setHasChanges] = useState(false);
+
+  // BlockNote editor content — stored as PartialBlock[] for roundtrip fidelity
+  const [editorBlocks, setEditorBlocks] = useState<PartialBlock[]>([]);
+  const [initialBlocks, setInitialBlocks] = useState<PartialBlock[] | undefined>(undefined);
+  const contentIdRef = useRef<string | null>(null);
 
   // Create mode vs edit mode
   const isCreateMode = !slug;
@@ -58,6 +58,27 @@ export function ContentEditor() {
       setTitle(currentContent.item.title);
       setExcerpt(currentContent.item.excerpt ?? "");
       setStatus(currentContent.item.status);
+      contentIdRef.current = currentContent.item.id;
+
+      // Load BlockNote content: prefer blocknote_json meta, fall back to legacy blocks
+      const meta = (currentContent as { meta?: Record<string, string> }).meta;
+      let blocks: PartialBlock[] | undefined;
+      if (meta?.blocknote_json) {
+        try {
+          blocks = JSON.parse(meta.blocknote_json);
+        } catch {
+          blocks = undefined;
+        }
+      }
+      if (!blocks) {
+        const legacyBlocks = currentContent.blocks.map((b) => ({
+          block_type: b.block_type,
+          data: b.data,
+        }));
+        blocks = legacyBlocksToBlockNote(legacyBlocks);
+      }
+      setInitialBlocks(blocks);
+      setEditorBlocks(blocks);
       setHasChanges(false);
     }
   }, [currentContent?.item.id]); // Only on initial load, not every render
@@ -88,14 +109,20 @@ export function ContentEditor() {
     [markChanged],
   );
 
-  // Save handler
+  // Handle BlockNote editor changes
+  const handleEditorChange = useCallback((blocks: PartialBlock[]) => {
+    setEditorBlocks(blocks);
+    markChanged();
+  }, [markChanged]);
+
+  // Save handler — converts BlockNote JSON to legacy blocks + stores JSON in meta
   const handleSave = useCallback(async () => {
     if (!title.trim()) return;
 
-    const blockData = (currentContent?.blocks || []).map((b) => ({
-      block_type: b.block_type,
-      data: b.data,
-    }));
+    // Convert BlockNote blocks to legacy format for content_blocks table
+    const blockData = blockNoteToLegacyBlocks(editorBlocks);
+    // Store raw BlockNote JSON for roundtrip fidelity
+    const blocknoteJson = JSON.stringify(editorBlocks);
 
     if (isCreateMode || !slug) {
       try {
@@ -103,6 +130,7 @@ export function ContentEditor() {
           title: title.trim(),
           status,
           blocks: blockData.length > 0 ? blockData : undefined,
+          meta: { blocknote_json: blocknoteJson },
         });
         setHasChanges(false);
         // Navigate to edit mode with the new slug
@@ -117,6 +145,7 @@ export function ContentEditor() {
           excerpt: excerpt.trim() || undefined,
           status,
           blocks: blockData,
+          meta: { blocknote_json: blocknoteJson },
         });
         setHasChanges(false);
       } catch {
@@ -127,7 +156,7 @@ export function ContentEditor() {
     title,
     excerpt,
     status,
-    currentContent?.blocks,
+    editorBlocks,
     isCreateMode,
     slug,
     createContent,
@@ -141,47 +170,6 @@ export function ContentEditor() {
     handleStatusChange(newStatus);
   }, [status, handleStatusChange]);
 
-  // Block mutation wrappers that also mark dirty
-  const handleAddBlock = useCallback(
-    (type: BlockType, pos?: number) => {
-      addBlock(type, pos);
-      markChanged();
-    },
-    [addBlock, markChanged],
-  );
-
-  const handleUpdateBlockData = useCallback(
-    (id: string, data: Record<string, unknown>) => {
-      updateBlockData(id, data);
-      markChanged();
-    },
-    [updateBlockData, markChanged],
-  );
-
-  const handleUpdateBlockType = useCallback(
-    (id: string, type: BlockType) => {
-      updateBlockType(id, type);
-      markChanged();
-    },
-    [updateBlockType, markChanged],
-  );
-
-  const handleRemoveBlock = useCallback(
-    (id: string) => {
-      removeBlock(id);
-      markChanged();
-    },
-    [removeBlock, markChanged],
-  );
-
-  const handleReorderBlocks = useCallback(
-    (from: number, to: number) => {
-      reorderBlocks(from, to);
-      markChanged();
-    },
-    [reorderBlocks, markChanged],
-  );
-
   // Keyboard shortcut: Ctrl+S to save
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
@@ -193,8 +181,6 @@ export function ContentEditor() {
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [handleSave]);
-
-  const blocks = currentContent?.blocks || [];
 
   // Loading state
   if (isLoadingDetail) {
@@ -306,31 +292,13 @@ export function ContentEditor() {
         className="w-full text-sm text-text-secondary placeholder:text-text-tertiary border-0 bg-transparent focus:outline-none mb-6 p-0 resize-none"
       />
 
-      {/* Block Editor */}
+      {/* Rich Text Editor */}
       <div className="border border-border rounded-lg bg-surface">
-        <BlockEditor
-          blocks={blocks}
-          onUpdateBlockData={handleUpdateBlockData}
-          onUpdateBlockType={handleUpdateBlockType}
-          onRemoveBlock={handleRemoveBlock}
-          onReorderBlocks={handleReorderBlocks}
-          onAddBlock={handleAddBlock}
+        <RichTextEditor
+          initialContent={initialBlocks}
+          onChange={handleEditorChange}
+          editable={true}
         />
-
-        {/* Empty state */}
-        {blocks.length === 0 && (
-          <div className="p-8 text-center">
-            <p className="text-text-tertiary text-sm mb-4">
-              No blocks yet. Add your first block to start writing.
-            </p>
-            <button
-              onClick={() => handleAddBlock("text", 0)}
-              className="px-4 py-2 text-sm bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
-            >
-              + Add text block
-            </button>
-          </div>
-        )}
       </div>
 
       {/* Unsaved indicator */}
