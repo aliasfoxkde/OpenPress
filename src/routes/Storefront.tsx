@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../lib/api";
+import { useCartStore } from "../stores/cart";
 
 interface Product {
   id: string;
@@ -82,8 +83,25 @@ export function StorefrontPage() {
 }
 
 function ProductCard({ product }: { product: Product }) {
+  const addToCart = useCartStore((s) => s.addItem);
+  const [added, setAdded] = useState(false);
   const formatPrice = (cents: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+
+  async function handleAddToCart(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+    await addToCart({
+      product_id: product.id,
+      title: product.title,
+      price: product.price,
+      quantity: 1,
+      sku: product.sku || undefined,
+      featured_image_url: product.featured_image_url || undefined,
+    });
+  }
 
   return (
     <Link
@@ -111,11 +129,24 @@ function ProductCard({ product }: { product: Product }) {
         {product.excerpt && (
           <p className="mt-1 text-sm text-text-tertiary line-clamp-2">{product.excerpt}</p>
         )}
-        <div className="mt-3 flex items-center gap-2">
-          <span className="text-lg font-bold text-text-primary">{formatPrice(product.price)}</span>
-          {product.compare_at_price && product.compare_at_price > product.price && (
-            <span className="text-sm text-text-tertiary line-through">{formatPrice(product.compare_at_price)}</span>
-          )}
+        <div className="mt-3 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold text-text-primary">{formatPrice(product.price)}</span>
+            {product.compare_at_price && product.compare_at_price > product.price && (
+              <span className="text-sm text-text-tertiary line-through">{formatPrice(product.compare_at_price)}</span>
+            )}
+          </div>
+          <button
+            onClick={handleAddToCart}
+            disabled={added}
+            className={`px-3 py-1.5 text-xs rounded-md font-medium transition-colors ${
+              added
+                ? "bg-green-100 text-green-700"
+                : "bg-primary-600 text-white hover:bg-primary-700"
+            }`}
+          >
+            {added ? "Added" : "Add to Cart"}
+          </button>
         </div>
       </div>
     </Link>
