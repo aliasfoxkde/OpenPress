@@ -1,5 +1,5 @@
 const CACHE_NAME = "openpress-v1";
-const STATIC_ASSETS = ["/", "/admin", "/login"];
+const STATIC_ASSETS = ["/", "/admin", "/login", "/shop", "/blog"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

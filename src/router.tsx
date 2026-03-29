@@ -12,10 +12,13 @@ import { BlogPostPage } from "./routes/BlogPost";
 import { AdminPage } from "./routes/admin/AdminPage";
 import { AdminDashboard } from "./routes/admin/AdminDashboard";
 import { AdminContent } from "./routes/admin/AdminContent";
+import { ContentEditor } from "./routes/admin/ContentEditor";
 import { AdminMedia } from "./routes/admin/AdminMedia";
 import { AdminSettings } from "./routes/admin/AdminSettings";
 import { AdminUsers } from "./routes/admin/AdminUsers";
 import AdminAI from "./routes/admin/AdminAI";
+import AdminProducts from "./routes/admin/AdminProducts";
+import AdminOrders from "./routes/admin/AdminOrders";
 import { LoginPage } from "./routes/LoginPage";
 
 const rootRoute = createRootRoute({
@@ -100,6 +103,24 @@ const adminAIRoute = createRoute({
   component: AdminAI,
 });
 
+const adminContentEditRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/content/edit",
+  component: ContentEditor,
+});
+
+const adminProductsRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/products",
+  component: AdminProducts,
+});
+
+const adminOrdersRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/orders",
+  component: AdminOrders,
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   shopRoute,
@@ -110,10 +131,13 @@ const routeTree = rootRoute.addChildren([
   adminRoute.addChildren([
     adminDashboardRoute,
     adminContentRoute,
+    adminContentEditRoute,
     adminMediaRoute,
     adminSettingsRoute,
     adminUsersRoute,
     adminAIRoute,
+    adminProductsRoute,
+    adminOrdersRoute,
   ]),
 ]);
 
