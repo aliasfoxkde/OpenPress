@@ -52,6 +52,8 @@ export function ContentEditor() {
   const [hasChanges, setHasChanges] = useState(false);
   const [featuredImageUrl, setFeaturedImageUrl] = useState("");
   const [selectedTermIds, setSelectedTermIds] = useState<string[]>([]);
+  const [seoTitle, setSeoTitle] = useState("");
+  const [seoDescription, setSeoDescription] = useState("");
 
   // Taxonomy state
   const [categories, setCategories] = useState<Term[]>([]);
@@ -116,12 +118,16 @@ export function ContentEditor() {
       setFeaturedImageUrl(currentContent.item.featured_image_url ?? "");
       contentIdRef.current = currentContent.item.id;
 
+      // Sync SEO meta
+      const meta = (currentContent as { meta?: Record<string, string> }).meta;
+      setSeoTitle(meta?.seo_title ?? "");
+      setSeoDescription(meta?.seo_description ?? "");
+
       // Sync terms
       const termIds = (currentContent.terms || []).map((t: any) => t.id || t.term_id);
       setSelectedTermIds(termIds.filter(Boolean));
 
       // Load BlockNote content
-      const meta = (currentContent as { meta?: Record<string, string> }).meta;
       let blocks: PartialBlock[] | undefined;
       if (meta?.blocknote_json) {
         try {
@@ -208,13 +214,18 @@ export function ContentEditor() {
     const blockData = blockNoteToLegacyBlocks(editorBlocks);
     const blocknoteJson = JSON.stringify(editorBlocks);
 
+    // Build meta object
+    const seoMeta: Record<string, string> = { blocknote_json: blocknoteJson };
+    if (seoTitle.trim()) seoMeta.seo_title = seoTitle.trim();
+    if (seoDescription.trim()) seoMeta.seo_description = seoDescription.trim();
+
     if (isCreateMode || !slug) {
       try {
         const newItem = await createContent({
           title: title.trim(),
           status,
           blocks: blockData.length > 0 ? blockData : undefined,
-          meta: { blocknote_json: blocknoteJson },
+          meta: seoMeta,
           featured_image_url: featuredImageUrl.trim() || undefined,
           term_ids: selectedTermIds.length > 0 ? selectedTermIds : undefined,
         });
@@ -230,7 +241,7 @@ export function ContentEditor() {
           excerpt: excerpt.trim() || undefined,
           status,
           blocks: blockData,
-          meta: { blocknote_json: blocknoteJson },
+          meta: seoMeta,
           featured_image_url: featuredImageUrl.trim() || undefined,
           term_ids: selectedTermIds,
         });
@@ -454,6 +465,39 @@ export function ContentEditor() {
           className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
         />
       </div>
+
+      {/* SEO */}
+      <details className="mb-6 border border-border rounded-lg bg-surface">
+        <summary className="px-4 py-3 text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-secondary transition-colors rounded-lg">
+          Search Engine Optimization (SEO)
+        </summary>
+        <div className="px-4 pb-4 space-y-3">
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Meta Title</label>
+            <input
+              type="text"
+              value={seoTitle}
+              onChange={(e) => { setSeoTitle(e.target.value); markChanged(); }}
+              placeholder={`Leave blank to use: ${title || "Page Title"}`}
+              maxLength={70}
+              className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+            />
+            <p className="text-xs text-text-tertiary mt-1">{seoTitle.length}/70 characters</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-text-secondary mb-1">Meta Description</label>
+            <textarea
+              value={seoDescription}
+              onChange={(e) => { setSeoDescription(e.target.value); markChanged(); }}
+              placeholder="A brief description for search engines..."
+              maxLength={160}
+              rows={3}
+              className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus resize-none"
+            />
+            <p className="text-xs text-text-tertiary mt-1">{seoDescription.length}/160 characters</p>
+          </div>
+        </div>
+      </details>
 
       {/* Categories & Tags */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4">
