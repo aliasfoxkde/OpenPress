@@ -134,6 +134,13 @@ export function RootLayout() {
                   <Link to="/shop" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors")}>
                     Shop
                   </Link>
+                  <Link to="/checkout" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1")}>
+                    Cart
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                    </svg>
+                  </Link>
                 </>
               )}
               <Link

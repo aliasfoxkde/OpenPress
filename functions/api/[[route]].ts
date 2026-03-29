@@ -13,6 +13,7 @@ import aiRoutes from "./lib/ai";
 import revisions from "./lib/revisions";
 import users from "./lib/users";
 import seo from "./lib/seo";
+import stripeRoutes from "./lib/stripe";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -255,6 +256,10 @@ app.get("/api/content/:slug", async (c) => {
 
 // SEO routes (public - sitemap, RSS, robots, search)
 app.route("/api/seo", seo);
+
+// Stripe checkout (protected - create session) and webhook (public)
+app.route("/api/checkout", stripeRoutes);
+app.route("/api/webhooks", stripeRoutes);
 
 // 404 handler
 app.notFound((c) => {

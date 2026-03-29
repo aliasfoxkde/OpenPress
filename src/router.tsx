@@ -20,6 +20,8 @@ import AdminAI from "./routes/admin/AdminAI";
 import AdminProducts from "./routes/admin/AdminProducts";
 import AdminOrders from "./routes/admin/AdminOrders";
 import { LoginPage } from "./routes/LoginPage";
+import { CheckoutPage } from "./routes/CheckoutPage";
+import { OrderSuccessPage } from "./routes/OrderSuccessPage";
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -59,6 +61,18 @@ const loginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/login",
   component: LoginPage,
+});
+
+const checkoutRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/checkout",
+  component: CheckoutPage,
+});
+
+const orderSuccessRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/order/success",
+  component: OrderSuccessPage,
 });
 
 const adminRoute = createRoute({
@@ -128,6 +142,8 @@ const routeTree = rootRoute.addChildren([
   blogRoute,
   blogPostRoute,
   loginRoute,
+  checkoutRoute,
+  orderSuccessRoute,
   adminRoute.addChildren([
     adminDashboardRoute,
     adminContentRoute,

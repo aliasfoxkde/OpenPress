@@ -100,21 +100,21 @@ Fix all critical security vulnerabilities from audit.
 
 ---
 
-## Phase 14: Stripe Payment Integration [PENDING]
+## Phase 14: Stripe Payment Integration [IN PROGRESS]
 
 Full checkout flow from cart to payment confirmation.
 
-- [ ] 14.1 Add Stripe env vars (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) to wrangler.toml
-- [ ] 14.2 Create checkout session endpoint (POST /api/checkout/create)
-- [ ] 14.3 Create Stripe webhook handler (POST /api/webhooks/stripe) with HMAC verification
-- [ ] 14.4 Handle checkout.session.completed event (mark order as paid)
-- [ ] 14.5 Handle payment_intent.payment_failed event
-- [ ] 14.6 Add stripe_session_id and stripe_payment_id columns to orders table
-- [ ] 14.7 Build Checkout page (cart review -> Stripe redirect)
-- [ ] 14.8 Build Order Success page (confirmation with order details)
+- [x] 14.1 Add Stripe env vars (STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET) to wrangler.toml
+- [x] 14.2 Create checkout session endpoint (POST /api/checkout/create)
+- [x] 14.3 Create Stripe webhook handler (POST /api/webhooks/stripe) with HMAC verification
+- [x] 14.4 Handle checkout.session.completed event (mark order as paid)
+- [x] 14.5 Handle payment_intent.payment_failed event
+- [x] 14.6 Add stripe_session_id and stripe_payment_id columns to orders table
+- [x] 14.7 Build Checkout page (cart review -> Stripe redirect)
+- [x] 14.8 Build Order Success page (confirmation with order details)
 - [ ] 14.9 Build Order Cancel page (return to cart)
-- [ ] 14.10 Add order receipt endpoint (GET /api/orders/:id/receipt)
-- [ ] 14.11 Add checkout routes to TanStack Router
+- [x] 14.10 Add order receipt endpoint (GET /api/orders/:id/receipt)
+- [x] 14.11 Add checkout routes to TanStack Router
 
 ---
 
