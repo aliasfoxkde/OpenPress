@@ -21,7 +21,7 @@ export function StorefrontPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
-  const [sort, setSort] = useState("default");
+  const [sort, setSort] = useState("newest");
 
   useSEO({
     title: "Shop",
@@ -30,11 +30,15 @@ export function StorefrontPage() {
     type: "website",
   });
 
-  async function loadProducts() {
+  async function loadProducts(searchTerm?: string, sortTerm?: string) {
     setLoading(true);
     setError("");
     try {
-      const res = await api.get("/api/products");
+      const params = new URLSearchParams();
+      if (searchTerm) params.set("search", searchTerm);
+      if (sortTerm && sortTerm !== "newest") params.set("sort", sortTerm);
+      const query = params.toString();
+      const res = await api.get(`/api/products${query ? `?${query}` : ""}`);
       setProducts(res.data || []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load products");
@@ -44,8 +48,11 @@ export function StorefrontPage() {
   }
 
   useEffect(() => {
-    void loadProducts();
-  }, []);
+    const timer = setTimeout(() => {
+      void loadProducts(search, sort);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search, sort]);
 
   if (loading) {
     return (
@@ -84,56 +91,40 @@ export function StorefrontPage() {
       </div>
 
       {/* Search & Sort */}
-      {products.length > 0 && (
-        <div className="mb-6 flex flex-col sm:flex-row gap-3">
-          <input
-            type="text"
-            placeholder="Search products..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
-          />
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="rounded-md border border-border px-3 py-2 text-sm bg-surface focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
-          >
-            <option value="default">Default order</option>
-            <option value="price-asc">Price: Low to High</option>
-            <option value="price-desc">Price: High to Low</option>
-            <option value="name-asc">Name: A-Z</option>
-          </select>
+      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+        <input
+          type="text"
+          placeholder="Search products..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+        />
+        <select
+          value={sort}
+          onChange={(e) => setSort(e.target.value)}
+          className="rounded-md border border-border px-3 py-2 text-sm bg-surface focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+        >
+          <option value="newest">Newest</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="name">Name: A-Z</option>
+        </select>
+      </div>
+
+      {products.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-text-tertiary text-lg">
+            {search ? "No products match your search." : "No products available yet."}
+          </p>
+          {!search && <p className="text-text-tertiary text-sm mt-2">Check back soon!</p>}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       )}
-
-      {(() => {
-        let filtered = search
-          ? products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.excerpt?.toLowerCase().includes(search.toLowerCase()))
-          : products;
-
-        if (sort === "price-asc") filtered = [...filtered].sort((a, b) => a.price - b.price);
-        else if (sort === "price-desc") filtered = [...filtered].sort((a, b) => b.price - a.price);
-        else if (sort === "name-asc") filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
-
-        if (filtered.length === 0) {
-          return (
-            <div className="text-center py-16">
-              <p className="text-text-tertiary text-lg">
-                {search ? "No products match your search." : "No products available yet."}
-              </p>
-              {!search && <p className="text-text-tertiary text-sm mt-2">Check back soon!</p>}
-            </div>
-          );
-        }
-
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filtered.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        );
-      })()}
     </div>
   );
 }

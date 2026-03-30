@@ -13,16 +13,32 @@ products.get("/", async (c) => {
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "20")));
   const offset = (page - 1) * limit;
   const status = c.req.query("status") || "active";
+  const search = c.req.query("search") || "";
+  const sort = c.req.query("sort") || "newest";
+
+  let orderBy = "p.updated_at DESC";
+  if (sort === "price-asc") orderBy = "p.price ASC";
+  else if (sort === "price-desc") orderBy = "p.price DESC";
+  else if (sort === "name") orderBy = "ci.title ASC";
+
+  let whereClause = "WHERE p.status = ?";
+  const bindParams: unknown[] = [status];
+
+  if (search) {
+    whereClause += " AND (ci.title LIKE ? OR ci.excerpt LIKE ? OR p.sku LIKE ?)";
+    const term = `%${search}%`;
+    bindParams.push(term, term, term);
+  }
 
   const [items, countResult] = await Promise.all([
     db.prepare(
       `SELECT p.*, ci.title, ci.slug, ci.excerpt, ci.featured_image_url
        FROM products p
        JOIN content_items ci ON p.content_id = ci.id
-       WHERE p.status = ?
-       ORDER BY p.updated_at DESC LIMIT ? OFFSET ?`
-    ).bind(status, limit, offset).all(),
-    db.prepare("SELECT COUNT(*) as total FROM products WHERE status = ?").bind(status).first<{ total: number }>(),
+       ${whereClause}
+       ORDER BY ${orderBy} LIMIT ? OFFSET ?`
+    ).bind(...bindParams, limit, offset).all(),
+    db.prepare(`SELECT COUNT(*) as total FROM products p JOIN content_items ci ON p.content_id = ci.id ${whereClause}`).bind(...bindParams).first<{ total: number }>(),
   ]);
 
   return c.json({
