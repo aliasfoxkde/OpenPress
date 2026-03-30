@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, Suspense } from "react";
 import { cn } from "@/lib/cn";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CommandPalette } from "@/components/ui/CommandPalette";
+import { CodeEditorPanel } from "@/components/editor/CodeEditorPanel";
 import { useCartStore } from "@/stores/cart";
 import { useAnalytics } from "@/lib/analytics";
 import { useTheme } from "@/hooks/useTheme";
@@ -50,6 +51,7 @@ export function RootLayout() {
   const isAdmin = routerState.location.pathname.startsWith("/admin");
   const cartItemCount = useCartStore((s) => s.itemCount());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [codeEditorOpen, setCodeEditorOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const scrollTimeout = useRef<ReturnType<typeof setTimeout>>();
 
@@ -63,6 +65,18 @@ export function RootLayout() {
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [routerState.location.pathname]);
+
+  // Ctrl+Shift+E to toggle code editor
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === "E") {
+        e.preventDefault();
+        setCodeEditorOpen((v) => !v);
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
 
   // Scroll-based header shrink
   useEffect(() => {
@@ -179,6 +193,25 @@ export function RootLayout() {
                   <kbd className="hidden sm:inline text-xs bg-surface-secondary px-1.5 py-0.5 rounded ml-2">⌘K</kbd>
                 </button>
               )}
+              {/* Code editor toggle (admin only) */}
+              {isAdmin && (
+                <button
+                  onClick={() => setCodeEditorOpen(!codeEditorOpen)}
+                  className={cn(
+                    "flex items-center gap-1.5 text-sm px-2.5 py-1.5 rounded-md transition-colors",
+                    codeEditorOpen
+                      ? "bg-primary-100 text-primary-700 font-medium"
+                      : "text-text-tertiary hover:text-text-primary hover:bg-surface-secondary"
+                  )}
+                  title="Custom Code Editor (Ctrl+Shift+E)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                  </svg>
+                  <span className="hidden sm:inline">Code</span>
+                </button>
+              )}
               <button
                 onClick={cycleMode}
                 className="text-sm text-text-tertiary hover:text-text-primary transition-colors p-1.5"
@@ -291,6 +324,7 @@ export function RootLayout() {
         </footer>
       )}
     </div>
+    <CodeEditorPanel open={codeEditorOpen} onClose={() => setCodeEditorOpen(false)} />
     </ToastProvider>
   );
 }
