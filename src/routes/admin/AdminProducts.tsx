@@ -28,13 +28,15 @@ export default function AdminProducts() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    const timer = setTimeout(() => void loadProducts(), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   async function loadProducts() {
     setLoading(true);
     try {
-      const res = await api.get("/api/products");
+      const query = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get(`/api/products${query}`);
       setProducts(res.data || []);
     } catch {
       // Products may not exist yet
@@ -194,10 +196,7 @@ export default function AdminProducts() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-surface">
-                {(search
-                  ? products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase()))
-                  : products
-                ).map((product) => (
+                {products.map((product) => (
                   <tr key={product.id} className="hover:bg-surface-secondary transition-colors">
                     <td className="px-4 py-3">
                       <div className="font-medium text-text-primary">{product.title}</div>
@@ -235,10 +234,7 @@ export default function AdminProducts() {
 
           {/* Mobile card view */}
           <div className="sm:hidden space-y-3">
-            {(search
-              ? products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.sku?.toLowerCase().includes(search.toLowerCase()))
-              : products
-            ).map((product) => (
+            {products.map((product) => (
               <div key={product.id} className="border border-border rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-text-primary">{product.title}</div>

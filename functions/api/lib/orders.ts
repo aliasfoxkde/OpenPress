@@ -89,11 +89,24 @@ orders.get("/", async (c) => {
   const user = c.get("user");
   const page = Math.max(1, parseInt(c.req.query("page") || "1"));
   const limit = Math.min(50, Math.max(1, parseInt(c.req.query("limit") || "20")));
+  const search = c.req.query("search") || "";
+
+  let query = "SELECT * FROM orders ORDER BY created_at DESC LIMIT ? OFFSET ?";
+  let countQuery = "SELECT COUNT(*) as total FROM orders";
+  const bindParams: unknown[] = [limit, (page - 1) * limit];
+  const countParams: unknown[] = [];
+
+  if (search) {
+    query = "SELECT * FROM orders WHERE id LIKE ? OR email LIKE ? OR status LIKE ? ORDER BY created_at DESC LIMIT ? OFFSET ?";
+    countQuery = "SELECT COUNT(*) as total FROM orders WHERE id LIKE ? OR email LIKE ? OR status LIKE ?";
+    const term = `%${search}%`;
+    bindParams.unshift(term, term, term);
+    countParams.push(term, term, term);
+  }
 
   const [items, countResult] = await Promise.all([
-    db.prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?")
-      .bind(user?.id, limit, (page - 1) * limit).all(),
-    db.prepare("SELECT COUNT(*) as total FROM orders WHERE user_id = ?").bind(user?.id).first<{ total: number }>(),
+    db.prepare(query).bind(...bindParams).all(),
+    db.prepare(countQuery).bind(...countParams).first<{ total: number }>(),
   ]);
 
   return c.json({

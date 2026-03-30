@@ -52,6 +52,9 @@ export function OrderSuccessPage() {
     void loadOrder();
   }, [navigate]);
 
+  const formatPrice = (cents: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+
   if (loading) {
     return (
       <div className="max-w-2xl mx-auto px-4 py-12">
@@ -107,7 +110,7 @@ export function OrderSuccessPage() {
                 <div className="text-sm font-medium text-text-primary">{item.title}</div>
                 <div className="text-xs text-text-tertiary">{item.sku} &middot; Qty: {item.quantity}</div>
               </div>
-              <div className="text-sm font-medium text-text-primary">${item.total.toFixed(2)}</div>
+              <div className="text-sm font-medium text-text-primary">{formatPrice(item.total)}</div>
             </div>
           ))}
         </div>
@@ -115,11 +118,11 @@ export function OrderSuccessPage() {
         <div className="bg-surface-secondary px-6 py-4 border-t border-border">
           <div className="flex justify-between text-sm">
             <span className="text-text-secondary">Subtotal</span>
-            <span className="text-text-primary">${order.subtotal.toFixed(2)}</span>
+            <span className="text-text-primary">{formatPrice(order.subtotal)}</span>
           </div>
           <div className="flex justify-between mt-2">
             <span className="text-lg font-bold text-text-primary">Total</span>
-            <span className="text-lg font-bold text-text-primary">${order.total.toFixed(2)} {order.currency.toUpperCase()}</span>
+            <span className="text-lg font-bold text-text-primary">{formatPrice(order.total)} {order.currency.toUpperCase()}</span>
           </div>
         </div>
       </div>

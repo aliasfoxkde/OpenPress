@@ -30,13 +30,14 @@ export default function AdminOrders() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    loadOrders();
-  }, [page]);
+    const timer = setTimeout(() => void loadOrders(), 300);
+    return () => clearTimeout(timer);
+  }, [page, search]);
 
   async function loadOrders() {
     setLoading(true);
     try {
-      const res = await api.get(`/api/orders?page=${page}&limit=20`);
+      const res = await api.get(`/api/orders?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ""}`);
       setOrders(res.data || []);
       if (res.pagination) setTotalPages(res.pagination.totalPages);
     } catch {
@@ -52,15 +53,13 @@ export default function AdminOrders() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">Orders</h1>
-      {orders.length > 0 && (
-        <input
-          type="text"
-          placeholder="Search orders..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
-        />
-      )}
+      <input
+        type="text"
+        placeholder="Search orders..."
+        value={search}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+        className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+      />
 
       {loading ? (
         <div className="animate-pulse space-y-3">
@@ -85,10 +84,7 @@ export default function AdminOrders() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-surface">
-                {(search
-                  ? orders.filter((o) => o.id.toLowerCase().includes(search.toLowerCase()) || o.email.toLowerCase().includes(search.toLowerCase()) || o.status.toLowerCase().includes(search.toLowerCase()))
-                  : orders
-                ).map((order) => (
+                {orders.map((order) => (
                   <tr key={order.id} className="hover:bg-surface-secondary transition-colors">
                     <td className="px-4 py-3 text-sm font-mono">
                       <Link to="/admin/orders/$id" params={{ id: order.id }} className="text-primary-600 hover:text-primary-700">
@@ -115,10 +111,7 @@ export default function AdminOrders() {
 
           {/* Mobile card view */}
           <div className="sm:hidden space-y-3">
-            {(search
-              ? orders.filter((o) => o.id.toLowerCase().includes(search.toLowerCase()) || o.email.toLowerCase().includes(search.toLowerCase()) || o.status.toLowerCase().includes(search.toLowerCase()))
-              : orders
-            ).map((order) => (
+            {orders.map((order) => (
               <Link
                 key={order.id}
                 to="/admin/orders/$id"
