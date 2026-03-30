@@ -123,7 +123,7 @@ export function CheckoutPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-surface-secondary rounded w-1/3" />
           {[1, 2, 3].map((i) => (
@@ -136,7 +136,7 @@ export function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-2xl mx-auto px-4 py-6 text-center">
         <h1 className="text-2xl font-bold text-text-primary">Cart is empty</h1>
         <p className="mt-2 text-text-secondary">Add some items before checking out.</p>
         <button
@@ -150,8 +150,8 @@ export function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
+    <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold text-text-primary">Checkout</h1>
         <Link to="/shop" className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors">
           &larr; Continue Shopping
@@ -163,7 +163,7 @@ export function CheckoutPage() {
       )}
 
       {/* Cart summary */}
-      <div className="border border-border rounded-lg mb-6">
+      <div className="border border-border rounded-lg mb-4">
         <div className="px-4 py-3 border-b border-border bg-surface-secondary">
           <span className="text-sm font-medium text-text-secondary">
             {totalItems} item{totalItems !== 1 ? "s" : ""} in cart

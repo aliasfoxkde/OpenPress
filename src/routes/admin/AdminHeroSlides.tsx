@@ -184,7 +184,7 @@ export function AdminHeroSlides() {
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center py-12">
+        <div className="flex items-center justify-center py-8">
           <div className="w-6 h-6 border-2 border-primary-300 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : (
@@ -275,7 +275,7 @@ export function AdminHeroSlides() {
           ))}
 
           {slides.length === 0 && (
-            <div className="text-center py-12 text-text-tertiary text-sm">
+            <div className="text-center py-8 text-text-tertiary text-sm">
               No slides yet. Click "+ New Slide" to create one.
             </div>
           )}

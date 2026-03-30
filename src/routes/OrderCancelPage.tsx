@@ -4,7 +4,7 @@ import { useSEO } from "@/hooks/useSEO";
 export function OrderCancelPage() {
   useSEO({ title: "Order Cancelled", description: "Your order has been cancelled", type: "website" });
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+    <div className="max-w-2xl mx-auto px-4 py-6 text-center">
       <div className="text-4xl mb-4">&#10007;</div>
       <h1 className="text-2xl font-bold text-text-primary mb-2">Order Cancelled</h1>
       <p className="text-text-secondary mb-6">

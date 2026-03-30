@@ -149,7 +149,7 @@ export function Components() {
     <div className="bg-surface">
       {/* Header */}
       <div className="border-b border-border bg-surface-secondary">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-3xl font-bold text-text-primary">Components & Widgets</h1>
           <p className="mt-2 text-text-secondary max-w-2xl">
             Reusable components, widgets, and sections you can embed in any page. Use the template tag <code className="px-1.5 py-0.5 rounded bg-surface border border-border text-xs font-mono">{"{{ widget:slug }}"}</code> to insert them into your content.
@@ -183,7 +183,7 @@ export function Components() {
       </div>
 
       {/* Template grid */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((t: typeof components[number]) => (
             <div key={t.slug} className="group border border-border rounded-xl overflow-hidden bg-surface hover:border-primary-300 hover:shadow-lg transition-all duration-300">
@@ -215,14 +215,14 @@ export function Components() {
           ))}
         </div>
         {filtered.length === 0 && (
-          <div className="text-center py-16 text-text-tertiary">
+          <div className="text-center py-8 text-text-tertiary">
             No components match your search.
           </div>
         )}
       </div>
 
       {/* How to use */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-4">
         <div className="border-t border-border pt-8">
           <h2 className="text-xl font-bold text-text-primary mb-4">How to Use Components</h2>
           <div className="grid gap-6 sm:grid-cols-3">

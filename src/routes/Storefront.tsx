@@ -56,8 +56,8 @@ export function StorefrontPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="animate-pulse space-y-8">
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="animate-pulse space-y-4">
           <div className="h-8 bg-surface-secondary rounded w-48" />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(4)].map((_, i) => (
@@ -71,7 +71,7 @@ export function StorefrontPage() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-7xl mx-auto px-4 py-6 text-center">
         <p className="text-text-tertiary mb-4">{error}</p>
         <button
           onClick={() => void loadProducts()}
@@ -84,14 +84,14 @@ export function StorefrontPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
-      <div className="mb-8">
+    <div className="max-w-7xl mx-auto px-4 py-4">
+      <div className="mb-4">
         <h1 className="text-3xl font-bold text-text-primary">Shop</h1>
         <p className="mt-2 text-text-secondary">Browse our products</p>
       </div>
 
       {/* Search & Sort */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-3">
+      <div className="mb-4 flex flex-col sm:flex-row gap-3">
         <input
           type="text"
           placeholder="Search products..."
@@ -112,7 +112,7 @@ export function StorefrontPage() {
       </div>
 
       {products.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-8">
           <p className="text-text-tertiary text-lg">
             {search ? "No products match your search." : "No products available yet."}
           </p>

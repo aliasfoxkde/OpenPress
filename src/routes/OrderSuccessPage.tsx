@@ -59,7 +59,7 @@ export function OrderSuccessPage() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12">
+      <div className="max-w-2xl mx-auto px-4 py-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-surface-secondary rounded w-1/2" />
           <div className="h-40 bg-surface-secondary rounded" />
@@ -70,7 +70,7 @@ export function OrderSuccessPage() {
 
   if (error || !order) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-2xl mx-auto px-4 py-6 text-center">
         <div className="text-4xl mb-4">Order Confirmed</div>
         <p className="text-text-secondary mb-4">{error || "Your order has been placed."}</p>
         <p className="text-sm text-text-tertiary mb-6">Check your email for order confirmation.</p>
@@ -82,8 +82,8 @@ export function OrderSuccessPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
-      <div className="text-center mb-8">
+    <div className="max-w-2xl mx-auto px-4 py-4">
+      <div className="text-center mb-4">
         <div className="text-4xl mb-2">&#10003;</div>
         <h1 className="text-2xl font-bold text-text-primary">Order Confirmed</h1>
         <p className="text-text-secondary mt-1">Thank you for your purchase!</p>
@@ -129,7 +129,7 @@ export function OrderSuccessPage() {
         </div>
       </div>
 
-      <div className="mt-6 text-center">
+      <div className="mt-4 text-center">
         <Link to="/shop" className="text-primary-600 hover:text-primary-700 font-medium">
           Continue Shopping
         </Link>

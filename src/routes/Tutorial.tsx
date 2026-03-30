@@ -240,7 +240,7 @@ export function Tutorial() {
     <div className="bg-surface flex flex-col">
       {/* Header */}
       <div className="border-b border-border bg-surface-secondary shrink-0">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-2xl font-bold text-text-primary">Setup Tutorial</h1>
           <p className="mt-1 text-sm text-text-secondary">
             Deploy OpenPress on Cloudflare Pages in minutes. Complete each step to proceed.

@@ -97,7 +97,7 @@ export function BlogPostPage() {
 
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 animate-pulse">
+      <div className="max-w-3xl mx-auto px-4 py-6 animate-pulse">
         <div className="h-8 bg-surface-secondary rounded w-3/4 mb-4" />
         <div className="h-4 bg-surface-secondary rounded w-1/4 mb-8" />
         <div className="space-y-3">
@@ -111,7 +111,7 @@ export function BlogPostPage() {
 
   if (error || !post) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-3xl mx-auto px-4 py-6 text-center">
         <h1 className="text-2xl font-bold text-text-primary">Post Not Found</h1>
         <p className="mt-2 text-text-secondary">{error}</p>
         <Link to="/blog" className="mt-4 inline-block text-primary-600 hover:text-primary-700">
@@ -126,7 +126,7 @@ export function BlogPostPage() {
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
-    <article className="max-w-3xl mx-auto px-4 py-8">
+    <article className="max-w-3xl mx-auto px-4 py-4">
       <nav className="mb-6 text-sm text-text-tertiary">
         <Link to="/" className="hover:text-text-primary">Home</Link>
         <span className="mx-2">/</span>

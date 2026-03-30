@@ -111,7 +111,7 @@ export function Templates() {
     <div className="bg-surface">
       {/* Header */}
       <div className="border-b border-border bg-surface-secondary">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-3xl font-bold text-text-primary">Templates & Themes</h1>
           <p className="mt-2 text-text-secondary max-w-2xl">
             Choose a theme for your site and customize colors, typography, layout, and more. All themes are responsive, accessible, and optimized for performance.
@@ -132,7 +132,7 @@ export function Templates() {
       </div>
 
       {/* Theme gallery */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((theme) => (
             <div
@@ -178,7 +178,7 @@ export function Templates() {
         </div>
 
         {filtered.length === 0 && (
-          <div className="text-center py-16 text-text-tertiary">No themes match your search.</div>
+          <div className="text-center py-8 text-text-tertiary">No themes match your search.</div>
         )}
 
         {/* Customization options */}

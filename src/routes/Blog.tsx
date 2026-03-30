@@ -82,8 +82,8 @@ export function BlogPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <div className="mb-8">
+    <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="mb-4">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-text-primary">Blog</h1>
@@ -107,7 +107,7 @@ export function BlogPage() {
 
       {/* Category filters */}
       {categories.length > 0 && (
-        <div className="mb-6 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           <button
             onClick={() => handleCategoryClick("")}
             className={`px-3 py-1.5 text-xs rounded-full transition-colors ${
@@ -135,7 +135,7 @@ export function BlogPage() {
       )}
 
       {/* Search */}
-      <div className="mb-6">
+      <div className="mb-4">
         <input
           type="text"
           placeholder="Search posts..."
@@ -146,7 +146,7 @@ export function BlogPage() {
       </div>
 
       {loading ? (
-        <div className="space-y-8 animate-pulse">
+        <div className="space-y-4 animate-pulse">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex gap-6">
               <div className="w-48 h-32 bg-surface-secondary rounded-lg flex-shrink-0" />
@@ -159,7 +159,7 @@ export function BlogPage() {
           ))}
         </div>
       ) : error ? (
-        <div className="text-center py-16">
+        <div className="text-center py-8">
           <p className="text-text-tertiary mb-4">{error}</p>
           <button
             onClick={() => { setPage(1); }}
@@ -169,14 +169,14 @@ export function BlogPage() {
           </button>
         </div>
       ) : posts.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-8">
           <p className="text-text-tertiary text-lg">
             {search ? "No posts match your search." : activeCategory ? "No posts in this category." : "No posts yet."}
           </p>
         </div>
       ) : (
         <>
-          <div className="space-y-8">
+          <div className="space-y-4">
             {posts.map((post) => (
               <Link
                 key={post.id}
@@ -224,7 +224,7 @@ export function BlogPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <nav className="mt-12 flex justify-center items-center gap-1" aria-label="Pagination">
+            <nav className="mt-6 flex justify-center items-center gap-1" aria-label="Pagination">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}

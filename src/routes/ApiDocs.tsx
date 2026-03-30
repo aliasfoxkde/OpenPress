@@ -117,7 +117,7 @@ export function ApiDocs() {
     <div className="bg-surface">
       {/* Header */}
       <div className="border-b border-border bg-surface-secondary">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
           <h1 className="text-3xl font-bold text-text-primary">API Reference</h1>
           <p className="mt-2 text-text-secondary">
             Complete REST API documentation for OpenPress. All endpoints accept and return JSON.
@@ -160,7 +160,7 @@ export function ApiDocs() {
       </div>
 
       {/* Auth info */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4">
         <div className="flex items-start gap-3 p-4 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/30 text-sm">
           <svg className="w-5 h-5 text-blue-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 100 20 10 10 0 000-20z" />
@@ -175,7 +175,7 @@ export function ApiDocs() {
       </div>
 
       {/* Endpoints list */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-4">
         <div className="space-y-2">
           {filtered.map((ep) => {
             const key = `${ep.method}-${ep.path}`;
@@ -257,7 +257,7 @@ export function ApiDocs() {
             );
           })}
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-text-tertiary">No endpoints match your search.</div>
+            <div className="text-center py-8 text-text-tertiary">No endpoints match your search.</div>
           )}
         </div>
       </div>

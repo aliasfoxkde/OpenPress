@@ -100,7 +100,7 @@ export function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12 animate-pulse">
+      <div className="max-w-7xl mx-auto px-4 py-6 animate-pulse">
         <div className="grid md:grid-cols-2 gap-8">
           <div className="aspect-square bg-surface-secondary rounded-xl" />
           <div className="space-y-4">
@@ -115,7 +115,7 @@ export function ProductDetailPage() {
 
   if (error || !product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+      <div className="max-w-7xl mx-auto px-4 py-6 text-center">
         <h1 className="text-2xl font-bold text-text-primary">Product Not Found</h1>
         <p className="mt-2 text-text-secondary">{error}</p>
         <Link to="/shop" className="mt-4 inline-block text-primary-600 hover:text-primary-700">
@@ -129,7 +129,7 @@ export function ProductDetailPage() {
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-4">
       {/* Breadcrumb */}
       <nav className="mb-6 text-sm text-text-tertiary">
         <Link to="/" className="hover:text-text-primary">Home</Link>
