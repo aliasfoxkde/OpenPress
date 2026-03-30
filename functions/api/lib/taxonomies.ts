@@ -10,15 +10,23 @@ taxonomies.get("/", async (c) => {
 
   const taxonomyList = await db.prepare("SELECT * FROM taxonomies ORDER BY name ASC").all();
 
-  // Get terms for each taxonomy
-  const result = [];
-  for (const taxonomy of taxonomyList.results as unknown as Record<string, unknown>[]) {
-    const terms = await db
-      .prepare("SELECT * FROM terms WHERE taxonomy_id = ? ORDER BY sort_order ASC, name ASC")
-      .bind(taxonomy.id as string)
-      .all();
-    result.push({ ...taxonomy, terms: terms.results });
+  // Batch-fetch all terms in a single query
+  const allTerms = await db
+    .prepare("SELECT * FROM terms ORDER BY taxonomy_id ASC, sort_order ASC, name ASC")
+    .all();
+
+  // Group terms by taxonomy_id
+  const termsByTaxonomy = new Map<string, unknown[]>();
+  for (const term of allTerms.results as Array<{ taxonomy_id: string }>) {
+    const list = termsByTaxonomy.get(term.taxonomy_id) || [];
+    list.push(term);
+    termsByTaxonomy.set(term.taxonomy_id, list);
   }
+
+  const result = (taxonomyList.results as unknown as Record<string, unknown>[]).map((taxonomy) => ({
+    ...taxonomy,
+    terms: termsByTaxonomy.get(taxonomy.id as string) || [],
+  }));
 
   return c.json({ data: result });
 });

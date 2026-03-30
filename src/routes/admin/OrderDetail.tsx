@@ -52,7 +52,7 @@ export function OrderDetail() {
     async function load() {
       try {
         const res = await api.get<{ data: OrderData }>(`/orders/${id}`);
-        setOrder(res);
+        setOrder(res.data);
       } catch {
         setMessage({ type: "error", text: "Failed to load order." });
       } finally {
@@ -191,7 +191,7 @@ export function OrderDetail() {
             </div>
             <div className="p-4 text-sm text-text-primary">
               {Object.entries(shipping).map(([key, value]) => (
-                <div key={key} className="capitalize">{value}</div>
+                <div key={key} className="capitalize">{String(value)}</div>
               ))}
             </div>
           </div>

@@ -36,7 +36,7 @@ export default function AdminProducts() {
     setLoading(true);
     try {
       const query = search ? `?search=${encodeURIComponent(search)}` : "";
-      const res = await api.get(`/api/products${query}`);
+      const res = await api.get<{ data: Product[] }>(`/api/products${query}`);
       setProducts(res.data || []);
     } catch {
       // Products may not exist yet

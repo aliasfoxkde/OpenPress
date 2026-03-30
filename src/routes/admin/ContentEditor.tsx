@@ -5,7 +5,10 @@ import { useAuthStore } from "@/stores/auth";
 import { RichTextEditor, blockNoteToLegacyBlocks, legacyBlocksToBlockNote } from "@/components/editor/RichTextEditor";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
-import type { ContentStatus } from "@shared/types";
+import type { ContentStatus, BlockType } from "@shared/types";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type PartialBlock = any;
 
 const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
   { value: "draft", label: "Draft" },
@@ -105,7 +108,7 @@ export function ContentEditor() {
   useEffect(() => {
     async function loadTaxonomies() {
       try {
-        const res = await api.get<{ data: { id: string; name: string; terms?: Term[] }[] }>("/taxonomies");
+        const res = await api.get<{ data: { id: string; name: string; slug: string; terms?: Term[] }[] }>("/taxonomies");
         for (const tax of res.data || []) {
           const terms = (tax.terms || []).map((t: any) => ({
             id: t.id,
@@ -142,7 +145,7 @@ export function ContentEditor() {
       setSeoDescription(meta?.seo_description ?? "");
 
       // Sync scheduled_at
-      const itemAny = currentContent.item as Record<string, unknown>;
+      const itemAny = currentContent.item as unknown as Record<string, unknown>;
       if (currentContent.item.status === "scheduled" && itemAny.scheduled_at) {
         setScheduledAt(String(itemAny.scheduled_at).slice(0, 16));
       } else {
@@ -190,7 +193,7 @@ export function ContentEditor() {
   async function handleRestoreRevision(revId: string) {
     setRestoringRevision(true);
     try {
-      await api.post(`/revisions/${revId}/restore`);
+      await api.post(`/revisions/${revId}/restore`, {});
       if (slug) {
         await fetchContent(slug);
       }
@@ -258,7 +261,7 @@ export function ContentEditor() {
   const handleSave = useCallback(async () => {
     if (!title.trim()) return;
 
-    const blockData = blockNoteToLegacyBlocks(editorBlocks);
+    const blockData = blockNoteToLegacyBlocks(editorBlocks) as { block_type: BlockType; data: Record<string, unknown> }[];
     const blocknoteJson = JSON.stringify(editorBlocks);
 
     // Build meta object

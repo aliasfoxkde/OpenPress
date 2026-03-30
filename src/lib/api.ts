@@ -24,12 +24,12 @@ async function refreshAccessToken(): Promise<string | null> {
 
     if (!res.ok) return null;
 
-    const body = await res.json();
+    const body = await res.json() as { data?: { access_token?: string } };
     const token = body.data?.access_token;
     if (token) {
       localStorage.setItem("auth_token", token);
     }
-    return token;
+    return token ?? null;
   } catch {
     return null;
   }
@@ -88,11 +88,11 @@ async function request<T>(
       headers["Authorization"] = `Bearer ${newToken}`;
       const retry = await fetch(url, { ...options, headers });
       if (!retry.ok) {
-        const body = await retry.json().catch(() => ({}));
+        const errBody = await retry.json().catch(() => ({})) as Record<string, unknown>;
         throw new ApiError(
           retry.status,
-          body.code || "UNKNOWN_ERROR",
-          body.message || `Request failed: ${retry.status}`,
+          (errBody.code as string) || "UNKNOWN_ERROR",
+          (errBody.message as string) || `Request failed: ${retry.status}`,
         );
       }
       return retry.json();
@@ -107,11 +107,11 @@ async function request<T>(
   }
 
   if (!response.ok) {
-    const body = await response.json().catch(() => ({}));
+    const errBody = await response.json().catch(() => ({})) as Record<string, unknown>;
     throw new ApiError(
       response.status,
-      body.code || "UNKNOWN_ERROR",
-      body.message || `Request failed: ${response.status}`,
+      (errBody.code as string) || "UNKNOWN_ERROR",
+      (errBody.message as string) || `Request failed: ${response.status}`,
     );
   }
 

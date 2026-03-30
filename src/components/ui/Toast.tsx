@@ -15,7 +15,7 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue>({ toast: () => {} });
 
 export function useToast() {
-  return useContext(ToastContext);
+  return useContext(ToastContext).toast;
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
@@ -33,7 +33,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <div className="fixed bottom-4 right-4 z-[100] space-y-2 max-w-sm">
+      <div className="fixed bottom-4 right-4 z-[100] space-y-2 max-w-sm" role="status" aria-live="polite">
         {toasts.map((t) => (
           <div
             key={t.id}

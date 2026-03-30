@@ -42,7 +42,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 
 export function AdminUsers() {
   const currentUser = useAuthStore((s) => s.user);
-  const { toast } = useToast();
+  const toast = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

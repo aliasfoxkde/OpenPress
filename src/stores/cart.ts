@@ -115,7 +115,7 @@ export const useCartStore = create<CartState>((set, get) => ({
   clear: async () => {
     set({ items: [] });
     try {
-      await api.post("/cart/clear");
+      await api.post("/cart/clear", {});
     } catch {
       // Ignore
     }

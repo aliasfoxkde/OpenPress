@@ -58,7 +58,7 @@ export function BlogPage() {
         const params = new URLSearchParams({ page: String(page), limit: "12" });
         if (activeCategory) params.set("category", activeCategory);
         if (search) params.set("search", search);
-        const res = await api.get(`/api/content?${params}`);
+        const res = await api.get<{ data: ContentItem[]; pagination?: { totalPages: number } }>(`/api/content?${params}`);
         setPosts(res.data || []);
         if (res.pagination) setTotalPages(res.pagination.totalPages);
       } catch {
@@ -162,7 +162,7 @@ export function BlogPage() {
         <div className="text-center py-16">
           <p className="text-text-tertiary mb-4">{error}</p>
           <button
-            onClick={() => void loadPosts()}
+            onClick={() => { setPage(1); }}
             className="text-sm text-primary-600 hover:text-primary-700 font-medium"
           >
             Try again

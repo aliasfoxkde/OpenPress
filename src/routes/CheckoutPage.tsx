@@ -108,7 +108,7 @@ export function CheckoutPage() {
         success_url: `${origin}/order/success`,
         cancel_url: `${origin}/checkout`,
       });
-      window.location.href = res.checkout_url;
+      window.location.href = res.data.checkout_url;
     } catch (e) {
       if (e instanceof ApiError) {
         setError(e.message);

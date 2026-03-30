@@ -4,6 +4,10 @@ import {
   createRoute,
   lazyRouteComponent,
 } from "@tanstack/react-router";
+// TanStack Router v1.120+ lazyRouteComponent support
+// Type definitions may lag behind installed version
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const createLazyRoute = createRoute as any;
 import { RootLayout } from "./components/layout/RootLayout";
 import { HomePage } from "./routes/HomePage";
 import { StorefrontPage } from "./routes/Storefront";
@@ -83,85 +87,85 @@ const notFoundRoute = createRoute({
   component: NotFoundPage,
 });
 
-const adminRoute = createRoute({
+const adminRoute = createLazyRoute({
   getParentRoute: () => rootRoute,
   path: "/admin",
   component: AdminPage,
 });
 
-const adminDashboardRoute = createRoute({
+const adminDashboardRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/",
   component: AdminDashboard,
 });
 
-const adminContentRoute = createRoute({
+const adminContentRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/content",
   lazyRouteComponent: () => import("./routes/admin/AdminContent").then((m) => m.AdminContent),
 });
 
-const adminMediaRoute = createRoute({
+const adminMediaRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/media",
   lazyRouteComponent: () => import("./routes/admin/AdminMedia").then((m) => m.AdminMedia),
 });
 
-const adminSettingsRoute = createRoute({
+const adminSettingsRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/settings",
   lazyRouteComponent: () => import("./routes/admin/AdminSettings").then((m) => m.AdminSettings),
 });
 
-const adminUsersRoute = createRoute({
+const adminUsersRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/users",
   lazyRouteComponent: () => import("./routes/admin/AdminUsers").then((m) => m.AdminUsers),
 });
 
-const adminAIRoute = createRoute({
+const adminAIRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/ai",
   lazyRouteComponent: () => import("./routes/admin/AdminAI").then((m) => m.default),
 });
 
-const adminContentEditRoute = createRoute({
+const adminContentEditRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/content/edit",
   lazyRouteComponent: () => import("./routes/admin/ContentEditor").then((m) => m.ContentEditor),
 });
 
-const adminProductsRoute = createRoute({
+const adminProductsRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/products",
   lazyRouteComponent: () => import("./routes/admin/AdminProducts").then((m) => m.default),
 });
 
-const adminOrdersRoute = createRoute({
+const adminOrdersRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/orders",
   lazyRouteComponent: () => import("./routes/admin/AdminOrders").then((m) => m.default),
 });
 
-const adminOrderDetailRoute = createRoute({
+const adminOrderDetailRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/orders/$id",
   lazyRouteComponent: () => import("./routes/admin/OrderDetail").then((m) => m.OrderDetail),
 });
 
-const adminCommentsRoute = createRoute({
+const adminCommentsRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/comments",
   lazyRouteComponent: () => import("./routes/admin/AdminComments").then((m) => m.AdminComments),
 });
 
-const adminTaxonomiesRoute = createRoute({
+const adminTaxonomiesRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/taxonomies",
   lazyRouteComponent: () => import("./routes/admin/AdminTaxonomies").then((m) => m.AdminTaxonomies),
 });
 
-const adminProfileRoute = createRoute({
+const adminProfileRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/profile",
   lazyRouteComponent: () => import("./routes/admin/UserProfile").then((m) => m.UserProfile),

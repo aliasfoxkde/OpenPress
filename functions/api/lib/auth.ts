@@ -77,9 +77,9 @@ async function generateAccessToken(
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   return await sign(
-    "HS256",
-    { sub: userId, email, role, iat: now, exp: now + ACCESS_TOKEN_EXPIRY } as unknown as Record<string, unknown>,
+    { sub: userId, email, role, iat: now, exp: now + ACCESS_TOKEN_EXPIRY } as Parameters<typeof sign>[0],
     secret,
+    "HS256",
   );
 }
 

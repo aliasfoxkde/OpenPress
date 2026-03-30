@@ -95,7 +95,7 @@ describe("requireCapability middleware", () => {
     const middleware = requireCapability("read");
     const app = new Hono();
     app.use("*", async (c, next) => {
-      c.set("user", { id: "1", email: "test@test.com", role: "subscriber" });
+      (c as any).set("user", { id: "1", email: "test@test.com", role: "subscriber" });
       await next();
     });
     app.use("*", middleware);
@@ -109,7 +109,7 @@ describe("requireCapability middleware", () => {
     const middleware = requireCapability("manage_settings");
     const app = new Hono();
     app.use("*", async (c, next) => {
-      c.set("user", { id: "1", email: "test@test.com", role: "editor" });
+      (c as any).set("user", { id: "1", email: "test@test.com", role: "editor" });
       await next();
     });
     app.use("*", middleware);

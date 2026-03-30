@@ -15,7 +15,7 @@ export function securityHeaders() {
     _c.header("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
     _c.header(
       "Content-Security-Policy",
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self'; frame-ancestors 'none';",
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob:; frame-ancestors 'none';",
     );
   };
 }
@@ -93,11 +93,10 @@ export function corsConfig() {
       "http://localhost:8788",
     ];
 
-    // Allow any *.pages.dev subdomain for preview deployments
+    // Allow *.openpress.pages.dev for preview deployments
     const isAllowed =
       allowedOrigins.includes(origin) ||
-      origin.endsWith(".openpress.pages.dev") ||
-      origin.endsWith(".pages.dev");
+      origin.endsWith(".openpress.pages.dev");
 
     if (isAllowed && origin) {
       c.header("Access-Control-Allow-Origin", origin);

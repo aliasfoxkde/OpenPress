@@ -58,7 +58,7 @@ export function BlogPostPage() {
   useEffect(() => {
     async function loadPost() {
       try {
-        const res = await api.get(`/api/content/${slug}`);
+        const res = await api.get<{ data: ContentItem }>(`/api/content/${slug}`);
         setPost(res.data);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Post not found");
@@ -109,10 +109,6 @@ export function BlogPostPage() {
     );
   }
 
-  // Reading time estimate (~200 words per minute)
-  const wordCount = post.content ? post.content.replace(/<[^>]*>/g, "").split(/\s+/).filter(Boolean).length : 0;
-  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
-
   if (error || !post) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
@@ -124,6 +120,10 @@ export function BlogPostPage() {
       </div>
     );
   }
+
+  // Reading time estimate (~200 words per minute)
+  const wordCount = post.content ? post.content.replace(/<[^>]*>/g, "").split(/\s+/).filter(Boolean).length : 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
     <article className="max-w-3xl mx-auto px-4 py-8">
@@ -232,7 +232,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
       return (
         <figure className="rounded-xl overflow-hidden">
           <img src={String(data.url || content)} alt={String(data.alt || "")} loading="lazy" decoding="async" className="w-full" />
-          {data.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(data.caption)}</figcaption>}
+          {!!data.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(data.caption)}</figcaption>}
         </figure>
       );
     case "quote":
@@ -323,7 +323,7 @@ function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
       return (
         <figure className="rounded-xl overflow-hidden">
           <img src={String(props.url || "")} alt={String(props.alt || "")} loading="lazy" decoding="async" className="w-full" />
-          {props.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(props.caption)}</figcaption>}
+          {!!props.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(props.caption)}</figcaption>}
         </figure>
       );
     case "codeBlock":

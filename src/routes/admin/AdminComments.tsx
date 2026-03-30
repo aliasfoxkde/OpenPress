@@ -40,7 +40,7 @@ export function AdminComments() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (statusFilter) params.set("status", statusFilter);
-      const res = await api.get<{ data: Comment[] }>(`/comments?${params}`);
+      const res = await api.get<{ data: Comment[]; pagination?: { totalPages: number } }>(`/comments?${params}`);
       setComments(res.data || []);
       if (res.pagination) setTotalPages(res.pagination.totalPages);
     } catch {

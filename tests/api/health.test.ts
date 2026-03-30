@@ -6,7 +6,7 @@ describe("Health API", () => {
     const res = await app.request("/api/health");
     expect(res.status).toBe(200);
 
-    const body = await res.json();
+    const body = await res.json() as Record<string, unknown>;
     expect(body.status).toBe("ok");
     expect(body.service).toBe("openpress");
     expect(body.version).toBe("0.1.0");
@@ -24,7 +24,7 @@ describe("Site API", () => {
     const res = await app.request("/api/site");
     expect(res.status).toBe(200);
 
-    const body = await res.json();
+    const body = await res.json() as { data: Record<string, unknown> };
     expect(body.data.name).toBeDefined();
     expect(body.data.version).toBe("0.1.0");
     expect(body.data.features).toBeDefined();
@@ -43,7 +43,7 @@ describe("404 handling", () => {
     const res = await app.request("/api/nonexistent");
     expect(res.status).toBe(404);
 
-    const body = await res.json();
+    const body = await res.json() as { error: { code: string } };
     expect(body.error.code).toBe("NOT_FOUND");
   });
 });

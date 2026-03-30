@@ -6,6 +6,7 @@ interface User {
   email: string;
   name: string;
   role: "admin" | "editor" | "author" | "contributor" | "subscriber" | "viewer";
+  avatar_url?: string;
 }
 
 interface AuthState {
@@ -17,6 +18,7 @@ interface AuthState {
   register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => void;
+  setUser: (user: User) => void;
 }
 
 function saveAuth(data: { user: User; access_token: string; csrf_token?: string }) {
@@ -80,6 +82,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     localStorage.removeItem("auth_user");
     localStorage.removeItem("csrf_token");
     set({ user: null, token: null, isAuthenticated: false });
+  },
+
+  setUser: (user: User) => {
+    localStorage.setItem("auth_user", JSON.stringify(user));
+    set({ user });
   },
 
   checkAuth: () => {

@@ -6,7 +6,7 @@ import type {
   ContentStatus,
   BlockType,
   ApiResponse,
-} from "@openpress/shared";
+} from "@shared/types";
 
 interface ContentListParams {
   page?: number;

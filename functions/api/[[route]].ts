@@ -105,7 +105,8 @@ protectedRoutes.use("*", async (c, next) => {
     const { SignJWT } = await import("jose");
     // Simple JWT verification
     const token = authHeader.slice(7);
-    const secret = new TextEncoder().encode("openpress-secret-key-2026-change-me-in-production");
+    const jwtSecret = c.env?.JWT_SECRET || "openpress-secret-key-2026-change-me-in-production";
+    const secret = new TextEncoder().encode(jwtSecret);
     const { payload } = await import("jose").then(async (jose) => {
       return await jose.jwtVerify(token, secret);
     });

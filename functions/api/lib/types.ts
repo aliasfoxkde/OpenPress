@@ -4,6 +4,8 @@ export type Bindings = {
   MEDIA: R2Bucket;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  JWT_SECRET?: string;
+  CRON_SECRET?: string;
 };
 
 export type Variables = {

@@ -71,7 +71,7 @@ export function ProductDetailPage() {
   useEffect(() => {
     async function loadProduct() {
       try {
-        const res = await api.get(`/api/products/${slug}`);
+        const res = await api.get<{ data: Product }>(`/api/products/${slug}`);
         setProduct(res.data);
       } catch (err: unknown) {
         setError(err instanceof Error ? err.message : "Product not found");

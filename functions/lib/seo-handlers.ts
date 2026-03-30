@@ -3,12 +3,12 @@
  * Root-level routes (/sitemap.xml, /feed.xml, /robots.txt) are handled by
  * separate function files for proper SEO URL structure.
  */
-import type { Bindings, Variables } from "./types";
+import type { Bindings, Variables } from "../api/lib/types";
 
 interface Env {
   DB: D1Database;
   CACHE: KVNamespace;
-  MEDIA: R3Bucket;
+  MEDIA: R2Bucket;
   JWT_SECRET: string;
 }
 
@@ -21,12 +21,12 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function getSiteUrl(c: { req: { header: (name: string) => string | undefined } }): string {
-  const host = c.req.header("Host");
+function getSiteUrl(c: { request: Request }): string {
+  const host = c.request.headers.get("Host");
   return host ? `https://${host}` : "https://openpress.pages.dev";
 }
 
-export async function handleSitemap(context: { env: Env; req: Request }): Promise<Response> {
+export async function handleSitemap(context: EventContext<Bindings, string, Record<string, unknown>>): Promise<Response> {
   const db = context.env.DB;
 
   const [contentItems, products] = await Promise.all([
@@ -87,7 +87,7 @@ ${urls.join("\n")}
   });
 }
 
-export async function handleFeed(context: { env: Env; req: Request }): Promise<Response> {
+export async function handleFeed(context: EventContext<Bindings, string, Record<string, unknown>>): Promise<Response> {
   const db = context.env.DB;
 
   const items = await db
@@ -142,7 +142,7 @@ ${itemsXml}
   });
 }
 
-export async function handleRobots(context: { env: Env; req: Request }): Promise<Response> {
+export async function handleRobots(context: EventContext<Bindings, string, Record<string, unknown>>): Promise<Response> {
   const siteUrl = getSiteUrl(context);
 
   const txt = `User-agent: *

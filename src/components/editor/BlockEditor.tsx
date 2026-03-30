@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, type DragEvent, type KeyboardEvent } from "react";
 import { cn } from "@/lib/cn";
-import type { ContentBlock, BlockType } from "@openpress/shared";
+import type { ContentBlock, BlockType } from "@shared/types";
 
 // ── Formatting helpers ──────────────────────────────────────────────
 function wrapSelection(
@@ -469,7 +469,6 @@ function BlockRenderer({
             value={text}
             onChange={(e) => updateField("text", e.target.value)}
             onKeyDown={(e) => onKeyDown(block, e)}
-            onFocus={() => onTextareaRef(e.currentTarget)}
             readOnly={readOnly}
             placeholder="Type something..."
             rows={Math.max(2, text.split("\n").length)}
@@ -514,7 +513,6 @@ function BlockRenderer({
                 value={text}
                 onChange={(e) => updateField("text", e.target.value)}
                 onKeyDown={(e) => onKeyDown(block, e)}
-                onFocus={() => onTextareaRef(e.currentTarget)}
                 placeholder="Heading text..."
                 rows={1}
                 className={cn(
