@@ -1,8 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Component } from "react";
 import { Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import { cn } from "@/lib/cn";
 import { useAuthStore } from "@/stores/auth";
 import type { UserRole } from "@shared/types";
+
+class AdminErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
+  state = { hasError: false, error: null };
+  static getDerivedStateFromError(error: Error) { return { hasError: true, error }; }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="flex items-center justify-center h-full p-8">
+          <div className="text-center max-w-md">
+            <div className="text-4xl mb-3">&#9888;</div>
+            <h2 className="text-lg font-semibold text-text-primary mb-2">Something went wrong</h2>
+            <p className="text-sm text-text-secondary mb-4">{this.state.error?.message || "An unexpected error occurred."}</p>
+            <button onClick={() => this.setState({ hasError: false, error: null })} className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+              Try again
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 interface NavItem {
   path: string;
@@ -280,7 +302,9 @@ export function AdminPage() {
           </span>
         </div>
         <main className="flex-1 overflow-y-auto p-5">
-          <Outlet />
+          <AdminErrorBoundary>
+            <Outlet />
+          </AdminErrorBoundary>
         </main>
       </div>
     </div>

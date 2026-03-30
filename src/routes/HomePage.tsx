@@ -426,14 +426,14 @@ export function HomePage() {
       {/* Contact Us Section */}
       <section className="relative py-16 sm:py-24 bg-surface-secondary">
         {/* Map background */}
-        <div className="absolute inset-0 opacity-[0.08]">
+        <div className="absolute inset-0 opacity-[0.15]">
           <img
             src="https://images.unsplash.com/photo-1524661135-92308546ae24?w=1920&q=60"
             alt=""
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-surface-secondary via-surface-secondary/95 to-surface-secondary" />
+          <div className="absolute inset-0 bg-gradient-to-r from-surface-secondary via-surface-secondary/90 to-surface-secondary" />
         </div>
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
