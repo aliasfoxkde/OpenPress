@@ -19,6 +19,7 @@ export function StorefrontPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     async function loadProducts() {
@@ -66,18 +67,43 @@ export function StorefrontPage() {
         <p className="mt-2 text-text-secondary">Browse our products</p>
       </div>
 
-      {products.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-text-tertiary text-lg">No products available yet.</p>
-          <p className="text-text-tertiary text-sm mt-2">Check back soon!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+      {/* Search */}
+      {products.length > 0 && (
+        <div className="mb-6">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+          />
         </div>
       )}
+
+      {(() => {
+        const filtered = search
+          ? products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.excerpt?.toLowerCase().includes(search.toLowerCase()))
+          : products;
+
+        if (filtered.length === 0) {
+          return (
+            <div className="text-center py-16">
+              <p className="text-text-tertiary text-lg">
+                {search ? "No products match your search." : "No products available yet."}
+              </p>
+              {!search && <p className="text-text-tertiary text-sm mt-2">Check back soon!</p>}
+            </div>
+          );
+        }
+
+        return (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filtered.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        );
+      })()}
     </div>
   );
 }
