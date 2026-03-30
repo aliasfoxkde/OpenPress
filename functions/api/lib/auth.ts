@@ -268,6 +268,58 @@ auth.get("/me", async (c) => {
   return c.json({ data: user });
 });
 
+// POST /forgot-password - initiate password reset
+auth.post("/forgot-password", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const { email } = await c.req.json<{ email: string }>();
+  if (!email) {
+    return c.json({ error: { message: "Email is required", code: "VALIDATION_ERROR" } }, 400);
+  }
+
+  const user = await db.prepare("SELECT id, name FROM users WHERE email = ?").bind(email).first<{ id: string; name: string }>();
+  if (!user) {
+    // Don't reveal whether email exists - return success regardless
+    return c.json({ message: "If an account with that email exists, a password reset link has been sent." });
+  }
+
+  // Generate a reset token (valid for 1 hour)
+  const resetToken = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 3600_000).toISOString();
+  await db.prepare("UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?")
+    .bind(resetToken, expiresAt, user.id)
+    .run();
+
+  return c.json({ message: "If an account with that email exists, a password reset link has been sent." });
+});
+
+// POST /reset-password - reset password with token
+auth.post("/reset-password", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const { token, password } = await c.req.json<{ token: string; password: string }>();
+  if (!token || !password) {
+    return c.json({ error: { message: "Token and password are required", code: "VALIDATION_ERROR" } }, 400);
+  }
+  if (password.length < 8) {
+    return c.json({ error: { message: "Password must be at least 8 characters", code: "VALIDATION_ERROR" } }, 400);
+  }
+
+  const user = await db.prepare("SELECT id, reset_token_expires FROM users WHERE reset_token = ?").bind(token).first<{ id: string; reset_token_expires: string }>();
+  if (!user || !user.reset_token_expires || new Date(user.reset_token_expires) < new Date()) {
+    return c.json({ error: { message: "Invalid or expired reset token", code: "INVALID_TOKEN" } }, 400);
+  }
+
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+  await db.prepare("UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?")
+    .bind(hash, user.id)
+    .run();
+
+  return c.json({ message: "Password has been reset successfully." });
+});
+
 // Auth verification middleware
 export const authMiddleware = async (c: any, next: any) => {
   const authHeader = c.req.header("Authorization");

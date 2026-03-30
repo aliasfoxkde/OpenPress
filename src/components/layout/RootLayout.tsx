@@ -1,9 +1,17 @@
 import { Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { cn } from "@/lib/cn";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { useCartStore } from "@/stores/cart";
+
+function RouteLoader() {
+  return (
+    <div className="flex items-center justify-center py-32">
+      <div className="w-8 h-8 border-2 border-primary-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
 function HamburgerIcon({ open }: { open: boolean }) {
   return (
@@ -200,7 +208,9 @@ export function RootLayout() {
         </div>
       )}
 
-      <Outlet />
+      <Suspense fallback={<RouteLoader />}>
+        <Outlet />
+      </Suspense>
 
       {/* Footer (public pages only) */}
       {!isAdmin && (
