@@ -24,19 +24,40 @@ interface RecentItem {
   updated_at: string;
 }
 
+interface RecentOrder {
+  id: string;
+  status: string;
+  total_cents: number;
+  email: string;
+  created_at: string;
+}
+
+interface RecentComment {
+  id: string;
+  author_name: string;
+  body: string;
+  status: string;
+  content_slug: string;
+  created_at: string;
+}
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [recentContent, setRecentContent] = useState<RecentItem[]>([]);
+  const [recentOrders, setRecentOrders] = useState<RecentOrder[]>([]);
+  const [recentComments, setRecentComments] = useState<RecentComment[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
-        const [statsRes, contentRes] = await Promise.all([
+        const [statsRes, contentRes, ordersRes, commentsRes] = await Promise.all([
           api.get<{ data: DashboardStats }>("/stats"),
           api.get<{ data: RecentItem[] }>("/content?limit=5"),
+          api.get<{ data: RecentOrder[]; pagination: { total: number } }>("/orders?limit=5").catch(() => null),
+          api.get<{ data: RecentComment[] }>("/comments?limit=5").catch(() => null),
         ]);
 
         if (statsRes?.data) {
@@ -45,6 +66,14 @@ export function AdminDashboard() {
 
         if (contentRes?.data) {
           setRecentContent(contentRes.data);
+        }
+
+        if (ordersRes?.data) {
+          setRecentOrders(ordersRes.data);
+        }
+
+        if (commentsRes?.data) {
+          setRecentComments(commentsRes.data);
         }
       } catch {
         // API not available
@@ -162,6 +191,77 @@ export function AdminDashboard() {
               </div>
             )}
           </div>
+          {/* Recent Orders */}
+          {canManage && recentOrders.length > 0 && (
+            <div className="mt-6 border border-border rounded-lg bg-surface">
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <h2 className="font-semibold text-text-primary">Recent Orders</h2>
+                <Link to="/admin/orders" className="text-xs text-primary-600 hover:text-primary-700">
+                  View all
+                </Link>
+              </div>
+              <div className="divide-y divide-border">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="px-6 py-3 flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-text-primary">
+                        {order.email || "Guest"}
+                      </div>
+                      <div className="text-xs text-text-tertiary mt-0.5">
+                        {new Date(order.created_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-text-primary">
+                        ${(order.total_cents / 100).toFixed(2)}
+                      </span>
+                      <span className={`text-xs px-2 py-1 rounded-full capitalize ${
+                        order.status === "completed" ? "bg-green-50 text-green-700" :
+                        order.status === "pending" ? "bg-yellow-50 text-yellow-700" :
+                        order.status === "processing" ? "bg-blue-50 text-blue-700" :
+                        "bg-surface-tertiary text-text-secondary"
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Recent Comments */}
+          {recentComments.length > 0 && (
+            <div className="mt-6 border border-border rounded-lg bg-surface">
+              <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+                <h2 className="font-semibold text-text-primary">Recent Comments</h2>
+                <Link to="/admin/comments" className="text-xs text-primary-600 hover:text-primary-700">
+                  View all
+                </Link>
+              </div>
+              <div className="divide-y divide-border">
+                {recentComments.map((comment) => (
+                  <div key={comment.id} className="px-6 py-3">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm font-medium text-text-primary">{comment.author_name}</div>
+                      <span className={`text-xs px-2 py-1 rounded-full capitalize ${
+                        comment.status === "approved" ? "bg-green-50 text-green-700" :
+                        comment.status === "pending" ? "bg-yellow-50 text-yellow-700" :
+                        comment.status === "spam" ? "bg-red-50 text-red-700" :
+                        "bg-surface-tertiary text-text-secondary"
+                      }`}>
+                        {comment.status}
+                      </span>
+                    </div>
+                    <p className="text-xs text-text-secondary mt-1 line-clamp-1">{comment.body}</p>
+                    <div className="text-xs text-text-tertiary mt-1">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -93,6 +93,10 @@ export function BlogPostPage() {
     );
   }
 
+  // Reading time estimate (~200 words per minute)
+  const wordCount = post.content ? post.content.replace(/<[^>]*>/g, "").split(/\s+/).filter(Boolean).length : 0;
+  const readingTime = Math.max(1, Math.ceil(wordCount / 200));
+
   if (error || !post) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-12 text-center">
@@ -135,6 +139,7 @@ export function BlogPostPage() {
           {post.author_name && (
             <span className="text-text-secondary">by {post.author_name}</span>
           )}
+          <span className="text-text-tertiary">{readingTime} min read</span>
           <span className="inline-flex items-center rounded-full bg-primary-100 px-2.5 py-0.5 text-xs font-medium text-primary-800 capitalize">
             {post.type}
           </span>
@@ -156,6 +161,8 @@ export function BlogPostPage() {
       </header>
 
       {/* Content */}
+      <div className="flex gap-8">
+        <div className="flex-1 min-w-0">
       {post.meta?.blocknote_json ? (
         <BlockNoteRenderer json={post.meta.blocknote_json} />
       ) : (
@@ -179,6 +186,11 @@ export function BlogPostPage() {
 
       {/* Comments Section */}
       <CommentsSection slug={slug} />
+        </div>
+
+        {/* Table of Contents (sidebar) */}
+        <TableOfContents post={post} />
+      </div>
     </article>
   );
 }
@@ -196,11 +208,9 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
     case "heading": {
       const level = (data.level as number) || 2;
       const sizeClass = level === 1 ? "text-4xl" : level === 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
-      if (level === 1) return <h1 className={`${sizeClass} font-bold text-text-primary`}>{content}</h1>;
-      if (level === 2) return <h2 className={`${sizeClass} font-bold text-text-primary`}>{content}</h2>;
-      if (level === 3) return <h3 className={`${sizeClass} font-bold text-text-primary`}>{content}</h3>;
-      if (level === 4) return <h4 className={`${sizeClass} font-bold text-text-primary`}>{content}</h4>;
-      return <h2 className={`${sizeClass} font-bold text-text-primary`}>{content}</h2>;
+      const headingId = content.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const Tag = `h${level}` as "h1" | "h2" | "h3" | "h4";
+      return <Tag id={headingId} className={`${sizeClass} font-bold text-text-primary`}>{content}</Tag>;
     }
     case "image":
       return (
@@ -285,11 +295,9 @@ function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
     case "heading": {
       const level = (props.level as number) || 2;
       const sizeClass = level === 1 ? "text-4xl" : level === 2 ? "text-3xl" : level === 3 ? "text-2xl" : "text-xl";
-      if (level === 1) return <h1 className={`${sizeClass} font-bold text-text-primary`}>{text}</h1>;
-      if (level === 2) return <h2 className={`${sizeClass} font-bold text-text-primary`}>{text}</h2>;
-      if (level === 3) return <h3 className={`${sizeClass} font-bold text-text-primary`}>{text}</h3>;
-      if (level === 4) return <h4 className={`${sizeClass} font-bold text-text-primary`}>{text}</h4>;
-      return <h2 className={`${sizeClass} font-bold text-text-primary`}>{text}</h2>;
+      const headingId = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const Tag = `h${level}` as "h1" | "h2" | "h3" | "h4";
+      return <Tag id={headingId} className={`${sizeClass} font-bold text-text-primary`}>{text}</Tag>;
     }
     case "bulletListItem":
       return <li className="list-disc ml-6 text-text-secondary">{text}</li>;
@@ -319,6 +327,83 @@ function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
       if (!text) return <div className="h-4" />; // empty paragraph spacer
       return <p className="text-text-secondary leading-relaxed">{text}</p>;
   }
+}
+
+// ─── Table of Contents ────────────────────────────────────────────────────
+
+function extractHeadings(post: ContentItem): { id: string; text: string; level: number }[] {
+  const headings: { id: string; text: string; level: number }[] = [];
+
+  // From BlockNote JSON
+  if (post.meta?.blocknote_json) {
+    try {
+      const blocks: BlockNoteBlock[] = JSON.parse(post.meta.blocknote_json);
+      for (const block of blocks) {
+        if (block.type === "heading") {
+          const level = (block.props?.level as number) || 2;
+          const text = extractText(block.content);
+          if (text) {
+            headings.push({
+              id: text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+              text,
+              level,
+            });
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  // From legacy HTML
+  if (headings.length === 0 && post.content) {
+    const matches = post.content.matchAll(/<h([2-4])[^>]*>(.*?)<\/h\1>/gi);
+    for (const match of matches) {
+      const text = match[2].replace(/<[^>]*>/g, "").trim();
+      if (text) {
+        headings.push({
+          id: text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
+          text,
+          level: parseInt(match[1]),
+        });
+      }
+    }
+  }
+
+  return headings;
+}
+
+function TableOfContents({ post }: { post: ContentItem }) {
+  const headings = extractHeadings(post);
+  if (headings.length < 2) return null;
+
+  return (
+    <nav className="hidden lg:block w-56 shrink-0">
+      <div className="sticky top-20">
+        <h3 className="text-sm font-semibold text-text-tertiary uppercase tracking-wider mb-3">
+          On this page
+        </h3>
+        <ul className="space-y-1.5 text-sm border-l border-border pl-3">
+          {headings.map((h) => (
+            <li key={h.id}>
+              <a
+                href={`#${h.id}`}
+                className={`block text-text-secondary hover:text-primary-600 transition-colors truncate ${h.level > 2 ? "pl-3 text-xs" : ""}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  const el = document.getElementById(h.id);
+                  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+                }}
+              >
+                {h.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  );
 }
 
 // ─── Comments Section ─────────────────────────────────────────────────────
