@@ -13,9 +13,21 @@ media.get("/", async (c) => {
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "20")));
   const offset = (page - 1) * limit;
   const mime_type = c.req.query("type");
+  const search = c.req.query("search") || "";
 
-  const whereClause = mime_type ? "WHERE mime_type LIKE ?" : "";
-  const params: unknown[] = mime_type ? [`${mime_type}%`] : [];
+  const conditions: string[] = [];
+  const params: unknown[] = [];
+
+  if (mime_type) {
+    conditions.push("mime_type LIKE ?");
+    params.push(`${mime_type}%`);
+  }
+  if (search && search.length <= 200) {
+    conditions.push("(filename LIKE ? OR original_name LIKE ?)");
+    params.push(`%${search}%`, `%${search}%`);
+  }
+
+  const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
 
   const [items, countResult] = await Promise.all([
     db

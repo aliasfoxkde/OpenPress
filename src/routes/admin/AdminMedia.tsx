@@ -24,7 +24,8 @@ export function AdminMedia() {
   async function fetchMedia() {
     setLoading(true);
     try {
-      const res = await api.get<{ data: MediaItem[] }>("/api/media");
+      const query = search ? `?search=${encodeURIComponent(search)}` : "";
+      const res = await api.get<{ data: MediaItem[] }>(`/api/media${query}`);
       setItems(res?.data || []);
     } catch {
       // ignore
@@ -34,8 +35,9 @@ export function AdminMedia() {
   }
 
   useEffect(() => {
-    void fetchMedia();
-  }, []);
+    const timer = setTimeout(() => void fetchMedia(), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   async function uploadFile(file: File) {
     setUploading(true);
@@ -92,15 +94,13 @@ export function AdminMedia() {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-text-primary">Media</h1>
-        {items.length > 0 && (
-          <input
-            type="text"
-            placeholder="Search files..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
-          />
-        )}
+        <input
+          type="text"
+          placeholder="Search files..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+        />
       </div>
 
       <div
@@ -122,25 +122,13 @@ export function AdminMedia() {
 
       {loading ? (
         <div className="text-center text-text-tertiary text-sm py-8">Loading...</div>
-      ) : (() => {
-        const filtered = search
-          ? items.filter((i) =>
-              i.original_name.toLowerCase().includes(search.toLowerCase()) ||
-              i.mime_type.toLowerCase().includes(search.toLowerCase()),
-            )
-          : items;
-
-        if (filtered.length === 0) {
-          return (
-            <div className="text-center text-text-tertiary text-sm py-8">
-              {search ? "No files match your search." : "No media files yet."}
-            </div>
-          );
-        }
-
-        return (
+      ) : items.length === 0 ? (
+        <div className="text-center text-text-tertiary text-sm py-8">
+          {search ? "No files match your search." : "No media files yet."}
+        </div>
+      ) : (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {filtered.map((item) => (
+          {items.map((item) => (
             <div key={item.id} className="border border-border rounded-lg overflow-hidden bg-surface group">
               <div className="aspect-square bg-surface-secondary flex items-center justify-center text-4xl">
                 {item.mime_type.startsWith("image/") && item.url ? (
@@ -162,8 +150,7 @@ export function AdminMedia() {
             </div>
           ))}
         </div>
-        );
-      })()}
+      )}
 
       <ConfirmDialog
         open={!!deleteTarget}

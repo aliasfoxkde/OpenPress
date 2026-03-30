@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { api, ApiError } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -53,7 +53,7 @@ export function AdminUsers() {
   const [deleting, setDeleting] = useState(false);
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
-  const fetchUsers = useCallback(async () => {
+  async function fetchUsers() {
     setIsLoading(true);
     setError(null);
     try {
@@ -71,11 +71,12 @@ export function AdminUsers() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, search]);
+  }
 
   useEffect(() => {
-    void fetchUsers();
-  }, [fetchUsers]);
+    const timer = setTimeout(() => void fetchUsers(), 300);
+    return () => clearTimeout(timer);
+  }, [page, search]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     setChangingRoleId(userId);
