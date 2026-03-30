@@ -154,6 +154,9 @@ export function RootLayout() {
               <Link to="/templates" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
                 Templates
               </Link>
+              <Link to="/components" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                Components
+              </Link>
               <Link to="/docs/api" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
                 API Docs
               </Link>
@@ -282,6 +285,13 @@ export function RootLayout() {
             Templates
           </Link>
           <Link
+            to="/components"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Components
+          </Link>
+          <Link
             to="/docs/api"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
@@ -342,6 +352,7 @@ export function RootLayout() {
                   <li><Link to="/blog" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Blog</Link></li>
                   <li><Link to="/shop" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Shop</Link></li>
                   <li><Link to="/templates" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Templates</Link></li>
+                  <li><Link to="/components" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Components</Link></li>
                   <li><Link to="/checkout" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Cart</Link></li>
                 </ul>
               </div>
@@ -394,10 +405,8 @@ export function RootLayout() {
               <div className="text-xs text-text-tertiary">
                 &copy; {new Date().getFullYear()} OpenPress. Open source, MIT license.
               </div>
-              <div className="flex items-center gap-1 text-xs text-text-tertiary">
-                Built with
-                <svg width="14" height="14" viewBox="0 0 24 24" className="mx-1 text-orange-400" fill="currentColor"><path d="M13.5 2C13.5 2 19 2 19 8c0 1.5-.3 3-1 4.5L15.5 16H19l-2.5 7h-9l1-3H7l1 3H0l4-12c-.7-1.5-1-3-1-4.5 0-6 5.5-6 11.5S19 2 13.5 2z"/></svg>
-                Cloudflare
+              <div className="text-xs text-text-tertiary">
+                This Application was Developed with TaskWizer AI technologies.
               </div>
             </div>
           </div>

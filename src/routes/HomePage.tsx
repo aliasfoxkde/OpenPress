@@ -511,6 +511,182 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Mobile App Section */}
+      <section className="py-16 sm:py-20 bg-surface-secondary">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+              <span>📱</span> Mobile Ready
+            </div>
+            <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
+              Your website, your app
+            </h2>
+            <p className="mt-4 text-text-secondary text-lg max-w-2xl mx-auto">
+              Turn your OpenPress site into a native iOS and Android app with
+              Capacitor — push notifications, offline support, and app store
+              distribution, completely free.
+            </p>
+          </div>
+
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Phone mockups */}
+            <div className="flex justify-center items-end gap-4 sm:gap-6">
+              {/* Android phone */}
+              <div className="relative w-40 sm:w-48">
+                <div className="bg-gray-900 rounded-[2rem] p-2 shadow-2xl">
+                  <div className="bg-white rounded-[1.5rem] overflow-hidden">
+                    {/* Status bar */}
+                    <div className="bg-primary-600 px-3 py-1.5 flex items-center justify-between text-white text-[10px]">
+                      <span>9:41</span>
+                      <div className="flex items-center gap-1">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>
+                      </div>
+                    </div>
+                    {/* App content */}
+                    <div className="p-3">
+                      <div className="h-2 bg-gray-200 rounded w-2/3 mb-2" />
+                      <div className="h-1.5 bg-gray-100 rounded w-full mb-1" />
+                      <div className="h-1.5 bg-gray-100 rounded w-5/6 mb-3" />
+                      <div className="bg-primary-50 rounded-lg p-2 mb-2">
+                        <div className="h-1.5 bg-primary-200 rounded w-3/4 mb-1" />
+                        <div className="h-1.5 bg-primary-100 rounded w-full" />
+                      </div>
+                      <div className="h-12 bg-gray-100 rounded-lg mb-2" />
+                      <div className="h-1.5 bg-gray-100 rounded w-full mb-1" />
+                      <div className="h-1.5 bg-gray-100 rounded w-4/5" />
+                    </div>
+                  </div>
+                </div>
+                {/* Android badge */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-full px-3 py-1 text-xs font-medium text-text-primary border border-border">
+                  Android
+                </div>
+              </div>
+
+              {/* iOS phone */}
+              <div className="relative w-44 sm:w-52 -mb-4">
+                <div className="bg-gray-900 rounded-[2.5rem] p-2 shadow-2xl ring-1 ring-gray-700">
+                  <div className="bg-white rounded-[2rem] overflow-hidden">
+                    {/* Notch */}
+                    <div className="bg-primary-600 relative pt-2">
+                      <div className="mx-auto w-16 h-4 bg-gray-900 rounded-b-xl" />
+                      <div className="px-4 py-1.5 flex items-center justify-between text-white text-[10px]">
+                        <span className="font-medium">9:41</span>
+                        <div className="flex items-center gap-1">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12.55a11 11 0 0 1 14.08 0M1.42 9a16 16 0 0 1 21.16 0M8.53 16.11a6 6 0 0 1 6.95 0M12 20h.01"/></svg>
+                          <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="6" width="18" height="12" rx="2"/><line x1="23" y1="13" x2="23" y2="11"/></svg>
+                        </div>
+                      </div>
+                    </div>
+                    {/* App content */}
+                    <div className="p-3">
+                      <div className="h-2 bg-gray-200 rounded w-2/3 mb-2" />
+                      <div className="h-1.5 bg-gray-100 rounded w-full mb-1" />
+                      <div className="h-1.5 bg-gray-100 rounded w-5/6 mb-3" />
+                      <div className="grid grid-cols-2 gap-1.5 mb-2">
+                        <div className="bg-primary-50 rounded-lg p-2">
+                          <div className="w-5 h-5 bg-primary-200 rounded mb-1" />
+                          <div className="h-1 bg-primary-100 rounded w-full" />
+                        </div>
+                        <div className="bg-gray-50 rounded-lg p-2">
+                          <div className="w-5 h-5 bg-gray-200 rounded mb-1" />
+                          <div className="h-1 bg-gray-100 rounded w-full" />
+                        </div>
+                      </div>
+                      <div className="h-10 bg-gray-100 rounded-lg mb-2" />
+                      <div className="h-1.5 bg-gray-100 rounded w-full mb-1" />
+                      <div className="h-1.5 bg-gray-100 rounded w-3/4" />
+                    </div>
+                  </div>
+                </div>
+                {/* iOS badge */}
+                <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-white shadow-lg rounded-full px-3 py-1 text-xs font-medium text-text-primary border border-border">
+                  iOS
+                </div>
+              </div>
+            </div>
+
+            {/* Features list */}
+            <div className="space-y-6">
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-green-100 text-green-600 rounded-xl flex items-center justify-center text-lg">
+                  ⚡
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">One command deploy</h3>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Run a single Capacitor command to generate native iOS and Android projects from your existing site. No extra code needed.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-lg">
+                  🔔
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">Push notifications</h3>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Engage your audience with real-time push notifications. Support for Firebase Cloud Messaging (Android) and APNs (iOS).
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center text-lg">
+                  📡
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">Offline support</h3>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Your app works even without internet. Service workers cache content so readers can browse your latest posts anywhere.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-orange-100 text-orange-600 rounded-xl flex items-center justify-center text-lg">
+                  🏪
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">App Store ready</h3>
+                  <p className="text-sm text-text-secondary mt-1">
+                    Distribute on Google Play and the Apple App Store. Capacitor handles native builds — you just upload and publish.
+                  </p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="flex-shrink-0 w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-lg">
+                  💰
+                </div>
+                <div>
+                  <h3 className="font-semibold text-text-primary">Completely free</h3>
+                  <p className="text-sm text-text-secondary mt-1">
+                    OpenPress is free. Capacitor is free. Cloudflare is free. Build and ship your app with zero infrastructure costs.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom CTA */}
+          <div className="mt-12 text-center">
+            <a
+              href="https://capacitorjs.com/docs/getting-started"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-primary-600 text-white px-6 py-3 rounded-xl hover:bg-primary-700 transition-all font-semibold text-sm shadow-lg shadow-primary-600/25"
+            >
+              Get started with Capacitor
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M7 17L17 7M17 7H7M17 7V17" />
+              </svg>
+            </a>
+            <p className="mt-3 text-sm text-text-tertiary">
+              Open source &middot; MIT License &middot; Works with any OpenPress site
+            </p>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 sm:py-20 bg-primary-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">

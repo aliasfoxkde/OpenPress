@@ -78,7 +78,7 @@ export function rateLimit(options: { windowMs?: number; maxRequests?: number; ke
  * Stricter rate limit for auth endpoints.
  */
 export function authRateLimit() {
-  return rateLimit({ windowMs: 15 * 60_000, maxRequests: 10, keyPrefix: "auth-rl:" });
+  return rateLimit({ windowMs: 15 * 60_000, maxRequests: 30, keyPrefix: "auth-rl:" });
 }
 
 /**

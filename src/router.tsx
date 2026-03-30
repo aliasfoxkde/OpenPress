@@ -24,6 +24,7 @@ import { NotFoundPage } from "./routes/NotFoundPage";
 import { ApiDocs } from "./routes/ApiDocs";
 import { Tutorial } from "./routes/Tutorial";
 import { Templates } from "./routes/Templates";
+import { Components } from "./routes/Components";
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -106,6 +107,12 @@ const templatesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/templates",
   component: Templates,
+});
+
+const componentsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/components",
+  component: Components,
 });
 
 const adminRoute = createLazyRoute({
@@ -254,6 +261,7 @@ const routeTree = rootRoute.addChildren([
   apiDocsRoute,
   tutorialRoute,
   templatesRoute,
+  componentsRoute,
   adminRoute.addChildren([
     adminDashboardRoute,
     adminContentRoute,
