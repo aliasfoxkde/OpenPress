@@ -318,12 +318,10 @@ export function RootLayout() {
       <Suspense fallback={<RouteLoader />}>
         <div id="main-content" className="flex-1 overflow-y-auto" role="main">
           <Outlet />
-        </div>
-      </Suspense>
 
-      {/* Footer (public pages only) */}
-      {!isAdmin && (
-        <footer className="border-t border-border bg-surface-secondary shrink-0">
+          {/* Footer (public pages only) — inside scrollable area so it's at page bottom, not fixed */}
+          {!isAdmin && (
+            <footer className="border-t border-border bg-surface-secondary mt-auto">
           {/* Main footer content */}
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -413,7 +411,9 @@ export function RootLayout() {
             </div>
           </div>
         </footer>
-      )}
+          )}
+        </div>
+      </Suspense>
     </div>
     <CodeEditorPanel open={codeEditorOpen} onClose={() => setCodeEditorOpen(false)} />
     <BackToTop />
