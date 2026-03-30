@@ -49,6 +49,38 @@ cart.delete("/:id", async (c) => {
   return c.json({ data: { removed: true } });
 });
 
+cart.put("/:id", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const id = c.req.param("id");
+  const body = await c.req.json();
+  const { quantity } = body;
+
+  if (typeof quantity !== "number" || quantity < 1) {
+    return c.json({ error: { message: "Quantity must be a positive number", code: "VALIDATION" } }, 400);
+  }
+
+  await db.prepare("UPDATE cart_items SET quantity = ?, updated_at = ? WHERE id = ?").bind(quantity, new Date().toISOString(), id).run();
+  return c.json({ data: { id, quantity } });
+});
+
+cart.post("/clear", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const user = c.get("user");
+  const sessionId = c.req.header("x-session-id") || "anonymous";
+
+  if (user) {
+    await db.prepare("DELETE FROM cart_items WHERE user_id = ?").bind(user.id).run();
+  } else {
+    await db.prepare("DELETE FROM cart_items WHERE session_id = ?").bind(sessionId).run();
+  }
+
+  return c.json({ data: { cleared: true } });
+});
+
 // Orders (protected)
 orders.get("/", async (c) => {
   const db = c.env.DB;

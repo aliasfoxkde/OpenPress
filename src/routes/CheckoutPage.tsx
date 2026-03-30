@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { api, ApiError } from "@/lib/api";
 
@@ -69,6 +69,34 @@ export function CheckoutPage() {
 
   const formatPrice = (cents: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
+
+  const updateQuantity = useCallback(async (cartId: string, productId: string, newQty: number) => {
+    if (newQty < 1) return;
+    setItems((prev) =>
+      prev.map((i) =>
+        i.cartItem.id === cartId ? { ...i, cartItem: { ...i.cartItem, quantity: newQty } } : i,
+      ),
+    );
+    try {
+      await api.put(`/cart/${cartId}`, { quantity: newQty });
+    } catch {
+      // Revert on failure
+      setItems((prev) =>
+        prev.map((i) =>
+          i.cartItem.id === cartId ? { ...i, cartItem: { ...i.cartItem, quantity: Math.max(1, newQty - 1) } } : i,
+        ),
+      );
+    }
+  }, []);
+
+  const removeItem = useCallback(async (cartId: string) => {
+    setItems((prev) => prev.filter((i) => i.cartItem.id !== cartId));
+    try {
+      await api.delete(`/cart/${cartId}`);
+    } catch {
+      // Item already removed locally
+    }
+  }, []);
 
   async function handleCheckout() {
     setCreating(true);
@@ -152,12 +180,37 @@ export function CheckoutPage() {
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-medium text-text-primary truncate">{product.title}</div>
                 <div className="text-xs text-text-tertiary">
-                  {formatPrice(product.price)} each &middot; Qty: {cartItem.quantity}
+                  {formatPrice(product.price)} each
                 </div>
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => void updateQuantity(cartItem.id, cartItem.product_id, cartItem.quantity - 1)}
+                  disabled={cartItem.quantity <= 1}
+                  className="w-7 h-7 flex items-center justify-center rounded border border-border text-text-secondary hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-default transition-colors"
+                >
+                  -
+                </button>
+                <span className="w-8 text-center text-sm text-text-primary">{cartItem.quantity}</span>
+                <button
+                  onClick={() => void updateQuantity(cartItem.id, cartItem.product_id, cartItem.quantity + 1)}
+                  className="w-7 h-7 flex items-center justify-center rounded border border-border text-text-secondary hover:bg-surface-secondary transition-colors"
+                >
+                  +
+                </button>
               </div>
               <div className="text-sm font-medium text-text-primary whitespace-nowrap">
                 {formatPrice(product.price * cartItem.quantity)}
               </div>
+              <button
+                onClick={() => void removeItem(cartItem.id)}
+                className="text-text-tertiary hover:text-red-500 transition-colors ml-1"
+                title="Remove item"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 6h18" /><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6" /><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2" />
+                </svg>
+              </button>
             </div>
           ))}
         </div>
@@ -182,7 +235,7 @@ export function CheckoutPage() {
         </div>
         <div className="flex items-center justify-between py-3 border-t border-border">
           <span className="text-lg font-bold text-text-primary">Total</span>
-          <span className="text-lg font-bold text-text-primary">${subtotal.toFixed(2)}</span>
+          <span className="text-lg font-bold text-text-primary">{formatPrice(subtotal)}</span>
         </div>
 
         <button

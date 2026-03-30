@@ -19,7 +19,7 @@ interface CartState {
   addItem: (item: CartItem) => Promise<void>;
   removeItem: (productId: string) => Promise<void>;
   updateQuantity: (productId: string, quantity: number) => Promise<void>;
-  clear: () => void;
+  clear: () => Promise<void>;
   itemCount: () => number;
   subtotal: () => number;
 }
@@ -79,9 +79,9 @@ export const useCartStore = create<CartState>((set, get) => ({
   },
 
   removeItem: async (productId) => {
+    const item = get().items.find((i) => i.product_id === productId);
     set({ items: get().items.filter((i) => i.product_id !== productId) });
     // Sync to API
-    const item = get().items.find((i) => i.product_id === productId);
     if (item?.id) {
       try {
         await api.delete(`/cart/${item.id}`);
@@ -96,15 +96,29 @@ export const useCartStore = create<CartState>((set, get) => ({
       await get().removeItem(productId);
       return;
     }
+    const item = get().items.find((i) => i.product_id === productId);
     set({
       items: get().items.map((i) =>
         i.product_id === productId ? { ...i, quantity } : i,
       ),
     });
+    // Sync to API
+    if (item?.id) {
+      try {
+        await api.put(`/cart/${item.id}`, { quantity });
+      } catch {
+        // Ignore
+      }
+    }
   },
 
-  clear: () => {
+  clear: async () => {
     set({ items: [] });
+    try {
+      await api.post("/cart/clear");
+    } catch {
+      // Ignore
+    }
   },
 
   itemCount: () => get().items.reduce((sum, i) => sum + i.quantity, 0),
