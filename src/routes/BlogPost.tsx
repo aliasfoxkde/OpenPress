@@ -38,6 +38,14 @@ interface ContentItem {
   author_name?: string;
   blocks: ContentBlock[];
   meta: Record<string, string>;
+  terms?: Term[];
+}
+
+interface Term {
+  id: string;
+  name: string;
+  slug: string;
+  taxonomy_id: string;
 }
 
 export function BlogPostPage() {
@@ -131,6 +139,20 @@ export function BlogPostPage() {
             {post.type}
           </span>
         </div>
+        {post.terms && post.terms.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {post.terms.map((term) => (
+              <Link
+                key={term.id}
+                to="/blog"
+                search={{ category: term.slug }}
+                className="inline-flex items-center rounded-full bg-surface-secondary border border-border px-3 py-0.5 text-xs text-text-secondary hover:text-primary-600 hover:border-primary-300 transition-colors"
+              >
+                {term.name}
+              </Link>
+            ))}
+          </div>
+        )}
       </header>
 
       {/* Content */}
