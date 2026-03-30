@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router";
+
 export function HomePage() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -183,8 +185,15 @@ export function HomePage() {
                 &copy; {new Date().getFullYear()}
               </span>
             </div>
+            <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
+              <Link to="/" className="hover:text-text-primary transition-colors">Home</Link>
+              <Link to="/blog" className="hover:text-text-primary transition-colors">Blog</Link>
+              <Link to="/shop" className="hover:text-text-primary transition-colors">Shop</Link>
+              <Link to="/checkout" className="hover:text-text-primary transition-colors">Cart</Link>
+              <Link to="/admin" className="hover:text-text-primary transition-colors">Admin</Link>
+            </nav>
             <p className="text-xs text-text-tertiary text-center sm:text-right">
-              This Application was Developed with TaskWizer AI technologies.
+              Powered by Cloudflare
             </p>
           </div>
         </div>
