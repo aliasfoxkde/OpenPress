@@ -142,6 +142,14 @@ export function AdminDashboard() {
                   Upload Media
                 </Link>
               )}
+              {canManage && (
+                <Link
+                  to="/admin/products"
+                  className="border border-border px-4 py-2 rounded-md text-sm text-text-secondary hover:bg-surface-secondary transition-colors"
+                >
+                  New Product
+                </Link>
+              )}
               {canManage && stats && stats.pending_comments > 0 && (
                 <Link
                   to="/admin/comments"
