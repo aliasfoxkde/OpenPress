@@ -204,6 +204,7 @@ export function CheckoutPage() {
               </div>
               <button
                 onClick={() => void removeItem(cartItem.id)}
+                aria-label="Remove item"
                 className="text-text-tertiary hover:text-red-500 transition-colors ml-1"
                 title="Remove item"
               >

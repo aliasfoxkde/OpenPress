@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 export function HomePage() {
+  useSEO({ title: "Home", description: "A modern, edge-native CMS", type: "website" });
   const [recentPosts, setRecentPosts] = useState<Array<{ id: string; slug: string; title: string; excerpt?: string; featured_image_url?: string | null; published_at?: string }>>([]);
   const [postsLoading, setPostsLoading] = useState(true);
 

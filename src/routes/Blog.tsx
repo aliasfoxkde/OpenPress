@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 interface ContentItem {
   id: string;
@@ -22,6 +23,7 @@ interface Category {
 }
 
 export function BlogPage() {
+  useSEO({ title: "Blog", description: "Latest posts and updates", type: "website" });
   const [posts, setPosts] = useState<ContentItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +93,7 @@ export function BlogPage() {
             href="/feed.xml"
             target="_blank"
             rel="noopener noreferrer"
+            aria-label="RSS Feed"
             className="text-text-tertiary hover:text-primary-600 transition-colors"
             title="RSS Feed"
           >
