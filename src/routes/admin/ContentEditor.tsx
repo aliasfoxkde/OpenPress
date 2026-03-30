@@ -1,28 +1,25 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useContentStore } from "@/stores/content";
 import { useAuthStore } from "@/stores/auth";
 import { RichTextEditor, blockNoteToLegacyBlocks, legacyBlocksToBlockNote } from "@/components/editor/RichTextEditor";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { Sidebar } from "@/components/editor/sidebar/Sidebar";
+import { DocumentPanel } from "@/components/editor/sidebar/DocumentPanel";
+import { FeaturedImagePanel } from "@/components/editor/sidebar/FeaturedImagePanel";
+import { TaxonomyPanel } from "@/components/editor/sidebar/TaxonomyPanel";
+import { SEOPanel } from "@/components/editor/sidebar/SEOPanel";
+import { EditorBottomBar } from "@/components/editor/EditorBottomBar";
 import type { ContentStatus, BlockType } from "@shared/types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type PartialBlock = any;
 
-const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
-  { value: "draft", label: "Draft" },
-  { value: "pending", label: "Pending Review" },
-  { value: "published", label: "Published" },
-  { value: "scheduled", label: "Scheduled" },
-  { value: "archived", label: "Archived" },
-];
-
 interface Term {
   id: string;
   name: string;
   slug: string;
-  taxonomy_id: string;
 }
 
 interface Revision {
@@ -37,6 +34,10 @@ interface MediaItem {
   original_name: string;
   mime_type: string;
   url?: string;
+}
+
+function cn(...classes: (string | false | undefined)[]) {
+  return classes.filter(Boolean).join(" ");
 }
 
 export function ContentEditor() {
@@ -58,7 +59,7 @@ export function ContentEditor() {
     clearCurrent,
   } = useContentStore();
 
-  // Local state for title/excerpt edits
+  // Local state
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState<ContentStatus>("draft");
@@ -73,8 +74,6 @@ export function ContentEditor() {
   // Taxonomy state
   const [categories, setCategories] = useState<Term[]>([]);
   const [tags, setTags] = useState<Term[]>([]);
-  const [tagInput, setTagInput] = useState("");
-  const [showTagSuggestions, setShowTagSuggestions] = useState(false);
 
   // Revision history
   const [revisions, setRevisions] = useState<Revision[]>([]);
@@ -89,10 +88,26 @@ export function ContentEditor() {
   // BlockNote editor content
   const [editorBlocks, setEditorBlocks] = useState<PartialBlock[]>([]);
   const [initialBlocks, setInitialBlocks] = useState<PartialBlock[] | undefined>(undefined);
+  const [lastSaved, setLastSaved] = useState<string | undefined>(undefined);
   const contentIdRef = useRef<string | null>(null);
 
   const isCreateMode = !slug;
   const isLimitedRole = user && !["admin", "editor"].includes(user.role);
+
+  // Word count & reading time
+  const { wordCount, readingTime } = useMemo(() => {
+    const text = editorBlocks
+      .map((b: any) => {
+        if (b.type === "text" && b.content) {
+          return b.content.map((c: any) => (c.type === "text" ? c.text : "")).join("");
+        }
+        return "";
+      })
+      .join(" ");
+    const words = text.trim().split(/\s+/).filter(Boolean).length;
+    const mins = Math.max(1, Math.ceil(words / 200));
+    return { wordCount: words, readingTime: `${mins} min` };
+  }, [editorBlocks]);
 
   // Load existing content
   useEffect(() => {
@@ -114,7 +129,6 @@ export function ContentEditor() {
             id: t.id,
             name: t.name,
             slug: t.slug,
-            taxonomy_id: tax.id,
           }));
           if (tax.name === "Category" || tax.slug === "category") {
             setCategories(terms);
@@ -139,12 +153,10 @@ export function ContentEditor() {
       setFeaturedImageUrl(currentContent.item.featured_image_url ?? "");
       contentIdRef.current = currentContent.item.id;
 
-      // Sync SEO meta
       const meta = (currentContent as { meta?: Record<string, string> }).meta;
       setSeoTitle(meta?.seo_title ?? "");
       setSeoDescription(meta?.seo_description ?? "");
 
-      // Sync scheduled_at
       const itemAny = currentContent.item as unknown as Record<string, unknown>;
       if (currentContent.item.status === "scheduled" && itemAny.scheduled_at) {
         setScheduledAt(String(itemAny.scheduled_at).slice(0, 16));
@@ -152,31 +164,21 @@ export function ContentEditor() {
         setScheduledAt("");
       }
 
-      // Sync terms
       const termIds = (currentContent.terms || []).map((t: any) => t.id || t.term_id);
       setSelectedTermIds(termIds.filter(Boolean));
 
-      // Load BlockNote content
       let blocks: PartialBlock[] | undefined;
       if (meta?.blocknote_json) {
-        try {
-          blocks = JSON.parse(meta.blocknote_json);
-        } catch {
-          blocks = undefined;
-        }
+        try { blocks = JSON.parse(meta.blocknote_json); } catch { blocks = undefined; }
       }
       if (!blocks) {
-        const legacyBlocks = currentContent.blocks.map((b) => ({
-          block_type: b.block_type,
-          data: b.data,
-        }));
+        const legacyBlocks = currentContent.blocks.map((b) => ({ block_type: b.block_type, data: b.data }));
         blocks = legacyBlocksToBlockNote(legacyBlocks);
       }
       setInitialBlocks(blocks);
       setEditorBlocks(blocks);
       setHasChanges(false);
 
-      // Load revisions
       loadRevisions(currentContent.item.id);
     }
   }, [currentContent?.item.id]);
@@ -194,9 +196,7 @@ export function ContentEditor() {
     setRestoringRevision(true);
     try {
       await api.post(`/revisions/${revId}/restore`, {});
-      if (slug) {
-        await fetchContent(slug);
-      }
+      if (slug) await fetchContent(slug);
       setShowRevisions(false);
     } catch (e) {
       toast(e instanceof ApiError ? e.message : "Failed to restore revision", "error");
@@ -206,7 +206,6 @@ export function ContentEditor() {
   }
 
   const markChanged = useCallback(() => setHasChanges(true), []);
-
   const handleTitleChange = useCallback((val: string) => { setTitle(val); markChanged(); }, [markChanged]);
   const handleExcerptChange = useCallback((val: string) => { setExcerpt(val); markChanged(); }, [markChanged]);
   const handleStatusChange = useCallback((val: ContentStatus) => { setStatus(val); markChanged(); }, [markChanged]);
@@ -217,8 +216,7 @@ export function ContentEditor() {
     setMediaLoading(true);
     try {
       const res = await api.get<{ data: MediaItem[] }>("/api/media");
-      const images = (res?.data || []).filter((m) => m.mime_type?.startsWith("image/"));
-      setMediaItems(images);
+      setMediaItems((res?.data || []).filter((m) => m.mime_type?.startsWith("image/")));
     } catch {
       // ignore
     } finally {
@@ -238,33 +236,12 @@ export function ContentEditor() {
     markChanged();
   }, [markChanged]);
 
-  // Tag management
-  const filteredTags = tagInput.length > 0
-    ? tags.filter((t) => t.name.toLowerCase().includes(tagInput.toLowerCase()))
-    : [];
-
-  function addTag(termId: string) {
-    if (!selectedTermIds.includes(termId)) {
-      setSelectedTermIds([...selectedTermIds, termId]);
-      markChanged();
-    }
-    setTagInput("");
-    setShowTagSuggestions(false);
-  }
-
-  function removeTag(termId: string) {
-    setSelectedTermIds(selectedTermIds.filter((id) => id !== termId));
-    markChanged();
-  }
-
   // Save handler
   const handleSave = useCallback(async () => {
     if (!title.trim()) return;
 
     const blockData = blockNoteToLegacyBlocks(editorBlocks) as { block_type: BlockType; data: Record<string, unknown> }[];
     const blocknoteJson = JSON.stringify(editorBlocks);
-
-    // Build meta object
     const seoMeta: Record<string, string> = { blocknote_json: blocknoteJson };
     if (seoTitle.trim()) seoMeta.seo_title = seoTitle.trim();
     if (seoDescription.trim()) seoMeta.seo_description = seoDescription.trim();
@@ -282,6 +259,7 @@ export function ContentEditor() {
           ...(status === "scheduled" && scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         });
         setHasChanges(false);
+        setLastSaved(new Date().toLocaleTimeString());
         void navigate({ to: "/admin/content/edit", search: { slug: newItem.slug } });
       } catch {
         toast("Failed to create content", "error");
@@ -299,25 +277,20 @@ export function ContentEditor() {
           ...(status === "scheduled" && scheduledAt ? { scheduled_at: new Date(scheduledAt).toISOString() } : {}),
         });
         setHasChanges(false);
-        // Refresh revisions after save
+        setLastSaved(new Date().toLocaleTimeString());
         if (contentIdRef.current) loadRevisions(contentIdRef.current);
       } catch {
         toast("Failed to save content", "error");
       }
     }
-  }, [
-    title, excerpt, status, editorBlocks, isCreateMode, slug, contentType,
-    featuredImageUrl, selectedTermIds, scheduledAt, createContent, saveContent, navigate,
-  ]);
+  }, [title, excerpt, status, editorBlocks, isCreateMode, slug, contentType, featuredImageUrl, selectedTermIds, scheduledAt, seoTitle, seoDescription, createContent, saveContent, navigate, toast]);
 
   const handleTogglePublish = useCallback(() => {
-    const newStatus: ContentStatus = status === "published" ? "draft" : "published";
-    handleStatusChange(newStatus);
+    handleStatusChange(status === "published" ? "draft" : "published");
   }, [status, handleStatusChange]);
 
   const handleSubmitForReview = useCallback(() => {
     handleStatusChange("pending");
-    // Trigger save with pending status
   }, [handleStatusChange]);
 
   // Autosave: debounced 30s
@@ -344,8 +317,8 @@ export function ContentEditor() {
   // Loading state
   if (isLoadingDetail) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <div className="text-text-tertiary">Loading content...</div>
+      <div className="flex h-full items-center justify-center">
+        <div className="text-text-tertiary text-sm">Loading content...</div>
       </div>
     );
   }
@@ -353,7 +326,7 @@ export function ContentEditor() {
   // Error state
   if (detailError) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <div className="flex h-full flex-col items-center justify-center gap-4">
         <div className="text-red-500">{detailError}</div>
         <button onClick={() => void navigate({ to: "/admin/content" })} className="text-sm text-primary-600 hover:underline">
           Back to content list
@@ -363,16 +336,16 @@ export function ContentEditor() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex items-center justify-between mb-6 sticky top-14 z-10 bg-surface py-2 -mt-2 border-b border-border">
+      <div className="shrink-0 flex items-center justify-between border-b border-border bg-surface px-4 py-2">
         <div className="flex items-center gap-3">
           <button
             onClick={() => void navigate({ to: "/admin/content" })}
             className="text-text-tertiary hover:text-text-primary transition-colors"
             title="Back to content list"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 10H5M5 10l4-4M5 10l4 4" />
             </svg>
           </button>
@@ -381,7 +354,7 @@ export function ContentEditor() {
               ? `New ${contentType === "page" ? "Page" : "Post"}`
               : (
                 <span className="flex items-center gap-1.5">
-                  <span className="text-text-tertiary">{contentType === "page" ? "Page" : "Post"}</span>
+                  <span>{contentType === "page" ? "Page" : "Post"}</span>
                   <span className="text-text-tertiary">/</span>
                   <span className="text-text-primary font-medium truncate max-w-xs">{title || "Untitled"}</span>
                 </span>
@@ -397,30 +370,6 @@ export function ContentEditor() {
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* Status selector */}
-          <select
-            value={status}
-            onChange={(e) => handleStatusChange(e.target.value as ContentStatus)}
-            className="text-xs border border-border rounded px-2 py-1.5 bg-surface"
-          >
-            {STATUS_OPTIONS.map((s) => (
-              <option key={s.value} value={s.value}>{s.label}</option>
-            ))}
-          </select>
-
-          {/* Schedule datetime picker */}
-          {status === "scheduled" && (
-            <input
-              type="datetime-local"
-              value={scheduledAt}
-              onChange={(e) => { setScheduledAt(e.target.value); markChanged(); }}
-              min={new Date().toISOString().slice(0, 16)}
-              className="text-xs border border-border rounded px-2 py-1.5 bg-surface"
-              title="Schedule publish date/time"
-            />
-          )}
-
-          {/* Submit for Review (limited roles) */}
           {isLimitedRole && status === "draft" && (
             <button
               onClick={() => { handleSubmitForReview(); void handleSave(); }}
@@ -429,8 +378,6 @@ export function ContentEditor() {
               Submit for Review
             </button>
           )}
-
-          {/* Publish/Unpublish toggle */}
           {!isLimitedRole && (
             <button
               onClick={handleTogglePublish}
@@ -444,8 +391,6 @@ export function ContentEditor() {
               {status === "published" ? "Unpublish" : "Publish"}
             </button>
           )}
-
-          {/* Save */}
           <button
             onClick={() => void handleSave()}
             disabled={isSaving || !title.trim()}
@@ -458,8 +403,6 @@ export function ContentEditor() {
           >
             {isSaving ? "Saving..." : "Save"}
           </button>
-
-          {/* Preview */}
           {status === "published" && slug && (
             <a
               href={`/blog/${slug}`}
@@ -473,21 +416,21 @@ export function ContentEditor() {
         </div>
       </div>
 
-      {/* Save error */}
+      {/* Save error banner */}
       {saveError && (
-        <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 rounded-md">{saveError}</div>
+        <div className="shrink-0 px-4 py-2 text-sm text-red-600 bg-red-50 border-b border-red-200">{saveError}</div>
       )}
 
-      {/* Revision History Sidebar */}
+      {/* Revision History */}
       {showRevisions && (
-        <div className="mb-6 border border-border rounded-lg bg-surface-secondary p-4">
-          <h3 className="text-sm font-semibold text-text-primary mb-3">Revision History</h3>
+        <div className="shrink-0 mx-4 mt-2 border border-border rounded-lg bg-surface-secondary p-3">
+          <h3 className="text-xs font-semibold text-text-primary mb-2">Revision History</h3>
           {revisions.length === 0 ? (
             <p className="text-xs text-text-tertiary">No revisions yet.</p>
           ) : (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
+            <div className="space-y-1 max-h-36 overflow-y-auto">
               {revisions.map((rev) => (
-                <div key={rev.id} className="flex items-center justify-between text-xs">
+                <div key={rev.id} className="flex items-center justify-between text-xs py-1">
                   <span className="text-text-secondary">
                     Rev #{rev.revision_number} &mdash; {new Date(rev.created_at).toLocaleString()}
                   </span>
@@ -505,220 +448,97 @@ export function ContentEditor() {
         </div>
       )}
 
-      {/* Content Type (create mode only) */}
-      {isCreateMode && (
-        <div className="mb-4 flex items-center gap-3">
-          <span className="text-sm font-medium text-text-secondary">Type:</span>
-          <div className="inline-flex rounded-md border border-border">
-            {(["post", "page"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => setContentType(t)}
-                className={`px-3 py-1 text-xs font-medium capitalize transition-colors ${
-                  contentType === t
-                    ? "bg-primary-600 text-white"
-                    : "bg-surface text-text-secondary hover:bg-surface-secondary"
-                } ${t === "post" ? "rounded-l-md" : "rounded-r-md"}`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Title */}
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => handleTitleChange(e.target.value)}
-        placeholder={contentType === "page" ? "Page title..." : "Post title..."}
-        className="w-full text-3xl font-bold text-text-primary placeholder:text-text-tertiary border-0 bg-transparent focus:outline-none mb-4 p-0"
-      />
-
-      {/* Excerpt */}
-      <textarea
-        value={excerpt}
-        onChange={(e) => handleExcerptChange(e.target.value)}
-        placeholder="Write an excerpt (optional)..."
-        rows={2}
-        className="w-full text-sm text-text-secondary placeholder:text-text-tertiary border-0 bg-transparent focus:outline-none mb-4 p-0 resize-none"
-      />
-
-      {/* Featured Image */}
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-text-secondary mb-1">Featured Image URL</label>
-        {featuredImageUrl ? (
-          <div className="relative mb-2">
-            <img
-              src={featuredImageUrl}
-              alt="Featured"
-              className="w-full max-h-48 object-cover rounded-md border border-border"
-              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-            />
-            <button
-              onClick={() => handleFeaturedImageChange("")}
-              className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded hover:bg-red-600 transition-colors"
-            >
-              Remove
-            </button>
-          </div>
-        ) : null}
-        <input
-          type="url"
-          value={featuredImageUrl}
-          onChange={(e) => handleFeaturedImageChange(e.target.value)}
-          placeholder="https://example.com/image.jpg"
-          className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
-        />
-        <button
-          type="button"
-          onClick={openMediaPicker}
-          className="mt-2 text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors"
-        >
-          Or choose from Media Library
-        </button>
-      </div>
-
-      {/* SEO */}
-      <details className="mb-6 border border-border rounded-lg bg-surface">
-        <summary className="px-4 py-3 text-sm font-medium text-text-primary cursor-pointer hover:bg-surface-secondary transition-colors rounded-lg">
-          Search Engine Optimization (SEO)
-        </summary>
-        <div className="px-4 pb-4 space-y-3">
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Meta Title</label>
+      {/* Main area: Canvas + Sidebar */}
+      <div className="flex flex-1 min-h-0">
+        {/* Canvas */}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="max-w-3xl mx-auto">
+            {/* Title */}
             <input
               type="text"
-              value={seoTitle}
-              onChange={(e) => { setSeoTitle(e.target.value); markChanged(); }}
-              placeholder={`Leave blank to use: ${title || "Page Title"}`}
-              maxLength={70}
-              className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              placeholder={contentType === "page" ? "Page title..." : "Post title..."}
+              className="w-full text-3xl font-bold text-text-primary placeholder:text-text-tertiary border-0 bg-transparent focus:outline-none mb-2 p-0"
             />
-            <p className="text-xs text-text-tertiary mt-1">{seoTitle.length}/70 characters</p>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-text-secondary mb-1">Meta Description</label>
+
+            {/* Excerpt */}
             <textarea
-              value={seoDescription}
-              onChange={(e) => { setSeoDescription(e.target.value); markChanged(); }}
-              placeholder="A brief description for search engines..."
-              maxLength={160}
-              rows={3}
-              className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus resize-none"
+              value={excerpt}
+              onChange={(e) => handleExcerptChange(e.target.value)}
+              placeholder="Write an excerpt (optional)..."
+              rows={2}
+              className="w-full text-sm text-text-secondary placeholder:text-text-tertiary border-0 bg-transparent focus:outline-none mb-4 p-0 resize-none"
             />
-            <p className="text-xs text-text-tertiary mt-1">{seoDescription.length}/160 characters</p>
-          </div>
-        </div>
-      </details>
 
-      {/* Categories & Tags */}
-      <div className="mb-6 flex flex-col sm:flex-row gap-4">
-        {/* Categories */}
-        {categories.length > 0 && (
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Category</label>
-            <select
-              value={selectedTermIds.find((id) => categories.some((c) => c.id === id)) || ""}
-              onChange={(e) => {
-                const newId = e.target.value;
-                // Remove any existing category selection
-                const nonCatIds = selectedTermIds.filter((id) => !categories.some((c) => c.id === id));
-                if (newId) {
-                  setSelectedTermIds([...nonCatIds, newId]);
-                } else {
-                  setSelectedTermIds(nonCatIds);
-                }
-                markChanged();
-              }}
-              className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
-            >
-              <option value="">None</option>
-              {categories.map((cat) => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-          </div>
-        )}
-
-        {/* Tags */}
-        {tags.length > 0 && (
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-text-secondary mb-1">Tags</label>
-            <div className="flex flex-wrap gap-1 mb-1">
-              {selectedTermIds
-                .filter((id) => tags.some((t) => t.id === id))
-                .map((id) => {
-                  const tag = tags.find((t) => t.id === id);
-                  return tag ? (
-                    <span
-                      key={id}
-                      className="inline-flex items-center gap-1 bg-primary-100 text-primary-700 text-xs px-2 py-0.5 rounded-full"
-                    >
-                      {tag.name}
-                      <button onClick={() => removeTag(id)} className="hover:text-primary-900" aria-label={`Remove ${tag.name}`}>{'×'}</button>
-                    </span>
-                  ) : null;
-                })}
-            </div>
-            <div className="relative">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(e) => { setTagInput(e.target.value); setShowTagSuggestions(true); }}
-                onFocus={() => setShowTagSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowTagSuggestions(false), 200)}
-                placeholder="Add tag..."
-                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none"
+            {/* Rich Text Editor */}
+            <div className="border border-border rounded-lg bg-surface">
+              <RichTextEditor
+                initialContent={initialBlocks}
+                onChange={handleEditorChange}
+                editable={true}
               />
-              {showTagSuggestions && filteredTags.length > 0 && (
-                <div className="absolute z-20 top-full mt-1 w-full bg-surface border border-border rounded-md shadow-lg max-h-32 overflow-y-auto">
-                  {filteredTags.map((tag) => (
-                    <button
-                      key={tag.id}
-                      onMouseDown={() => addTag(tag.id)}
-                      className="w-full text-left px-3 py-1.5 text-sm hover:bg-surface-secondary transition-colors"
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
-        )}
-      </div>
-
-      {/* Rich Text Editor */}
-      <div className="border border-border rounded-lg bg-surface">
-        <RichTextEditor
-          initialContent={initialBlocks}
-          onChange={handleEditorChange}
-          editable={true}
-        />
-      </div>
-
-      {/* Unsaved indicator */}
-      {hasChanges && (
-        <div className="fixed bottom-4 right-4 bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-md text-xs shadow-md">
-          Unsaved changes — autosaves in 30s (Ctrl+S to save now)
         </div>
-      )}
+
+        {/* Settings Sidebar */}
+        <Sidebar>
+          <DocumentPanel
+            contentType={contentType}
+            onContentTypeChange={setContentType}
+            isCreateMode={isCreateMode}
+            status={status}
+            onStatusChange={(val) => handleStatusChange(val as ContentStatus)}
+            scheduledAt={scheduledAt}
+            onScheduledAtChange={setScheduledAt}
+            markChanged={markChanged}
+          />
+          <FeaturedImagePanel
+            imageUrl={featuredImageUrl}
+            onChange={handleFeaturedImageChange}
+            onOpenMediaPicker={openMediaPicker}
+          />
+          <TaxonomyPanel
+            categories={categories}
+            tags={tags}
+            selectedTermIds={selectedTermIds}
+            onTermIdsChange={setSelectedTermIds}
+            markChanged={markChanged}
+          />
+          <SEOPanel
+            title={title}
+            seoTitle={seoTitle}
+            onSeoTitleChange={setSeoTitle}
+            seoDescription={seoDescription}
+            onSeoDescriptionChange={setSeoDescription}
+            markChanged={markChanged}
+          />
+        </Sidebar>
+      </div>
+
+      {/* Bottom Bar */}
+      <EditorBottomBar
+        hasChanges={hasChanges}
+        isSaving={isSaving}
+        lastSaved={lastSaved}
+        wordCount={wordCount}
+        readingTime={readingTime}
+      />
 
       {/* Media Picker Modal */}
       {showMediaPicker && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowMediaPicker(false)}>
           <div className="bg-surface rounded-xl w-full max-w-2xl max-h-[80vh] shadow-xl" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-              <h2 className="text-lg font-bold text-text-primary">Choose Image</h2>
-              <button onClick={() => setShowMediaPicker(false)} className="text-text-tertiary hover:text-text-primary text-lg" aria-label="Close media picker">{'×'}</button>
+            <div className="flex items-center justify-between px-5 py-3 border-b border-border">
+              <h2 className="text-base font-bold text-text-primary">Choose Image</h2>
+              <button onClick={() => setShowMediaPicker(false)} className="text-text-tertiary hover:text-text-primary text-lg" aria-label="Close media picker">{'\u00d7'}</button>
             </div>
-            <div className="p-5 overflow-y-auto max-h-[60vh]">
+            <div className="p-4 overflow-y-auto max-h-[60vh]">
               {mediaLoading ? (
                 <div className="text-center py-8 text-text-tertiary text-sm">Loading media...</div>
               ) : mediaItems.length === 0 ? (
-                <div className="text-center py-8 text-text-tertiary text-sm">No images in the media library. Upload images from the Media page first.</div>
+                <div className="text-center py-8 text-text-tertiary text-sm">No images in the media library.</div>
               ) : (
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                   {mediaItems.map((item) => (
@@ -742,8 +562,4 @@ export function ContentEditor() {
       )}
     </div>
   );
-}
-
-function cn(...classes: (string | false | undefined)[]) {
-  return classes.filter(Boolean).join(" ");
 }
