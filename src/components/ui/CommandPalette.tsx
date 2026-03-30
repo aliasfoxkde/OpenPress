@@ -73,8 +73,8 @@ export function CommandPalette() {
         id: `search-${r.id}`,
         label: r.title,
         group: "Search Results",
-        action: () => { setOpen(false); void navigate({ to: `/blog/${r.slug}` }); },
-        icon: "📄",
+        action: () => { setOpen(false); void navigate({ to: `/${r.type === "page" ? "" : "blog/"}${r.slug}` }); },
+        icon: r.type === "page" ? "📄" : "📰",
       }));
       const filtered = getStaticCommands().filter(
         (cmd) => cmd.label.toLowerCase().includes(q) || cmd.group.toLowerCase().includes(q)
