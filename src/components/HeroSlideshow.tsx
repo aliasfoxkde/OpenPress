@@ -15,23 +15,42 @@ interface HeroSlide {
   animation_type: string;
 }
 
+// Vibrant gradient backgrounds for each slide (when no image)
+const GRADIENTS = [
+  "linear-gradient(135deg, #0f172a 0%, #1e3a5f 30%, #0f172a 60%, #1a1a2e 100%)",
+  "linear-gradient(135deg, #1a0a2e 0%, #3b1d5e 30%, #1a0a2e 60%, #0f1729 100%)",
+  "linear-gradient(135deg, #0a1628 0%, #0d3b3b 30%, #0a1628 60%, #0f172a 100%)",
+  "linear-gradient(135deg, #1a0f00 0%, #4a2c0a 30%, #1a0f00 60%, #1a1206 100%)",
+  "linear-gradient(135deg, #0a1a0a 0%, #0a3d1a 30%, #0a1a0a 60%, #0f172a 100%)",
+];
+
 export function HeroSlideshow() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [direction, setDirection] = useState(1);
   const [isPaused, setIsPaused] = useState(false);
+  const [direction, setDirection] = useState(1);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     api.get<{ data: HeroSlide[] }>("/hero-slides")
       .then((res) => {
         if (res.data?.length) setSlides(res.data);
       })
-      .catch(() => {
-        // fallback: keep empty
-      });
+      .catch(() => {});
   }, []);
+
+  // Preload images
+  useEffect(() => {
+    for (const s of slides) {
+      if (s.background_image_url) {
+        const img = new Image();
+        img.onload = () => setLoadedImages((prev) => new Set(prev).add(s.id));
+        img.src = s.background_image_url;
+      }
+    }
+  }, [slides]);
 
   const goTo = useCallback((index: number, dir: number) => {
     if (isTransitioning || slides.length <= 1) return;
@@ -43,7 +62,7 @@ export function HeroSlideshow() {
     }, 50);
     setTimeout(() => {
       setIsTransitioning(false);
-    }, 600);
+    }, 700);
   }, [isTransitioning, slides.length]);
 
   const next = useCallback(() => {
@@ -76,14 +95,13 @@ export function HeroSlideshow() {
     return () => window.removeEventListener("keydown", handler);
   }, [next, prev]);
 
-  // Static fallback when no slides are loaded
   const fallbackSlide: HeroSlide = {
     id: "fallback",
     title: "OpenPress",
     subtitle: "Modern CMS for the Edge",
     content: "Open-source, edge-native content management. Free on Cloudflare's global network.",
     background_image_url: null,
-    background_gradient: "from-primary-950 via-primary-900 to-primary-800",
+    background_gradient: "",
     primary_button_text: "Get Started",
     primary_button_url: "/docs/tutorial",
     secondary_button_text: "View on GitHub",
@@ -92,100 +110,134 @@ export function HeroSlideshow() {
   };
 
   const activeSlides = slides.length > 0 ? slides : [fallbackSlide];
-
   const slide = activeSlides[current];
-  const animation = slide.animation_type || "slide";
-
-  const getAnimationClass = () => {
-    if (slides.length === 0 && !isTransitioning) return "translate-x-0 opacity-100 scale-100";
-    if (!isTransitioning) return "translate-x-0 opacity-100 scale-100";
-    if (animation === "fade") return direction > 0 ? "translate-x-8 opacity-0" : "translate-x-[-32px] opacity-0";
-    if (animation === "bounce") return direction > 0 ? "translate-x-8 opacity-0 scale-95" : "translate-x-[-32px] opacity-0 scale-95";
-    if (animation === "zoom") return "opacity-0 scale-95";
-    return "translate-x-8 opacity-0"; // slide default
-  };
+  const hasImage = !!slide.background_image_url && loadedImages.has(slide.id);
+  const gradient = GRADIENTS[current % GRADIENTS.length];
 
   return (
     <section
-      className="relative overflow-hidden text-white min-h-[400px] sm:min-h-[480px] lg:min-h-[520px]"
+      className="relative overflow-hidden h-[520px] sm:h-[580px] lg:h-[640px] text-white"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
       role="region"
       aria-roledescription="carousel"
       aria-label="Featured content slideshow"
     >
+      {/* Background layers */}
       {activeSlides.map((s, i) => (
         <div
           key={s.id}
           className={cn(
-            "absolute inset-0 transition-all duration-500 ease-out",
-            i === current ? "z-10" : "z-0",
+            "absolute inset-0 transition-all duration-700 ease-in-out",
+            i === current ? "opacity-100 scale-100" : "opacity-0 scale-105",
           )}
+          aria-hidden={i !== current}
         >
+          {s.background_image_url ? (
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${s.background_image_url})` }}
+            />
+          ) : null}
+          {/* Gradient overlay */}
           <div
-            className={cn(
-              "absolute inset-0 transition-all duration-500 ease-out",
-              getAnimationClass(),
-            )}
+            className="absolute inset-0"
             style={{
-              backgroundImage: s.background_image_url
-                ? `url(${s.background_image_url})`
-                : undefined,
-              background: s.background_image_url
-                ? "center/cover"
-                : `linear-gradient(135deg, ${s.background_gradient || "from-primary-950 via-primary-900 to-primary-800"})`,
+              background: s.background_image_url && hasImage
+                ? "linear-gradient(135deg, rgba(15,23,42,0.75) 0%, rgba(30,58,95,0.6) 50%, rgba(15,23,42,0.8) 100%)"
+                : s.background_image_url
+                  ? gradient
+                  : gradient,
             }}
           />
-          {/* Overlay for image slides */}
-          {s.background_image_url && (
-            <div className="absolute inset-0 bg-black/40" />
-          )}
         </div>
       ))}
 
-      {/* Decorative blurs */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none z-[5]">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400 rounded-full blur-3xl" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-primary-300 rounded-full blur-3xl" />
+      {/* Animated gradient orbs */}
+      <div className="absolute inset-0 pointer-events-none z-[2] overflow-hidden">
+        <div
+          className="absolute w-[600px] h-[600px] rounded-full opacity-[0.07] blur-3xl animate-[orb1_20s_ease-in-out_infinite]"
+          style={{
+            background: "radial-gradient(circle, rgba(99,102,241,0.8), transparent 70%)",
+            top: "-10%",
+            right: "-5%",
+          }}
+        />
+        <div
+          className="absolute w-[500px] h-[500px] rounded-full opacity-[0.06] blur-3xl animate-[orb2_25s_ease-in-out_infinite]"
+          style={{
+            background: "radial-gradient(circle, rgba(168,85,247,0.8), transparent 70%)",
+            bottom: "-10%",
+            left: "-5%",
+          }}
+        />
+        <div
+          className="absolute w-[400px] h-[400px] rounded-full opacity-[0.05] blur-3xl animate-[orb3_18s_ease-in-out_infinite]"
+          style={{
+            background: "radial-gradient(circle, rgba(59,130,246,0.8), transparent 70%)",
+            top: "30%",
+            left: "20%",
+          }}
+        />
       </div>
 
+      {/* Subtle grid pattern overlay */}
+      <div
+        className="absolute inset-0 z-[3] opacity-[0.03] pointer-events-none"
+        style={{
+          backgroundImage: "linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+
       {/* Content */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:py-24 lg:py-32 flex flex-col items-center justify-center min-h-[400px] sm:min-h-[480px] lg:min-h-[520px] text-center" aria-live="polite" aria-atomic="true">
+      <div className="relative z-10 mx-auto max-w-5xl px-6 sm:px-8 h-full flex flex-col items-center justify-center text-center" aria-live="polite" aria-atomic="true">
         <div className={cn(
-          "transition-all duration-500 ease-out",
-          isTransitioning ? (animation === "zoom" ? "opacity-0 scale-95" : animation === "fade" ? "opacity-0 translate-y-4" : `opacity-0 translate-x-${direction > 0 ? "8" : "-8"}`) : "opacity-100 translate-y-0 translate-x-0",
+          "transition-all duration-700 ease-out",
+          isTransitioning ? "opacity-0 translate-y-6" : "opacity-100 translate-y-0",
         )}>
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm mb-6">
-            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-            Open Source &middot; Edge-Native &middot; AI-Ready
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2.5 bg-white/[0.08] backdrop-blur-md border border-white/[0.1] rounded-full px-5 py-2 mb-8">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            </span>
+            <span className="text-sm font-medium text-white/80 tracking-wide">Open Source &middot; Edge-Native &middot; AI-Ready</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl">
-            <span className="block">{slide.title}</span>
+
+          {/* Title */}
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
+            <span className="block text-white drop-shadow-lg">{slide.title}</span>
             {slide.subtitle && (
-              <span className="block bg-gradient-to-r from-primary-200 to-white bg-clip-text text-transparent">
+              <span className="block mt-2 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 bg-clip-text text-transparent drop-shadow-none">
                 {slide.subtitle}
               </span>
             )}
           </h1>
+
+          {/* Description */}
           {slide.content && (
-            <p className="mt-6 text-lg sm:text-xl text-primary-100 max-w-2xl mx-auto leading-relaxed">
+            <p className="mt-6 text-base sm:text-lg text-white/70 max-w-2xl mx-auto leading-relaxed">
               {slide.content}
             </p>
           )}
+
+          {/* Buttons */}
           {(slide.primary_button_text || slide.secondary_button_text) && (
             <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
               {slide.primary_button_text && (
                 <a
                   href={slide.primary_button_url || "#"}
-                  className="bg-white text-primary-900 px-8 py-3.5 rounded-xl hover:bg-primary-50 transition-all font-semibold text-base shadow-lg shadow-primary-900/50"
+                  className="group relative bg-white text-slate-900 px-8 py-3.5 rounded-xl font-semibold text-base shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 hover:scale-[1.02] transition-all duration-300"
                 >
-                  {slide.primary_button_text}
+                  <span className="relative z-10">{slide.primary_button_text}</span>
+                  <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-white via-blue-50 to-white opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 </a>
               )}
               {slide.secondary_button_text && (
                 <a
                   href={slide.secondary_button_url || "#"}
-                  className="border border-white/20 text-white px-8 py-3.5 rounded-xl hover:bg-white/10 transition-all font-semibold text-base backdrop-blur-sm"
+                  className="group border border-white/20 text-white px-8 py-3.5 rounded-xl font-semibold text-base backdrop-blur-md hover:bg-white/[0.08] hover:border-white/30 transition-all duration-300"
                 >
                   {slide.secondary_button_text}
                 </a>
@@ -195,12 +247,22 @@ export function HeroSlideshow() {
         </div>
       </div>
 
+      {/* Progress bar */}
+      {activeSlides.length > 1 && (
+        <div className="absolute bottom-0 left-0 right-0 z-20 h-0.5 bg-white/10">
+          <div
+            className="h-full bg-white/60 transition-all duration-6000 ease-linear"
+            style={{ width: isPaused ? undefined : `${((current + 1) / activeSlides.length) * 100}%` }}
+          />
+        </div>
+      )}
+
       {/* Navigation arrows */}
       {activeSlides.length > 1 && (
         <>
           <button
             onClick={prev}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+            className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-md border border-white/[0.1] flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
             aria-label="Previous slide"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -209,7 +271,7 @@ export function HeroSlideshow() {
           </button>
           <button
             onClick={next}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/20 hover:bg-black/40 backdrop-blur-sm flex items-center justify-center text-white transition-colors"
+            className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-white/[0.08] hover:bg-white/[0.15] backdrop-blur-md border border-white/[0.1] flex items-center justify-center text-white transition-all duration-300 hover:scale-110"
             aria-label="Next slide"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -221,14 +283,14 @@ export function HeroSlideshow() {
 
       {/* Dot indicators */}
       {activeSlides.length > 1 && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
           {activeSlides.map((s, i) => (
             <button
               key={s.id}
               onClick={() => goTo(i, i > current ? 1 : -1)}
               className={cn(
-                "w-2 h-2 rounded-full transition-all duration-300",
-                i === current ? "bg-white w-6" : "bg-white/40 hover:bg-white/60",
+                "h-2 rounded-full transition-all duration-500",
+                i === current ? "bg-white w-8 shadow-lg shadow-white/30" : "bg-white/30 hover:bg-white/50 w-2",
               )}
               aria-label={`Go to slide ${i + 1}`}
             />

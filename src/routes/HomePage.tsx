@@ -29,9 +29,12 @@ export function HomePage() {
       <HeroSlideshow />
 
       {/* Features Grid */}
-      <section className="py-16 sm:py-24 bg-surface">
+      <section className="py-16 sm:py-24 bg-white dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+              <span>⚡</span> Core Features
+            </div>
             <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
               Everything you need
             </h2>
@@ -84,9 +87,12 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary-300/50 to-transparent dark:via-primary-700/30" />
+
       {/* Recent Posts */}
       {!postsLoading && recentPosts.length > 0 && (
-        <section className="py-16 sm:py-24 bg-surface-secondary">
+        <section className="py-16 sm:py-24 bg-gradient-to-b from-slate-50 to-blue-50/50 dark:from-slate-800/50 dark:to-blue-950/20">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">Latest Posts</h2>
@@ -139,8 +145,11 @@ export function HomePage() {
         </section>
       )}
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-blue-300/50 to-transparent dark:via-blue-700/30" />
+
       {/* Architecture Section */}
-      <section className="py-16 sm:py-24 bg-surface overflow-hidden">
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-blue-50/50 to-slate-50 dark:from-blue-950/20 dark:to-slate-900 overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
             <div>
@@ -307,10 +316,16 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-amber-300/50 to-transparent dark:via-amber-700/30" />
+
       {/* Testimonials Section */}
-      <section className="py-16 sm:py-24 bg-surface-secondary">
+      <section className="py-16 sm:py-24 bg-white dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+              <span>⭐</span> Testimonials
+            </div>
             <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
               Loved by developers
             </h2>
@@ -344,10 +359,16 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-emerald-300/50 to-transparent dark:via-emerald-700/30" />
+
       {/* Showcase Section */}
-      <section className="py-16 sm:py-24 bg-surface">
+      <section className="py-16 sm:py-24 bg-gradient-to-b from-slate-50 to-emerald-50/30 dark:from-slate-800/50 dark:to-emerald-950/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12 sm:mb-16">
+            <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
+              <span>🚀</span> Use Cases
+            </div>
             <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
               See it in action
             </h2>
@@ -402,8 +423,11 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-purple-300/50 to-transparent dark:via-purple-700/30" />
+
       {/* Contact Us Section */}
-      <section className="py-16 sm:py-24 bg-surface-secondary">
+      <section className="py-16 sm:py-24 bg-white dark:bg-slate-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
             <div>
@@ -511,8 +535,11 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary-300/50 to-transparent dark:via-primary-700/30" />
+
       {/* Mobile App Section */}
-      <section className="py-16 sm:py-20 bg-surface">
+      <section className="py-16 sm:py-20 bg-gradient-to-b from-slate-50 to-purple-50/30 dark:from-slate-800/50 dark:to-purple-950/10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4">
@@ -686,6 +713,9 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Divider */}
+      <div className="h-px bg-gradient-to-r from-transparent via-primary-400/50 to-transparent dark:via-primary-600/30" />
 
       {/* CTA Section */}
       <section className="py-16 sm:py-20 bg-primary-900 text-white">
