@@ -190,6 +190,7 @@ export type Capability =
   | "manage_plugins"
   | "manage_products"
   | "manage_orders"
+  | "manage_comments"
   | "use_ai"
   | "publish_own"
   | "edit_own"
@@ -207,14 +208,14 @@ const ROLE_CAPABILITIES: Record<Role, Capability[]> = {
     "publish_any", "edit_any", "delete_any",
     "manage_media", "manage_taxonomies", "manage_settings",
     "manage_users", "manage_plugins", "manage_products",
-    "manage_orders", "use_ai",
+    "manage_orders", "manage_comments", "use_ai",
     "publish_own", "edit_own", "delete_own",
     "upload_media", "submit_draft", "read",
   ],
   editor: [
     "publish_any", "edit_any", "delete_any",
     "manage_media", "manage_taxonomies",
-    "manage_products", "manage_orders", "use_ai",
+    "manage_products", "manage_orders", "manage_comments", "use_ai",
     "publish_own", "edit_own", "delete_own",
     "upload_media", "submit_draft", "read",
   ],
