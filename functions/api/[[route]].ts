@@ -238,25 +238,56 @@ app.get("/api/content", async (c) => {
   const page = Math.max(1, parseInt(c.req.query("page") || "1"));
   const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "20")));
   const offset = (page - 1) * limit;
+  const category = c.req.query("category");
 
-  // Try KV cache for page 1
-  const cacheKey = `content:list:page=${page}:limit=${limit}`;
-  if (cache && page === 1) {
+  // Try KV cache for page 1 (skip cache when filtering)
+  const cacheKey = `content:list:page=${page}:limit=${limit}${category ? `:cat=${category}` : ""}`;
+  if (cache && page === 1 && !category) {
     const cached = await cache.get(cacheKey);
     if (cached) {
       try { return c.json(JSON.parse(cached)); } catch { /* cache miss */ }
     }
   }
 
-  const [items, countResult] = await Promise.all([
-    db
-      .prepare(
-        "SELECT ci.id, ci.type, ci.slug, ci.title, ci.excerpt, ci.status, ci.author_id, ci.featured_image_url, ci.published_at, ci.created_at, ci.updated_at, u.name as author_name FROM content_items ci LEFT JOIN users u ON ci.author_id = u.id WHERE ci.status = 'published' ORDER BY ci.published_at DESC LIMIT ? OFFSET ?",
+  let items: D1Result;
+  let countResult: { total: number } | undefined;
+
+  if (category && /^[a-z0-9-]+$/.test(category)) {
+    // Filter by category slug
+    [items, countResult] = await Promise.all([
+      db
+        .prepare(
+          `SELECT DISTINCT ci.id, ci.type, ci.slug, ci.title, ci.excerpt, ci.status, ci.author_id, ci.featured_image_url, ci.published_at, ci.created_at, ci.updated_at, u.name as author_name
+           FROM content_items ci
+           LEFT JOIN users u ON ci.author_id = u.id
+           JOIN term_relationships tr ON tr.content_id = ci.id
+           JOIN terms t ON t.id = tr.term_id
+           WHERE ci.status = 'published' AND t.slug = ?
+           ORDER BY ci.published_at DESC LIMIT ? OFFSET ?`
+        )
+        .bind(category, limit, offset)
+        .all(),
+      db.prepare(
+        `SELECT COUNT(DISTINCT ci.id) as total
+         FROM content_items ci
+         JOIN term_relationships tr ON tr.content_id = ci.id
+         JOIN terms t ON t.id = tr.term_id
+         WHERE ci.status = 'published' AND t.slug = ?`
       )
-      .bind(limit, offset)
-      .all(),
-    db.prepare("SELECT COUNT(*) as total FROM content_items WHERE status = 'published'").first<{ total: number }>(),
-  ]);
+      .bind(category)
+      .first<{ total: number }>(),
+    ]);
+  } else {
+    [items, countResult] = await Promise.all([
+      db
+        .prepare(
+          "SELECT ci.id, ci.type, ci.slug, ci.title, ci.excerpt, ci.status, ci.author_id, ci.featured_image_url, ci.published_at, ci.created_at, ci.updated_at, u.name as author_name FROM content_items ci LEFT JOIN users u ON ci.author_id = u.id WHERE ci.status = 'published' ORDER BY ci.published_at DESC LIMIT ? OFFSET ?",
+        )
+        .bind(limit, offset)
+        .all(),
+      db.prepare("SELECT COUNT(*) as total FROM content_items WHERE status = 'published'").first<{ total: number }>(),
+    ]);
+  }
 
   const response = c.json({
     data: items.results,
