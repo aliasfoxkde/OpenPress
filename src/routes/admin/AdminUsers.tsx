@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { api, ApiError } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 import type { UserRole } from "@shared/types";
 
 interface UserRow {
@@ -41,6 +42,7 @@ const ROLE_COLORS: Record<UserRole, string> = {
 
 export function AdminUsers() {
   const currentUser = useAuthStore((s) => s.user);
+  const { toast } = useToast();
   const [users, setUsers] = useState<UserRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -82,7 +84,7 @@ export function AdminUsers() {
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
     } catch (e) {
       if (e instanceof ApiError) {
-        alert(e.message);
+        toast(e.message, "error");
       }
     } finally {
       setChangingRoleId(null);
@@ -102,7 +104,7 @@ export function AdminUsers() {
       setDeleteTarget(null);
     } catch (e) {
       if (e instanceof ApiError) {
-        alert(e.message);
+        toast(e.message, "error");
       }
     } finally {
       setDeleting(false);

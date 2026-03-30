@@ -2,8 +2,12 @@ import { Hono } from "hono";
 import { setCookie } from "hono/cookie";
 import { sign, verify as jwtVerify } from "hono/jwt";
 import type { Bindings, Variables } from "./types";
+import { authRateLimit } from "./security";
 
 const auth = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+// Apply stricter rate limiting to all auth routes
+auth.use("*", authRateLimit());
 
 // JWT secret - in production, set via `wrangler secret put JWT_SECRET`
 function getJwtSecret(c: any): string {
