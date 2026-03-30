@@ -10,7 +10,7 @@ settings.get("/", async (c) => {
 
   const result = await db.prepare("SELECT key, value FROM settings").all();
   const data: Record<string, string> = {};
-  for (const row of result.results as { key: string; value: string }) {
+  for (const row of result.results as unknown as { key: string; value: string }[]) {
     data[row.key] = row.value;
   }
 

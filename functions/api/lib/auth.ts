@@ -77,8 +77,8 @@ async function generateAccessToken(
 ): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   return await sign(
-    { alg: "HS256", typ: "JWT" },
-    { sub: userId, email, role, iat: now, exp: now + ACCESS_TOKEN_EXPIRY },
+    "HS256",
+    { sub: userId, email, role, iat: now, exp: now + ACCESS_TOKEN_EXPIRY } as unknown as Record<string, unknown>,
     secret,
   );
 }
@@ -259,7 +259,7 @@ auth.post("/refresh", async (c) => {
     .prepare(
       "SELECT s.user_id, s.expires_at, u.email, u.name, u.role FROM sessions s JOIN users u ON s.user_id = u.id WHERE s.refresh_token = ? AND s.expires_at > datetime('now')",
     )
-    .bind(refresh_token)
+    .bind(refreshToken)
     .first<{ user_id: string; expires_at: string; email: string; name: string; role: string }>();
 
   if (!session) {
@@ -348,7 +348,7 @@ export const authMiddleware = async (c: any, next: any) => {
   }
 
   try {
-    const payload = await jwtVerify({ alg: "HS256" }, authHeader.slice(7), JWT_SECRET);
+    const payload = await jwtVerify(getJwtSecret(c), authHeader.slice(7), { alg: "HS256" });
     c.set("user", { id: payload.sub, email: payload.email, role: payload.role });
     return next();
   } catch {

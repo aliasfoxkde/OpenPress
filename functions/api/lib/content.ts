@@ -105,7 +105,7 @@ content.get("/:slug", async (c) => {
       blocks: blocks.results,
       terms: terms.results,
       meta: Object.fromEntries(
-        meta.results.map((m: { meta_key: string; meta_value: string }) => [m.meta_key, m.meta_value]),
+        meta.results.map((m) => [m.meta_key as string, m.meta_value as string] as [string, string]),
       ),
     },
   });

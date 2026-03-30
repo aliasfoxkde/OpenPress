@@ -266,7 +266,7 @@ app.get("/api/content", async (c) => {
   }
 
   let items: D1Result;
-  let countResult: { total: number } | undefined;
+  let countResult: { total: number } | null;
 
   if (category && /^[a-z0-9-]+$/.test(category)) {
     // Filter by category slug
@@ -474,5 +474,5 @@ app.onError((err, c) => {
 });
 
 export const onRequest = async (context: EventContext<Bindings, string, Record<string, unknown>>) => {
-  return app.fetch(context.request, context.env, context);
+  return app.fetch(context.request, context.env, context as unknown as ExecutionContext);
 };

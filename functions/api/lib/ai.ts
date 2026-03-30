@@ -148,7 +148,7 @@ ai.post("/embed", async (c) => {
 
     const results = await (aiBinding as unknown as { run: (model: string, opts: { text: string[] }) => Promise<{ data: number[][] }> }).run(
       "@cf/baai/bge-base-en-v1.5",
-      { texts }
+      { text: texts }
     );
 
     return c.json({ data: { embeddings: results.data } });

@@ -12,7 +12,7 @@ taxonomies.get("/", async (c) => {
 
   // Get terms for each taxonomy
   const result = [];
-  for (const taxonomy of taxonomyList.results as Record<string, unknown>) {
+  for (const taxonomy of taxonomyList.results as unknown as Record<string, unknown>[]) {
     const terms = await db
       .prepare("SELECT * FROM terms WHERE taxonomy_id = ? ORDER BY sort_order ASC, name ASC")
       .bind(taxonomy.id as string)

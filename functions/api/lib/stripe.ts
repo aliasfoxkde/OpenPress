@@ -175,7 +175,7 @@ stripe.post("/webhook", async (c) => {
     return c.json({ error: { message: "Event too old", code: "STALE_EVENT" } }, 400);
   }
 
-  let event: { type: string; data: { object: Record<string, unknown> } };
+  let event: { type: string; data: { object: Record<string, unknown> & { metadata?: Record<string, string>; client_reference_id?: string; payment_intent?: string } } };
   try {
     event = JSON.parse(body);
   } catch {
