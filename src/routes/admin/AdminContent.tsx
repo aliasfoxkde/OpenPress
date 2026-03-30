@@ -12,6 +12,7 @@ interface ContentItem {
   status: string;
   excerpt?: string;
   author_id?: string;
+  author_name?: string;
   updated_at: string;
   created_at: string;
 }
@@ -316,6 +317,7 @@ export function AdminContent() {
                   />
                 </th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Title</th>
+                <th className="text-left px-4 py-3 font-medium text-text-tertiary hidden lg:table-cell">Author</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary hidden sm:table-cell">Type</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary">Status</th>
                 <th className="text-left px-4 py-3 font-medium text-text-tertiary hidden md:table-cell">Updated</th>
@@ -345,7 +347,10 @@ export function AdminContent() {
                       <div className="text-xs text-text-tertiary mt-0.5 truncate max-w-xs">{item.excerpt}</div>
                     )}
                   </td>
-                  <td className="px-4 py-3 capitalize text-text-secondary hidden sm:table-cell">{item.type}</td>
+                  <td className="px-4 py-3 text-text-secondary text-xs hidden lg:table-cell">
+                    {item.author_name || "—"}
+                  </td>
+                  <td className="px-4 py-3 capitalize text-text-secondary text-xs hidden sm:table-cell">{item.type}</td>
                   <td className="px-4 py-3">
                     <button
                       onClick={() => void handleToggleStatus(item.slug, item.status)}

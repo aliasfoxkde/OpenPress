@@ -52,7 +52,7 @@ content.get("/", async (c) => {
   const [items, countResult] = await Promise.all([
     db
       .prepare(
-        `SELECT id, type, slug, title, excerpt, status, author_id, featured_image_url, published_at, scheduled_at, created_at, updated_at FROM content_items ${whereClause} ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
+        `SELECT ci.id, ci.type, ci.slug, ci.title, ci.excerpt, ci.status, ci.author_id, ci.featured_image_url, ci.published_at, ci.scheduled_at, ci.created_at, ci.updated_at, u.name as author_name FROM content_items ci LEFT JOIN users u ON ci.author_id = u.id ${whereClause} ORDER BY ci.updated_at DESC LIMIT ? OFFSET ?`,
       )
       .bind(...params, limit, offset)
       .all(),
