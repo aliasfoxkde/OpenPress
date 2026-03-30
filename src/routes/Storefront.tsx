@@ -38,7 +38,7 @@ export function StorefrontPage() {
       if (searchTerm) params.set("search", searchTerm);
       if (sortTerm && sortTerm !== "newest") params.set("sort", sortTerm);
       const query = params.toString();
-      const res = await api.get<{ data: Product[] }>(`/api/products${query ? `?${query}` : ""}`);
+      const res = await api.get<{ data: Product[] }>(`/products${query ? `?${query}` : ""}`);
       setProducts(res.data || []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load products");

@@ -39,10 +39,22 @@ export function LoginPage() {
   // If URL has ?redirect= param, store it for post-login navigation
   const [redirectAfter, setRedirectAfter] = useState<string | null>(null);
 
-  const fillDemo = () => {
-    setEmail("demo@openpress.dev");
-    setPassword("Demo1234");
+  const fillDemo = async () => {
     setError("");
+    setSubmitting(true);
+    try {
+      const res = await api.post<{ data: { user: { id: string; email: string; name: string; role: string }; access_token: string; expires_in: number; csrf_token: string } }>("/auth/demo-login", {});
+      localStorage.setItem("auth_token", res.data.access_token);
+      localStorage.setItem("auth_user", JSON.stringify(res.data.user));
+      localStorage.setItem("csrf_token", res.data.csrf_token);
+      useAuthStore.getState().setUser(res.data.user);
+      useAuthStore.setState({ token: res.data.access_token, isAuthenticated: true });
+      void navigate({ to: redirectAfter || "/admin" });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Demo login failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   useEffect(() => {
@@ -341,9 +353,10 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={fillDemo}
-                  className="block w-full text-sm text-text-tertiary hover:text-text-secondary py-1.5 px-3 rounded-lg hover:bg-surface-secondary transition-colors"
+                  disabled={submitting}
+                  className="block w-full text-sm text-text-tertiary hover:text-text-secondary py-1.5 px-3 rounded-lg hover:bg-surface-secondary transition-colors disabled:opacity-50"
                 >
-                  Use demo account
+                  {submitting ? "Logging in..." : "Use demo account"}
                 </button>
                 <button
                   type="button"

@@ -156,27 +156,30 @@ export function HeroSlideshow() {
       {/* Animated gradient orbs */}
       <div className="absolute inset-0 pointer-events-none z-[2] overflow-hidden">
         <div
-          className="absolute w-[600px] h-[600px] rounded-full opacity-[0.07] blur-3xl animate-[orb1_20s_ease-in-out_infinite]"
+          className="absolute w-[600px] h-[600px] rounded-full opacity-[0.07] blur-3xl"
           style={{
             background: "radial-gradient(circle, rgba(99,102,241,0.8), transparent 70%)",
             top: "-10%",
             right: "-5%",
+            animation: "orb1 20s ease-in-out infinite",
           }}
         />
         <div
-          className="absolute w-[500px] h-[500px] rounded-full opacity-[0.06] blur-3xl animate-[orb2_25s_ease-in-out_infinite]"
+          className="absolute w-[500px] h-[500px] rounded-full opacity-[0.06] blur-3xl"
           style={{
             background: "radial-gradient(circle, rgba(168,85,247,0.8), transparent 70%)",
             bottom: "-10%",
             left: "-5%",
+            animation: "orb2 25s ease-in-out infinite",
           }}
         />
         <div
-          className="absolute w-[400px] h-[400px] rounded-full opacity-[0.05] blur-3xl animate-[orb3_18s_ease-in-out_infinite]"
+          className="absolute w-[400px] h-[400px] rounded-full opacity-[0.05] blur-3xl"
           style={{
             background: "radial-gradient(circle, rgba(59,130,246,0.8), transparent 70%)",
             top: "30%",
             left: "20%",
+            animation: "orb3 18s ease-in-out infinite",
           }}
         />
       </div>

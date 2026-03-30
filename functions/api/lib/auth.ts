@@ -231,6 +231,69 @@ auth.post("/login", async (c) => {
   });
 });
 
+// POST /demo-login - auto-provision demo user on first use
+auth.post("/demo-login", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const DEMO_EMAIL = "demo@openpress.dev";
+  const DEMO_PASSWORD = "Demo1234";
+
+  // Check if demo user exists, create if not
+  let user = await db
+    .prepare("SELECT id, email, name, role, password_hash FROM users WHERE email = ?")
+    .bind(DEMO_EMAIL)
+    .first<{ id: string; email: string; name: string; role: string; password_hash: string }>();
+
+  if (!user) {
+    const id = crypto.randomUUID();
+    const passwordHash = await hashPassword(DEMO_PASSWORD);
+    const now = new Date().toISOString();
+    await db
+      .prepare(
+        "INSERT INTO users (id, email, name, password_hash, role, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      )
+      .bind(id, DEMO_EMAIL, "Demo User", passwordHash, "admin", now, now)
+      .run();
+    user = { id, email: DEMO_EMAIL, name: "Demo User", role: "admin", password_hash: passwordHash };
+  }
+
+  const token = await generateAccessToken(user.id, user.email, user.role, getJwtSecret(c));
+  const refreshToken = generateRefreshToken();
+  const now = new Date().toISOString();
+  const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
+
+  await db
+    .prepare("INSERT INTO sessions (id, user_id, refresh_token, expires_at, created_at) VALUES (?, ?, ?, ?, ?)")
+    .bind(crypto.randomUUID(), user.id, refreshToken, refreshExpiry, now)
+    .run();
+
+  setCookie(c, "refresh_token", refreshToken, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "Strict",
+    path: "/api",
+    maxAge: REFRESH_TOKEN_EXPIRY / 1000,
+  });
+
+  const csrfToken = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
+  setCookie(c, "csrf_token", csrfToken, {
+    secure: true,
+    sameSite: "Strict",
+    path: "/",
+    maxAge: ACCESS_TOKEN_EXPIRY,
+  });
+
+  return c.json({
+    data: {
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      access_token: token,
+      expires_in: ACCESS_TOKEN_EXPIRY,
+      csrf_token: csrfToken,
+    },
+  });
+});
+
 // POST /refresh
 auth.post("/refresh", async (c) => {
   const db = c.env.DB;
