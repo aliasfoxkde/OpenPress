@@ -5,10 +5,32 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { useCartStore } from "@/stores/cart";
 
+function HamburgerIcon({ open }: { open: boolean }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+      {open ? (
+        <>
+          <path d="M5 5l10 10M15 5L5 15" />
+        </>
+      ) : (
+        <>
+          <path d="M3 6h14M3 10h14M3 14h14" />
+        </>
+      )}
+    </svg>
+  );
+}
+
 export function RootLayout() {
   const routerState = useRouterState();
   const isAdmin = routerState.location.pathname.startsWith("/admin");
   const cartItemCount = useCartStore((s) => s.itemCount());
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [routerState.location.pathname]);
 
   // Dark mode
   const [dark, setDark] = useState(() => {
@@ -36,13 +58,21 @@ export function RootLayout() {
             <nav className="flex items-center gap-4">
               {!isAdmin && (
                 <>
+                  {/* Mobile menu toggle */}
+                  <button
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                    className="sm:hidden p-1.5 text-text-tertiary hover:text-text-primary transition-colors"
+                    aria-label="Toggle menu"
+                  >
+                    <HamburgerIcon open={mobileMenuOpen} />
+                  </button>
+
                   {/* Search trigger */}
                   <button
                     onClick={() => {
-                      // Trigger Ctrl+K by dispatching a keyboard event
                       window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true }));
                     }}
-                    className="flex items-center gap-2 text-sm text-text-tertiary border border-border rounded-md px-3 py-1.5 hover:border-border-focus transition-colors"
+                    className="hidden sm:flex items-center gap-2 text-sm text-text-tertiary border border-border rounded-md px-3 py-1.5 hover:border-border-focus transition-colors"
                   >
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
@@ -51,16 +81,16 @@ export function RootLayout() {
                     <kbd className="hidden sm:inline text-xs bg-surface-secondary px-1.5 py-0.5 rounded ml-2">⌘K</kbd>
                   </button>
 
-                  <Link to="/" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors")}>
+                  <Link to="/" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
                     Home
                   </Link>
-                  <Link to="/blog" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors")}>
+                  <Link to="/blog" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
                     Blog
                   </Link>
-                  <Link to="/shop" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors")}>
+                  <Link to="/shop" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
                     Shop
                   </Link>
-                  <Link to="/checkout" className={cn("text-sm text-text-secondary hover:text-text-primary transition-colors flex items-center gap-1 relative")}>
+                  <Link to="/checkout" className="hidden sm:flex text-sm text-text-secondary hover:text-text-primary transition-colors items-center gap-1 relative">
                     Cart
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
@@ -68,6 +98,18 @@ export function RootLayout() {
                     </svg>
                     {cartItemCount > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
+                        {cartItemCount > 99 ? "99+" : cartItemCount}
+                      </span>
+                    )}
+                  </Link>
+                  {/* Mobile cart icon */}
+                  <Link to="/checkout" className="sm:hidden relative p-1.5 text-text-tertiary hover:text-text-primary transition-colors">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                    </svg>
+                    {cartItemCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
                         {cartItemCount > 99 ? "99+" : cartItemCount}
                       </span>
                     )}
@@ -114,6 +156,50 @@ export function RootLayout() {
           </div>
         </div>
       </header>
+
+      {/* Mobile menu dropdown */}
+      {mobileMenuOpen && !isAdmin && (
+        <div className="sm:hidden border-b border-border bg-surface px-4 py-3 space-y-2">
+          <button
+            onClick={() => { window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true })); setMobileMenuOpen(false); }}
+            className="flex items-center gap-2 text-sm text-text-tertiary w-full px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+            </svg>
+            Search...
+          </button>
+          <Link
+            to="/"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Home
+          </Link>
+          <Link
+            to="/blog"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Blog
+          </Link>
+          <Link
+            to="/shop"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Shop
+          </Link>
+          <Link
+            to="/checkout"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Cart{cartItemCount > 0 ? ` (${cartItemCount})` : ""}
+          </Link>
+        </div>
+      )}
+
       <Outlet />
     </div>
     </ToastProvider>
