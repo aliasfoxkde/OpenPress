@@ -657,7 +657,7 @@ export function ContentEditor() {
                       className="inline-flex items-center gap-1 bg-primary-100 text-primary-700 text-xs px-2 py-0.5 rounded-full"
                     >
                       {tag.name}
-                      <button onClick={() => removeTag(id)} className="hover:text-primary-900">&times;</button>
+                      <button onClick={() => removeTag(id)} className="hover:text-primary-900" aria-label={`Remove ${tag.name}`}>{'×'}</button>
                     </span>
                   ) : null;
                 })}
@@ -712,7 +712,7 @@ export function ContentEditor() {
           <div className="bg-surface rounded-xl w-full max-w-2xl max-h-[80vh] shadow-xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between px-5 py-4 border-b border-border">
               <h2 className="text-lg font-bold text-text-primary">Choose Image</h2>
-              <button onClick={() => setShowMediaPicker(false)} className="text-text-tertiary hover:text-text-primary text-lg">&times;</button>
+              <button onClick={() => setShowMediaPicker(false)} className="text-text-tertiary hover:text-text-primary text-lg" aria-label="Close media picker">{'×'}</button>
             </div>
             <div className="p-5 overflow-y-auto max-h-[60vh]">
               {mediaLoading ? (

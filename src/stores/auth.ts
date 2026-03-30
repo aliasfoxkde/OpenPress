@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   checkAuth: () => {
     const token = localStorage.getItem("auth_token");
-    let user: User | null = null;
+    let user: User | null;
     try {
       const stored = localStorage.getItem("auth_user");
       user = stored ? JSON.parse(stored) : null;

@@ -115,7 +115,7 @@ export function AdminMedia() {
           dragOver ? "border-primary-400 bg-primary-50" : "border-border hover:border-primary-300"
         }`}
       >
-        <input ref={fileRef} type="file" multiple onChange={handleFileChange} className="hidden" />
+        <input ref={fileRef} type="file" multiple onChange={handleFileChange} className="hidden" aria-label="Upload files" />
         <div className="text-3xl mb-2">{uploading ? "..." : "."}</div>
         <div className="text-sm text-text-secondary font-medium">
           {uploading ? "Uploading..." : "Drop files here or click to upload"}

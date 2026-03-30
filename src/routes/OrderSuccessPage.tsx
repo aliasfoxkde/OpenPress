@@ -41,8 +41,8 @@ export function OrderSuccessPage() {
 
     async function loadOrder() {
       try {
-        const data = await api.get<OrderData>(`/orders/${orderId}/receipt`);
-        setOrder(data);
+        const res = await api.get<{ data: OrderData }>(`/orders/${orderId}/receipt`);
+        setOrder(res.data);
       } catch {
         setError("Could not load order details. Check your email for confirmation.");
       } finally {

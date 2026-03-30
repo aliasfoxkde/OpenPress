@@ -116,6 +116,7 @@ export function OrderDetail() {
           <button
             onClick={() => void navigate({ to: "/admin/orders" })}
             className="text-text-tertiary hover:text-text-primary transition-colors"
+            aria-label="Back to orders"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 10H5M5 10l4-4M5 10l4 4" />
