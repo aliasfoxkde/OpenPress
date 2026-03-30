@@ -3,7 +3,7 @@ import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useContentStore } from "@/stores/content";
 import { useAuthStore } from "@/stores/auth";
 import { RichTextEditor, blockNoteToLegacyBlocks, legacyBlocksToBlockNote } from "@/components/editor/RichTextEditor";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 import type { ContentStatus } from "@shared/types";
 
@@ -195,8 +195,8 @@ export function ContentEditor() {
         await fetchContent(slug);
       }
       setShowRevisions(false);
-    } catch {
-      // error handled silently
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to restore revision", "error");
     } finally {
       setRestoringRevision(false);
     }

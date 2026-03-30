@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface Comment {
   id: string;
@@ -32,8 +33,9 @@ export function AdminComments() {
   const [totalPages, setTotalPages] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const toast = useToast();
 
-  const fetchComments = useCallback(async () => {
+  async function fetchComments() {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
@@ -42,23 +44,24 @@ export function AdminComments() {
       setComments(res.data || []);
       if (res.pagination) setTotalPages(res.pagination.totalPages);
     } catch {
-      // silently fail
+      // ignore
     } finally {
       setLoading(false);
     }
-  }, [page, statusFilter]);
+  }
 
   useEffect(() => {
-    void fetchComments();
-  }, [fetchComments]);
+    const timer = setTimeout(() => void fetchComments(), 300);
+    return () => clearTimeout(timer);
+  }, [page, statusFilter]);
 
   async function updateStatus(id: string, status: string) {
     setUpdatingId(id);
     try {
       await api.put(`/comments/${id}/status`, { status });
       await fetchComments();
-    } catch {
-      // silently fail
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to update comment", "error");
     } finally {
       setUpdatingId(null);
     }
@@ -70,8 +73,8 @@ export function AdminComments() {
       await api.delete(`/comments/${deleteTarget}`);
       setDeleteTarget(null);
       await fetchComments();
-    } catch {
-      // silently fail
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to delete comment", "error");
     }
   }
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface Term {
   id: string;
@@ -28,6 +29,7 @@ export function AdminTaxonomies() {
   const [creating, setCreating] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; taxonomyId: string } | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const toast = useToast();
 
   async function fetchTaxonomies() {
     setLoading(true);
@@ -53,8 +55,8 @@ export function AdminTaxonomies() {
       setNewTermName("");
       setAddingTo(null);
       await fetchTaxonomies();
-    } catch {
-      // ignore
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to create term", "error");
     } finally {
       setCreating(false);
     }
@@ -67,8 +69,8 @@ export function AdminTaxonomies() {
       await api.delete(`/taxonomies/terms/${deleteTarget.id}`);
       setDeleteTarget(null);
       await fetchTaxonomies();
-    } catch {
-      // ignore
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to delete term", "error");
     } finally {
       setDeleting(false);
     }

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface MediaItem {
   id: string;
@@ -20,6 +21,7 @@ export function AdminMedia() {
   const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const toast = useToast();
 
   async function fetchMedia() {
     setLoading(true);
@@ -51,8 +53,9 @@ export function AdminMedia() {
         body: formData,
       });
       if (res.ok) await fetchMedia();
+      else toast("Failed to upload file", "error");
     } catch {
-      // ignore
+      toast("Failed to upload file", "error");
     } finally {
       setUploading(false);
     }
@@ -64,8 +67,8 @@ export function AdminMedia() {
       await api.delete(`/api/media/${deleteTarget}`);
       setDeleteTarget(null);
       await fetchMedia();
-    } catch {
-      // ignore
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to delete file", "error");
     }
   }
 
