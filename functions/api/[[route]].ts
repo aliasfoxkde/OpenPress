@@ -23,6 +23,7 @@ import marketing from "./lib/marketing";
 import componentRoutes from "./lib/components";
 import navigation from "./lib/navigation";
 import aiAssistant from "./lib/ai-assistant";
+import heroSlides from "./lib/hero-slides";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -219,6 +220,9 @@ app.route("/api/components", componentRoutes);
 
 // Public navigation
 app.route("/api/navigation", navigation);
+
+// Public hero slides
+app.route("/api", heroSlides);
 
 // Public AI assistant chat + widget config
 app.route("/api/ai-assistant", aiAssistant);

@@ -34,12 +34,18 @@ export function LoginPage() {
   const navigate = useNavigate();
 
   // If URL has ?token= param, auto-switch to reset password view (from email link)
+  // If URL has ?redirect= param, store it for post-login navigation
+  const [redirectAfter, setRedirectAfter] = useState<string | null>(null);
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const token = params.get("token");
     if (token) {
       setResetToken(token);
       setView("reset");
+    }
+    const redirect = params.get("redirect");
+    if (redirect) {
+      setRedirectAfter(redirect);
     }
   }, []);
 
@@ -55,10 +61,10 @@ export function LoginPage() {
     try {
       if (view === "register") {
         await register(email, password, name || undefined);
-        void navigate({ to: "/admin" });
+        void navigate({ to: redirectAfter || "/admin" });
       } else {
         await login(email, password);
-        void navigate({ to: "/admin" });
+        void navigate({ to: redirectAfter || "/admin" });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Authentication failed");

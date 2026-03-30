@@ -7,6 +7,7 @@ import { CodeEditorPanel } from "@/components/editor/CodeEditorPanel";
 import { useCartStore } from "@/stores/cart";
 import { useAnalytics } from "@/lib/analytics";
 import { useTheme } from "@/hooks/useTheme";
+import { BackToTop } from "@/components/ui/BackToTop";
 
 function RouteLoader() {
   return (
@@ -300,24 +301,92 @@ export function RootLayout() {
       {/* Footer (public pages only) */}
       {!isAdmin && (
         <footer className="border-t border-border bg-surface-secondary mt-auto glass-surface">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-text-tertiary">
-                &copy; {new Date().getFullYear()}{" "}
-                <Link to="/" className="hover:text-text-primary transition-colors">OpenPress</Link>
-              </div>
-              <nav className="flex items-center gap-4 text-sm">
-                <Link to="/" className="text-text-tertiary hover:text-text-primary transition-colors">Home</Link>
-                <Link to="/blog" className="text-text-tertiary hover:text-text-primary transition-colors">Blog</Link>
-                <Link to="/shop" className="text-text-tertiary hover:text-text-primary transition-colors">Shop</Link>
-              </nav>
-              <div className="flex items-center gap-3 text-text-tertiary">
-                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="hover:text-text-primary transition-colors" title="RSS Feed">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M4 11a9 9 0 0 1 9 9 9 9 0 0 1-18 0" />
-                    <line x1="4" y1="11" x2="20" y2="11" />
+          {/* Main footer content */}
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {/* Column 1: Brand */}
+              <div>
+                <Link to="/" className="flex items-center gap-2 mb-4">
+                  <svg viewBox="0 0 32 32" className="w-8 h-8 text-primary-600" fill="none">
+                    <rect x="2" y="2" width="28" height="28" rx="6" fill="currentColor" opacity="0.1" />
+                    <rect x="4" y="4" width="24" height="24" rx="4" stroke="currentColor" strokeWidth="2" />
+                    <path d="M10 10h12v2H10z" fill="currentColor" opacity="0.3" />
+                    <path d="M10 15h8v2H10z" fill="currentColor" opacity="0.25" />
+                    <path d="M10 20h10v2H10z" fill="currentColor" opacity="0.2" />
+                    <circle cx="23" cy="20" r="4" stroke="currentColor" strokeWidth="1.5" />
+                    <path d="M23 18v4M21 20h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
                   </svg>
-                </a>
+                  <span className="font-bold text-text-primary text-lg">OpenPress</span>
+                </Link>
+                <p className="text-sm text-text-secondary leading-relaxed">
+                  A modern, open-source CMS built on Cloudflare's edge network. Fast, free, and infinitely extensible.
+                </p>
+              </div>
+
+              {/* Column 2: Navigation */}
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary mb-4">Navigation</h3>
+                <ul className="space-y-2.5">
+                  <li><Link to="/" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Home</Link></li>
+                  <li><Link to="/blog" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Blog</Link></li>
+                  <li><Link to="/shop" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Shop</Link></li>
+                  <li><Link to="/templates" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Templates</Link></li>
+                  <li><Link to="/checkout" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Cart</Link></li>
+                </ul>
+              </div>
+
+              {/* Column 3: Resources */}
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary mb-4">Resources</h3>
+                <ul className="space-y-2.5">
+                  <li><Link to="/docs/api" className="text-sm text-text-secondary hover:text-text-primary transition-colors">API Documentation</Link></li>
+                  <li><Link to="/docs/tutorial" className="text-sm text-text-secondary hover:text-text-primary transition-colors">Setup Tutorial</Link></li>
+                  <li>
+                    <a href="https://github.com/aliasfoxkde/OpenPress" target="_blank" rel="noopener noreferrer" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+                      GitHub
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="text-sm text-text-secondary hover:text-text-primary transition-colors">
+                      RSS Feed
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Column 4: Contact / Social */}
+              <div>
+                <h3 className="text-sm font-semibold text-text-primary mb-4">Connect</h3>
+                <ul className="space-y-2.5">
+                  <li>
+                    <a href="https://github.com/aliasfoxkde/OpenPress" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-1.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.089-.745-2.089-.162-2.089-.162 0-1.186.013-2.689.003-3.074C7.793 5.07 7.5 5.557 7.5 5.557 1.128-.18 2.316-.562 3.5-.934.108.778.417 1.305.76 1.605-2.665.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.12 3.176.765.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                      GitHub
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-text-secondary hover:text-text-primary transition-colors">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 11a9 9 0 0 1 9 9 9 9 0 0 1-18 0" /><line x1="4" y1="11" x2="20" y2="11" />
+                      </svg>
+                      RSS
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          {/* Bottom bar */}
+          <div className="border-t border-border">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+              <div className="text-xs text-text-tertiary">
+                &copy; {new Date().getFullYear()} OpenPress. Open source, MIT license.
+              </div>
+              <div className="flex items-center gap-1 text-xs text-text-tertiary">
+                Built with
+                <svg width="14" height="14" viewBox="0 0 24 24" className="mx-1 text-orange-400" fill="currentColor"><path d="M13.5 2C13.5 2 19 2 19 8c0 1.5-.3 3-1 4.5L15.5 16H19l-2.5 7h-9l1-3H7l1 3H0l4-12c-.7-1.5-1-3-1-4.5 0-6 5.5-6 11.5S19 2 13.5 2z"/></svg>
+                Cloudflare
               </div>
             </div>
           </div>
@@ -325,6 +394,7 @@ export function RootLayout() {
       )}
     </div>
     <CodeEditorPanel open={codeEditorOpen} onClose={() => setCodeEditorOpen(false)} />
+    <BackToTop />
     </ToastProvider>
   );
 }

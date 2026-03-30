@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useSEO } from "@/hooks/useSEO";
+import { HeroSlideshow } from "@/components/HeroSlideshow";
 
 export function HomePage() {
   useSEO({ title: "Home", description: "A modern, edge-native CMS", type: "website" });
@@ -24,48 +25,8 @@ export function HomePage() {
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-950 via-primary-900 to-primary-800 text-white">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-20 left-10 w-72 h-72 bg-primary-400 rounded-full blur-3xl" />
-          <div className="absolute bottom-10 right-10 w-96 h-96 bg-primary-300 rounded-full blur-3xl" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8 lg:py-36">
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-1.5 text-sm mb-6">
-              <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-              Open Source &middot; Edge-Native &middot; AI-Ready
-            </div>
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-7xl">
-              <span className="block">The CMS,</span>
-              <span className="block bg-gradient-to-r from-primary-200 to-white bg-clip-text text-transparent">
-                Reimagined.
-              </span>
-            </h1>
-            <p className="mt-6 text-lg sm:text-xl text-primary-100 max-w-2xl mx-auto leading-relaxed">
-              OpenPress is a modern, open-source content platform built on
-              Cloudflare's edge network. React themes, JS plugins, block
-              editor, and AI-ready out of the box.
-            </p>
-            <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
-              <a
-                href="/admin"
-                className="bg-white text-primary-900 px-8 py-3.5 rounded-xl hover:bg-primary-50 transition-all font-semibold text-base shadow-lg shadow-primary-900/50"
-              >
-                Open Dashboard &rarr;
-              </a>
-              <a
-                href="https://github.com/aliasfoxkde/OpenPress"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border border-white/20 text-white px-8 py-3.5 rounded-xl hover:bg-white/10 transition-all font-semibold text-base backdrop-blur-sm"
-              >
-                View on GitHub
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Hero Slideshow */}
+      <HeroSlideshow />
 
       {/* Features Grid */}
       <section className="py-16 sm:py-24 bg-surface">
@@ -83,19 +44,40 @@ export function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group border border-border rounded-xl p-6 bg-surface hover:border-primary-300 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 glass-card"
+                className="flip-card h-56 cursor-pointer"
               >
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-primary-50 text-lg group-hover:bg-primary-100 transition-colors">
-                    {feature.icon}
+                <div className="flip-card-inner">
+                  {/* Front face */}
+                  <div className="flip-card-front border border-border rounded-xl p-6 bg-surface hover:border-primary-300 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 glass-card flex flex-col">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-primary-50 text-lg">
+                        {feature.icon}
+                      </div>
+                      <h3 className="font-semibold text-text-primary text-lg">
+                        {feature.title}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-text-secondary leading-relaxed">
+                      {feature.description}
+                    </p>
+                    <div className="mt-auto pt-3 text-xs text-primary-500 font-medium">Hover to learn more →</div>
                   </div>
-                  <h3 className="font-semibold text-text-primary text-lg">
-                    {feature.title}
-                  </h3>
+                  {/* Back face */}
+                  <div className="flip-card-back border border-primary-200 rounded-xl p-6 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-950/50 dark:to-primary-900/30 flex flex-col justify-center">
+                    <div className="text-2xl mb-3">{feature.icon}</div>
+                    <h3 className="font-semibold text-text-primary text-lg mb-2">{feature.title}</h3>
+                    <ul className="space-y-1.5 flex-1">
+                      {feature.highlights.map((h) => (
+                        <li key={h} className="flex items-start gap-2 text-sm text-text-secondary">
+                          <svg className="w-4 h-4 text-primary-500 mt-0.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
+                          {h}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <p className="mt-2 text-sm text-text-secondary leading-relaxed">
-                  {feature.description}
-                </p>
               </div>
             ))}
           </div>
@@ -358,42 +340,47 @@ export function HomePage() {
 }
 
 const features = [
-
   {
     icon: "⚡",
     title: "Edge-Native",
     description:
       "Runs on Cloudflare's global network of 300+ edge locations. Sub-millisecond API responses, zero cold starts.",
+    highlights: ["300+ edge locations", "Zero cold starts", "Sub-ms latency", "Auto-scaling"],
   },
   {
     icon: "🧩",
     title: "Plugin System",
     description:
       "JavaScript hooks and filters inspired by WordPress — but modern, fully typed, and sandboxed for security.",
+    highlights: ["Actions & filters", "Sandboxed execution", "TypeScript types", "NPM distributable"],
   },
   {
     icon: "🎨",
     title: "React Themes",
     description:
       "Composable React themes with a component registry. Distribute as NPM packages, not ZIP files.",
+    highlights: ["Component registry", "NPM packages", "Hot-swappable", "Customizable"],
   },
   {
     icon: "📝",
     title: "Block Editor",
     description:
       "A modern block-based content editor. Drag, drop, and compose rich content with a Gutenberg-like experience.",
+    highlights: ["Drag & drop blocks", "Rich media support", "Collaborative editing", "Auto-save"],
   },
   {
     icon: "🔐",
     title: "API-First",
     description:
       "Every feature exposed via REST API. JWT authentication, full CRUD operations, and OpenAPI documentation.",
+    highlights: ["REST API", "JWT auth", "RBAC roles", "Rate limiting"],
   },
   {
     icon: "🤖",
     title: "AI-Ready",
     description:
       "Built for the AI era with Workers AI, Vectorize for semantic search, and a hook system AI agents can invoke.",
+    highlights: ["Workers AI", "Vectorize search", "AI hooks", "Content generation"],
   },
 ];
 

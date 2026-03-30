@@ -106,7 +106,9 @@ async function request<T>(
     localStorage.removeItem("auth_token");
     localStorage.removeItem("auth_user");
     localStorage.removeItem("csrf_token");
-    window.location.href = "/login";
+    const currentPath = window.location.pathname + window.location.search;
+    const redirect = currentPath !== "/login" ? `?redirect=${encodeURIComponent(currentPath)}` : "";
+    window.location.href = `/login${redirect}`;
     throw new ApiError(401, "UNAUTHORIZED", "Session expired. Please sign in again.");
   }
 

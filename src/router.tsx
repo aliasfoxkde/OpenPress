@@ -21,6 +21,9 @@ import { CheckoutPage } from "./routes/CheckoutPage";
 import { OrderSuccessPage } from "./routes/OrderSuccessPage";
 import { OrderCancelPage } from "./routes/OrderCancelPage";
 import { NotFoundPage } from "./routes/NotFoundPage";
+import { ApiDocs } from "./routes/ApiDocs";
+import { Tutorial } from "./routes/Tutorial";
+import { Templates } from "./routes/Templates";
 
 const rootRoute = createRootRoute({
   component: RootLayout,
@@ -85,6 +88,24 @@ const notFoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/404",
   component: NotFoundPage,
+});
+
+const apiDocsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/docs/api",
+  component: ApiDocs,
+});
+
+const tutorialRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/docs/tutorial",
+  component: Tutorial,
+});
+
+const templatesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/templates",
+  component: Templates,
 });
 
 const adminRoute = createLazyRoute({
@@ -213,6 +234,12 @@ const adminNavigationRoute = createLazyRoute({
   lazyRouteComponent: () => import("./routes/admin/AdminNavigation").then((m) => m.AdminNavigation),
 });
 
+const adminHeroSlidesRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/hero-slides",
+  lazyRouteComponent: () => import("./routes/admin/AdminHeroSlides").then((m) => m.AdminHeroSlides),
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   shopRoute,
@@ -224,6 +251,9 @@ const routeTree = rootRoute.addChildren([
   orderSuccessRoute,
   orderCancelRoute,
   notFoundRoute,
+  apiDocsRoute,
+  tutorialRoute,
+  templatesRoute,
   adminRoute.addChildren([
     adminDashboardRoute,
     adminContentRoute,
@@ -245,6 +275,7 @@ const routeTree = rootRoute.addChildren([
     adminSocialRoute,
     adminComponentsRoute,
     adminNavigationRoute,
+    adminHeroSlidesRoute,
   ]),
 ]);
 
