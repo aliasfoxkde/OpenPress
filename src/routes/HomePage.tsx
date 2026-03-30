@@ -1,4 +1,25 @@
+import { useState, useEffect } from "react";
+import { Link } from "@tanstack/react-router";
+import { api } from "../lib/api";
+
 export function HomePage() {
+  const [recentPosts, setRecentPosts] = useState<Array<{ id: string; slug: string; title: string; excerpt?: string; featured_image_url?: string | null; published_at?: string }>>([]);
+  const [postsLoading, setPostsLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadRecent() {
+      try {
+        const res = await api.get<{ data: Array<{ id: string; slug: string; title: string; excerpt?: string; featured_image_url?: string | null; published_at?: string }> }>("/api/content?limit=3");
+        setRecentPosts(res.data || []);
+      } catch {
+        // posts section is optional
+      } finally {
+        setPostsLoading(false);
+      }
+    }
+    void loadRecent();
+  }, []);
+
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
       {/* Hero Section */}
@@ -76,6 +97,61 @@ export function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Recent Posts */}
+      {!postsLoading && recentPosts.length > 0 && (
+        <section className="py-16 sm:py-24 bg-surface">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between mb-8">
+              <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">Latest Posts</h2>
+              <Link
+                to="/blog"
+                className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+              >
+                View all &rarr;
+              </Link>
+            </div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {recentPosts.map((post) => (
+                <Link
+                  key={post.id}
+                  to="/blog/$slug"
+                  params={{ slug: post.slug }}
+                  className="group rounded-xl border border-border overflow-hidden bg-surface hover:shadow-lg transition-all duration-300"
+                >
+                  {post.featured_image_url ? (
+                    <div className="aspect-video overflow-hidden">
+                      <img
+                        src={post.featured_image_url}
+                        alt={post.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                  ) : (
+                    <div className="aspect-video bg-gradient-to-br from-primary-50 to-primary-100 flex items-center justify-center">
+                      <span className="text-3xl opacity-30">📰</span>
+                    </div>
+                  )}
+                  <div className="p-5">
+                    <h3 className="font-semibold text-text-primary group-hover:text-primary-600 transition-colors line-clamp-2">
+                      {post.title}
+                    </h3>
+                    {post.excerpt && (
+                      <p className="mt-2 text-sm text-text-secondary line-clamp-2">{post.excerpt}</p>
+                    )}
+                    {post.published_at && (
+                      <time className="mt-3 block text-xs text-text-tertiary">
+                        {new Date(post.published_at).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+                      </time>
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Architecture Section */}
       <section className="py-16 sm:py-24 bg-surface-secondary">
