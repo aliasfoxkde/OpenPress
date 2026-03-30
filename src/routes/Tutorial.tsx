@@ -237,7 +237,7 @@ export function Tutorial() {
   const progress = Math.round((completed.size / steps.length) * 100);
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-surface flex flex-col">
+    <div className="bg-surface flex flex-col">
       {/* Header */}
       <div className="border-b border-border bg-surface-secondary shrink-0">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-6">

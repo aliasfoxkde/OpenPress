@@ -24,6 +24,7 @@ import componentRoutes from "./lib/components";
 import navigation from "./lib/navigation";
 import aiAssistant from "./lib/ai-assistant";
 import heroSlides from "./lib/hero-slides";
+import { heroSlidesAdmin } from "./lib/hero-slides";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -174,6 +175,7 @@ protectedRoutes.use("/ai/*", requireCapability("use_ai"));
 protectedRoutes.route("/ai", aiRoutes);
 protectedRoutes.route("/revisions", revisions);
 protectedRoutes.route("/users", users);
+protectedRoutes.route("/hero-slides", heroSlidesAdmin);
 
 // Dashboard stats (any authenticated user)
 protectedRoutes.get("/stats", async (c) => {
@@ -207,6 +209,9 @@ protectedRoutes.get("/stats", async (c) => {
   });
 });
 
+// Public hero slides (must be before protectedRoutes to avoid 401)
+app.route("/api", heroSlides);
+
 app.route("/api", protectedRoutes);
 
 // Public composite product routes
@@ -220,9 +225,6 @@ app.route("/api/components", componentRoutes);
 
 // Public navigation
 app.route("/api/navigation", navigation);
-
-// Public hero slides
-app.route("/api", heroSlides);
 
 // Public AI assistant chat + widget config
 app.route("/api/ai-assistant", aiAssistant);

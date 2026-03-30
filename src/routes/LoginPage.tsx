@@ -117,7 +117,7 @@ export function LoginPage() {
   // Forgot password success
   if (view === "forgot-success") {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 bg-surface-secondary py-8">
+      <div className="flex h-full items-center justify-center px-4 bg-surface-secondary">
         <div className="w-full max-w-sm text-center">
           <div className="text-4xl mb-4">&#9993;</div>
           <h1 className="text-2xl font-bold text-text-primary mb-2">Check your email</h1>
@@ -138,7 +138,7 @@ export function LoginPage() {
   // Reset password view
   if (view === "reset") {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 bg-surface-secondary py-8">
+      <div className="flex h-full items-center justify-center px-4 bg-surface-secondary">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-text-primary">Reset password</h1>
@@ -196,7 +196,7 @@ export function LoginPage() {
   // Forgot password request
   if (view === "forgot") {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 bg-surface-secondary py-8">
+      <div className="flex h-full items-center justify-center px-4 bg-surface-secondary">
         <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-text-primary">Forgot password?</h1>
@@ -240,7 +240,7 @@ export function LoginPage() {
 
   // Login / Register
   return (
-    <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-8 bg-surface-secondary">
+    <div className="flex h-full items-center justify-center px-4 bg-surface-secondary">
       <div className="w-full max-w-md">
         <div className="border border-border rounded-2xl bg-surface shadow-xl shadow-black/5 p-6">
           {/* Logo */}

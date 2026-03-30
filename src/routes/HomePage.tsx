@@ -24,7 +24,7 @@ export function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
+    <div className="flex flex-col">
       {/* Hero Slideshow */}
       <HeroSlideshow />
 
@@ -86,7 +86,7 @@ export function HomePage() {
 
       {/* Recent Posts */}
       {!postsLoading && recentPosts.length > 0 && (
-        <section className="py-16 sm:py-24 bg-surface">
+        <section className="py-16 sm:py-24 bg-surface-secondary">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-2xl font-bold text-text-primary sm:text-3xl">Latest Posts</h2>
@@ -140,7 +140,7 @@ export function HomePage() {
       )}
 
       {/* Architecture Section */}
-      <section className="py-16 sm:py-24 bg-surface-secondary overflow-hidden">
+      <section className="py-16 sm:py-24 bg-surface overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
             <div>
@@ -512,7 +512,7 @@ export function HomePage() {
       </section>
 
       {/* Mobile App Section */}
-      <section className="py-16 sm:py-20 bg-surface-secondary">
+      <section className="py-16 sm:py-20 bg-surface">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 rounded-full px-4 py-1.5 text-sm font-medium mb-4">

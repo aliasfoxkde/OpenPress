@@ -92,7 +92,7 @@ export function RootLayout() {
   return (
     <ToastProvider>
     <CommandPalette />
-    <div className="min-h-screen bg-surface">
+    <div className="h-screen flex flex-col bg-surface overflow-hidden">
       <header
         className={cn(
           "sticky top-0 z-50 transition-all duration-300",
@@ -316,12 +316,14 @@ export function RootLayout() {
       )}
 
       <Suspense fallback={<RouteLoader />}>
-        <Outlet />
+        <div className="flex-1 overflow-y-auto">
+          <Outlet />
+        </div>
       </Suspense>
 
       {/* Footer (public pages only) */}
       {!isAdmin && (
-        <footer className="border-t border-border bg-surface-secondary mt-auto">
+        <footer className="border-t border-border bg-surface-secondary shrink-0">
           {/* Main footer content */}
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -400,12 +402,12 @@ export function RootLayout() {
           </div>
 
           {/* Bottom bar */}
-          <div className="border-t border-border">
+          <div className="bg-primary-900 border-t border-primary-800">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-              <div className="text-xs text-text-tertiary">
+              <div className="text-xs text-primary-200">
                 &copy; {new Date().getFullYear()} OpenPress. Open source, MIT license.
               </div>
-              <div className="text-xs text-text-tertiary">
+              <div className="text-xs text-primary-300">
                 This Application was Developed with TaskWizer AI technologies.
               </div>
             </div>

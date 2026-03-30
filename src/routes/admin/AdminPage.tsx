@@ -88,7 +88,7 @@ export function AdminPage() {
   // ─── Auth guard ────────────────────────────────────────────
   if (!user) {
     return (
-      <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center bg-surface-secondary px-4 py-8">
+      <div className="flex h-full items-center justify-center bg-surface-secondary px-4">
         <div className="text-center max-w-sm">
           <div className="w-14 h-14 mx-auto mb-3 rounded-2xl bg-primary-50 flex items-center justify-center">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary-600">

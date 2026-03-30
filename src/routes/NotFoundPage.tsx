@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 
 export function NotFoundPage() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center px-4">
+    <div className="h-full flex items-center justify-center px-4">
       <div className="text-center">
         {/* Animated 404 illustration */}
         <div className="relative inline-block mb-6">

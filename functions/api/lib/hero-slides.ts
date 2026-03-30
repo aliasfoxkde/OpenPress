@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import type { Bindings, Variables } from "./types";
 
-const heroSlides = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+// Public hero slides handler (GET /hero-slides only)
+const heroSlidesPublic = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-// GET /hero-slides — Public: get active slides
-heroSlides.get("/hero-slides", async (c) => {
+heroSlidesPublic.get("/hero-slides", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
@@ -15,8 +15,12 @@ heroSlides.get("/hero-slides", async (c) => {
   return c.json({ data: slides.results });
 });
 
-// GET /admin/hero-slides — Admin: list all slides
-heroSlides.get("/admin/hero-slides", async (c) => {
+export default heroSlidesPublic;
+
+// Admin hero slides handler (CRUD) — mounted under /api/admin/hero-slides
+const heroSlidesAdmin = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+heroSlidesAdmin.get("/", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
@@ -27,8 +31,7 @@ heroSlides.get("/admin/hero-slides", async (c) => {
   return c.json({ data: slides.results });
 });
 
-// POST /admin/hero-slides — Create slide
-heroSlides.post("/admin/hero-slides", async (c) => {
+heroSlidesAdmin.post("/", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
@@ -42,7 +45,6 @@ heroSlides.post("/admin/hero-slides", async (c) => {
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
 
-  // Get max sort_order
   const maxSort = await db.prepare("SELECT COALESCE(MAX(sort_order), -1) as max_sort FROM hero_slides").first<{ max_sort: number }>();
   const sortOrder = (maxSort?.max_sort ?? -1) + 1;
 
@@ -62,8 +64,7 @@ heroSlides.post("/admin/hero-slides", async (c) => {
   return c.json({ data: slide }, 201);
 });
 
-// PUT /admin/hero-slides/:id — Update slide
-heroSlides.put("/admin/hero-slides/:id", async (c) => {
+heroSlidesAdmin.put("/:id", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
@@ -102,8 +103,7 @@ heroSlides.put("/admin/hero-slides/:id", async (c) => {
   return c.json({ data: slide });
 });
 
-// DELETE /admin/hero-slides/:id — Delete slide
-heroSlides.delete("/admin/hero-slides/:id", async (c) => {
+heroSlidesAdmin.delete("/:id", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
@@ -117,8 +117,7 @@ heroSlides.delete("/admin/hero-slides/:id", async (c) => {
   return c.json({ data: { deleted: true } });
 });
 
-// PUT /admin/hero-slides/reorder — Reorder slides
-heroSlides.put("/admin/hero-slides/reorder", async (c) => {
+heroSlidesAdmin.put("/reorder", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
@@ -138,4 +137,4 @@ heroSlides.put("/admin/hero-slides/reorder", async (c) => {
   return c.json({ data: { reordered: true, count: items.length } });
 });
 
-export default heroSlides;
+export { heroSlidesAdmin };

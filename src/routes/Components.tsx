@@ -146,7 +146,7 @@ export function Components() {
   });
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-surface">
+    <div className="bg-surface">
       {/* Header */}
       <div className="border-b border-border bg-surface-secondary">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
