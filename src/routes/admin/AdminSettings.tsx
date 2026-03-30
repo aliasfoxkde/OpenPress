@@ -19,6 +19,15 @@ export function AdminSettings() {
     analytics_provider: "none",
     analytics_id: "",
     analytics_custom: "",
+    // SEO/SEM
+    seo_title_template: "%site% — %title%",
+    seo_meta_description: "",
+    seo_og_image: "",
+    seo_canonical_url: "",
+    seo_robots_index: "true",
+    seo_robots_follow: "true",
+    seo_twitter_handle: "",
+    seo_structured_data_type: "website",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -27,7 +36,7 @@ export function AdminSettings() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await api.get<{ data: Settings }>("/api/settings");
+        const res = await api.get<{ data: Settings }>("/settings");
         if (res?.data) setSettings(res.data);
       } catch {
         // ignore - use defaults
@@ -43,7 +52,7 @@ export function AdminSettings() {
     setSaving(true);
     setSaved(false);
     try {
-      await api.put("/api/settings", settings);
+      await api.put("/settings", settings);
       // Reload analytics if provider changed
       reloadAnalytics({
         provider: (settings.analytics_provider as "google" | "plausible" | "custom" | "none") || "none",
@@ -197,6 +206,95 @@ export function AdminSettings() {
                 />
               </div>
             )}
+          </div>
+        </fieldset>
+
+        <fieldset className="border border-border rounded-lg p-4">
+          <legend className="text-sm font-medium text-text-primary px-2">SEO / SEM</legend>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Title Template</label>
+              <input
+                type="text"
+                value={settings.seo_title_template || ""}
+                onChange={(e) => setSettings({ ...settings, seo_title_template: e.target.value })}
+                placeholder="%site% — %title%"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+              />
+              <p className="text-xs text-text-tertiary mt-1">Available tokens: %site%, %title%, %description%, %sep%</p>
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Default Meta Description</label>
+              <textarea
+                rows={2}
+                value={settings.seo_meta_description || ""}
+                onChange={(e) => setSettings({ ...settings, seo_meta_description: e.target.value })}
+                maxLength={160}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+              />
+              <p className="text-xs text-text-tertiary mt-1">{(settings.seo_meta_description || "").length}/160 characters</p>
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Default OG Image URL</label>
+              <input
+                type="text"
+                value={settings.seo_og_image || ""}
+                onChange={(e) => setSettings({ ...settings, seo_og_image: e.target.value })}
+                placeholder="https://example.com/og-image.png"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Canonical Base URL</label>
+              <input
+                type="text"
+                value={settings.seo_canonical_url || ""}
+                onChange={(e) => setSettings({ ...settings, seo_canonical_url: e.target.value })}
+                placeholder="https://openpress.pages.dev"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+              />
+            </div>
+            <div className="flex gap-6">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={settings.seo_robots_index === "true"}
+                  onChange={(e) => setSettings({ ...settings, seo_robots_index: e.target.checked ? "true" : "false" })}
+                />
+                <span>Allow indexing (robots index)</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={settings.seo_robots_follow === "true"}
+                  onChange={(e) => setSettings({ ...settings, seo_robots_follow: e.target.checked ? "true" : "false" })}
+                />
+                <span>Allow link following (robots follow)</span>
+              </label>
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Twitter Handle</label>
+              <input
+                type="text"
+                value={settings.seo_twitter_handle || ""}
+                onChange={(e) => setSettings({ ...settings, seo_twitter_handle: e.target.value })}
+                placeholder="@openpress"
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Default Structured Data Type</label>
+              <select
+                value={settings.seo_structured_data_type || "website"}
+                onChange={(e) => setSettings({ ...settings, seo_structured_data_type: e.target.value })}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus bg-surface"
+              >
+                <option value="website">Website</option>
+                <option value="article">Article</option>
+                <option value="organization">Organization</option>
+                <option value="person">Person</option>
+              </select>
+            </div>
           </div>
         </fieldset>
 

@@ -78,7 +78,7 @@ export function ConfirmDialog({
       <div className="fixed inset-0 bg-black/40" onClick={onCancel} />
       <div
         ref={dialogRef}
-        className="relative bg-surface rounded-xl p-6 w-full max-w-sm shadow-xl mx-4"
+        className="relative bg-surface rounded-xl p-6 w-full max-w-sm shadow-xl mx-4 glass-elevated"
         role="alertdialog"
         aria-modal="true"
         aria-labelledby="confirm-title"

@@ -9,6 +9,7 @@ export interface CartItem {
   quantity: number;
   sku?: string;
   featured_image_url?: string;
+  configuration?: Record<string, string[]>;
 }
 
 interface CartState {
@@ -73,6 +74,7 @@ export const useCartStore = create<CartState>((set, get) => ({
       await api.post("/cart/add", {
         product_id: item.product_id,
         quantity: item.quantity,
+        configuration: item.configuration || undefined,
       });
     } catch {
       set({ items: previousItems });

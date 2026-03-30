@@ -73,7 +73,11 @@ async function request<T>(
   });
 
   // Auto-refresh token on 401
-  if (response.status === 401 && token) {
+  // Only attempt refresh for protected routes (not public ones like /content, /products, /cart)
+  const publicPaths = ["/content", "/products", "/cart", "/site", "/health", "/seo", "/comments"];
+  const isPublicPath = publicPaths.some((p) => path.startsWith(p));
+
+  if (response.status === 401 && token && !isPublicPath) {
     if (!isRefreshing) {
       isRefreshing = true;
       refreshPromise = refreshAccessToken().finally(() => {

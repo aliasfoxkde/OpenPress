@@ -15,6 +15,7 @@ export interface ContentItem {
 }
 
 export type ContentType = "post" | "page" | "product" | "custom";
+export type ProductType = "simple" | "composite" | "variable" | "digital";
 export type ContentStatus = "draft" | "published" | "scheduled" | "archived" | "trash" | "pending";
 
 export interface ContentBlock {
@@ -187,4 +188,79 @@ export interface SiteSettings {
   posts_per_page: number;
   allow_registration: boolean;
   [key: string]: unknown;
+}
+
+// Composite product types
+export interface CompositeProduct {
+  id: string;
+  product_id: string;
+  base_price: number;
+  min_price: number | null;
+  max_price: number | null;
+  price_display: "range" | "from" | "hidden";
+  layout: "accordion" | "wizard" | "tabs" | "grid";
+  shop_page_thumbnail: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CompositeComponent {
+  id: string;
+  composite_id: string;
+  title: string;
+  description: string | null;
+  is_required: number;
+  selection_type: "single" | "multi";
+  min_quantity: number;
+  max_quantity: number;
+  display_mode: "thumbnail" | "dropdown" | "swatch" | "radio";
+  sort_order: number;
+  options?: CompositeComponentOption[];
+}
+
+export interface CompositeComponentOption {
+  id: string;
+  component_id: string;
+  product_id: string;
+  is_default: number;
+  price_override: number | null;
+  price_override_type: "fixed" | "discount" | "markup" | null;
+  price_override_value: number | null;
+  sort_order: number;
+  base_product_price?: number;
+  product_title?: string;
+  product_slug?: string;
+  product_image?: string;
+  product_sku?: string;
+  product_inventory?: number;
+}
+
+export interface CompositeScenario {
+  id: string;
+  composite_id: string;
+  title: string;
+  description: string | null;
+  thumbnail_url: string | null;
+  is_default: number;
+  sort_order: number;
+  defaults?: CompositeScenarioDefault[];
+}
+
+export interface CompositeScenarioDefault {
+  id: string;
+  scenario_id: string;
+  component_id: string;
+  option_id: string | null;
+  is_hidden: number;
+  option_title?: string;
+}
+
+export interface CompositeCompatRule {
+  id: string;
+  composite_id: string;
+  component_id: string;
+  option_id: string;
+  incompatible_component_id: string;
+  incompatible_option_id: string;
+  message: string | null;
 }

@@ -16,6 +16,13 @@ import seo from "./lib/seo";
 import stripeRoutes from "./lib/stripe";
 import comments from "./lib/comments";
 import cron from "./lib/cron";
+import composite from "./lib/composite";
+import payments from "./lib/payments";
+import social from "./lib/social";
+import marketing from "./lib/marketing";
+import componentRoutes from "./lib/components";
+import navigation from "./lib/navigation";
+import aiAssistant from "./lib/ai-assistant";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -146,6 +153,20 @@ protectedRoutes.use("/settings/*", requireCapability("manage_settings"));
 protectedRoutes.route("/settings", settings);
 protectedRoutes.use("/products/*", requireCapability("manage_products"));
 protectedRoutes.route("/products", products);
+protectedRoutes.use("/composite/*", requireCapability("manage_products"));
+protectedRoutes.route("/composite", composite);
+protectedRoutes.use("/payments/*", requireCapability("manage_settings"));
+protectedRoutes.route("/payments", payments);
+protectedRoutes.use("/social/*", requireCapability("manage_settings"));
+protectedRoutes.route("/social", social);
+protectedRoutes.use("/marketing/*", requireCapability("manage_settings"));
+protectedRoutes.route("/marketing", marketing);
+protectedRoutes.use("/components/*", requireCapability("manage_settings"));
+protectedRoutes.route("/components", componentRoutes);
+protectedRoutes.use("/navigation/*", requireCapability("manage_settings"));
+protectedRoutes.route("/navigation", navigation);
+protectedRoutes.use("/ai-assistant/*", requireCapability("use_ai"));
+protectedRoutes.route("/ai-assistant", aiAssistant);
 protectedRoutes.use("/orders/*", requireCapability("manage_orders"));
 protectedRoutes.route("/orders", orders);
 protectedRoutes.use("/ai/*", requireCapability("use_ai"));
@@ -187,10 +208,33 @@ protectedRoutes.get("/stats", async (c) => {
 
 app.route("/api", protectedRoutes);
 
+// Public composite product routes
+app.route("/api/composite", composite);
+
+// Public social links
+app.route("/api/social", social);
+
+// Public reusable components
+app.route("/api/components", componentRoutes);
+
+// Public navigation
+app.route("/api/navigation", navigation);
+
+// Public AI assistant chat + widget config
+app.route("/api/ai-assistant", aiAssistant);
+
+// Public payment providers (for checkout)
+app.route("/api/payments", payments);
+
+// Public marketing (coupon apply/remove)
+app.route("/api/marketing", marketing);
+
 // Public cart routes (session-based, no auth required)
 app.route("/api/cart", cart);
 
 // Public product listing (no auth required)
+app.route("/api/composite", composite);
+
 app.get("/api/products", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);

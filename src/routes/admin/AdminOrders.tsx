@@ -37,7 +37,7 @@ export default function AdminOrders() {
   async function loadOrders() {
     setLoading(true);
     try {
-      const res = await api.get<{ data: Order[]; pagination?: { totalPages: number } }>(`/api/orders?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ""}`);
+      const res = await api.get<{ data: Order[]; pagination?: { totalPages: number } }>(`/orders?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ""}`);
       setOrders(res.data || []);
       if (res.pagination) setTotalPages(res.pagination.totalPages);
     } catch {

@@ -1,10 +1,11 @@
 import { Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { cn } from "@/lib/cn";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { useCartStore } from "@/stores/cart";
 import { useAnalytics } from "@/lib/analytics";
+import { useTheme } from "@/hooks/useTheme";
 
 function RouteLoader() {
   return (
@@ -30,42 +31,77 @@ function HamburgerIcon({ open }: { open: boolean }) {
   );
 }
 
+function OpenPressLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={className} fill="none">
+      <rect x="2" y="2" width="28" height="28" rx="6" fill="currentColor" opacity="0.1" />
+      <rect x="4" y="4" width="24" height="24" rx="4" stroke="currentColor" strokeWidth="2" />
+      <path d="M10 10h12v2H10z" fill="currentColor" opacity="0.3" />
+      <path d="M10 15h8v2H10z" fill="currentColor" opacity="0.25" />
+      <path d="M10 20h10v2H10z" fill="currentColor" opacity="0.2" />
+      <circle cx="23" cy="20" r="4" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M23 18v4M21 20h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function RootLayout() {
   const routerState = useRouterState();
   const isAdmin = routerState.location.pathname.startsWith("/admin");
   const cartItemCount = useCartStore((s) => s.itemCount());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout>>();
 
   // Analytics (page view tracking)
   useAnalytics();
+
+  // Theme mode (auto/light/dark/liquid-glass)
+  const { mode, cycleMode } = useTheme();
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [routerState.location.pathname]);
 
-  // Dark mode
-  const [dark, setDark] = useState(() => {
-    if (typeof window === "undefined") return false;
-    const stored = localStorage.getItem("dark-mode");
-    if (stored !== null) return stored === "true";
-    return window.matchMedia("(prefers-color-scheme: dark)").matches;
-  });
-
+  // Scroll-based header shrink
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-    localStorage.setItem("dark-mode", String(dark));
-  }, [dark]);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
     <ToastProvider>
     <CommandPalette />
     <div className="min-h-screen bg-surface">
-      <header className="border-b border-border bg-surface sticky top-0 z-50">
+      <header
+        className={cn(
+          "sticky top-0 z-50 transition-all duration-300 glass-surface",
+          scrolled
+            ? "border-b border-border bg-surface/95 shadow-sm"
+            : "border-b border-transparent bg-surface/70 backdrop-blur-md shadow-none"
+        )}
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-14 items-center justify-between">
-            <Link to="/" className="text-lg font-bold text-primary-700">
-              OpenPress
+          <div className={cn(
+            "flex items-center justify-between transition-all duration-300",
+            scrolled ? "h-14" : "h-16"
+          )}>
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <OpenPressLogo className={cn(
+                "text-primary-600 transition-all duration-300 shrink-0",
+                scrolled ? "w-6 h-6" : "w-8 h-8"
+              )} />
+              <span className={cn(
+                "font-bold text-primary-700 transition-all duration-300 origin-left",
+                scrolled ? "text-lg" : "text-2xl"
+              )}>
+                OpenPress
+              </span>
             </Link>
             <nav className="flex items-center gap-4">
               {!isAdmin && (
@@ -144,17 +180,29 @@ export function RootLayout() {
                 </button>
               )}
               <button
-                onClick={() => setDark(!dark)}
+                onClick={cycleMode}
                 className="text-sm text-text-tertiary hover:text-text-primary transition-colors p-1.5"
-                title={dark ? "Switch to light mode" : "Switch to dark mode"}
+                title={`Theme: ${mode === "auto" ? "Auto (System)" : mode === "liquid-glass" ? "Liquid Glass" : mode.charAt(0).toUpperCase() + mode.slice(1)}`}
               >
-                {dark ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {mode === "auto" ? (
+                  /* Monitor icon — auto follows system */
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8"/><path d="M12 17v4"/>
+                  </svg>
+                ) : mode === "light" ? (
+                  /* Sun icon */
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
                   </svg>
-                ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                ) : mode === "dark" ? (
+                  /* Moon icon */
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                ) : (
+                  /* Diamond/gem icon — Liquid Glass */
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M6 3h12l4 6-10 13L2 9z"/><path d="M2 9h20"/><path d="M10 3l-4 6 6 13"/><path d="M14 3l4 6-6 13"/>
                   </svg>
                 )}
               </button>
@@ -218,7 +266,7 @@ export function RootLayout() {
 
       {/* Footer (public pages only) */}
       {!isAdmin && (
-        <footer className="border-t border-border bg-surface-secondary mt-auto">
+        <footer className="border-t border-border bg-surface-secondary mt-auto glass-surface">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-sm text-text-tertiary">

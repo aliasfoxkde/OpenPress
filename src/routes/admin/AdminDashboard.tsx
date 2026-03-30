@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { api } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
+import { useToast } from "@/components/ui/Toast";
 
 interface DashboardStats {
   content_count: number;
@@ -96,6 +97,91 @@ export function AdminDashboard() {
   ];
 
   const canManage = user && ["admin", "editor"].includes(user.role);
+  const isAdmin = user?.role === "admin";
+  const toast = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [loadingSample, setLoadingSample] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const [contentRes, productsRes, ordersRes, usersRes, settingsRes, commentsRes] = await Promise.all([
+        api.get("/content?limit=100").catch(() => ({ data: [] })),
+        api.get("/products?limit=100").catch(() => ({ data: [] })),
+        api.get("/orders?limit=100").catch(() => ({ data: [] })),
+        api.get("/users").catch(() => ({ data: [] })),
+        api.get("/settings").catch(() => ({ data: {} })),
+        api.get("/comments?limit=100").catch(() => ({ data: [] })),
+      ]);
+      const exportData = {
+        exported_at: new Date().toISOString(),
+        version: "1.0.0",
+        content: contentRes.data || [],
+        products: productsRes.data || [],
+        orders: ordersRes.data || [],
+        users: usersRes.data || [],
+        settings: settingsRes.data || {},
+        comments: commentsRes.data || [],
+      };
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `openpress-export-${new Date().toISOString().slice(0, 10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast("Data exported successfully", "success");
+    } catch {
+      toast("Failed to export data", "error");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function handleImport(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      toast(`Imported: ${(data.content || []).length} content, ${(data.products || []).length} products, ${(data.users || []).length} users`, "success");
+    } catch {
+      toast("Invalid import file", "error");
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  }
+
+  async function handleLoadSample() {
+    setLoadingSample(true);
+    try {
+      await api.post("/settings", {
+        site_name: "OpenPress Demo",
+        site_description: "A modern, edge-native CMS — Demo Site",
+        posts_per_page: "12",
+      });
+      // Create sample posts
+      const samplePosts = [
+        { title: "Welcome to OpenPress", slug: "welcome-to-openpress", type: "post", status: "published", content: "<p>OpenPress is a modern, open-source CMS built on Cloudflare's edge network. This is your first post — edit it or create new content from the dashboard.</p>", excerpt: "Your first post on OpenPress", meta: { seo_title: "Welcome to OpenPress" } },
+        { title: "Getting Started Guide", slug: "getting-started", type: "post", status: "published", content: "<h2>Quick Start</h2><p>OpenPress makes it easy to create and manage content. Here's how to get started:</p><ul><li>Create your first post from the Dashboard</li><li>Customize your site in Settings</li><li>Add products to your store</li></ul>", excerpt: "Learn how to set up your OpenPress site", meta: { seo_title: "Getting Started with OpenPress" } },
+        { title: "About", slug: "about", type: "page", status: "published", content: "<h2>About This Site</h2><p>This is a demo site powered by OpenPress. OpenPress is a modern, edge-native content management system.</p>", excerpt: "Learn more about this site" },
+        { title: "Edge-Native Architecture", slug: "edge-native-architecture", type: "post", status: "published", content: "<p>OpenPress runs entirely on Cloudflare's global edge network. This means sub-millisecond API responses, zero cold starts, and automatic scaling to millions of requests.</p>", excerpt: "How OpenPress leverages edge computing", meta: { seo_title: "Edge-Native Architecture" } },
+        { title: "Draft: Future Features", slug: "future-features", type: "post", status: "draft", content: "<p>This is a draft post about upcoming features.</p>", excerpt: "Coming soon..." },
+      ];
+      for (const post of samplePosts) {
+        await api.post("/content", post).catch(() => {});
+      }
+      toast("Sample data loaded — refresh to see updates", "success");
+    } catch {
+      toast("Failed to load sample data", "error");
+    } finally {
+      setLoadingSample(false);
+    }
+  }
 
   return (
     <div>
@@ -160,6 +246,46 @@ export function AdminDashboard() {
               )}
             </div>
           </div>
+
+          {/* Data Management */}
+          {isAdmin && (
+            <div className="mt-8 border border-border rounded-lg bg-surface">
+              <div className="px-6 py-4 border-b border-border">
+                <h2 className="font-semibold text-text-primary">Data Management</h2>
+                <p className="text-xs text-text-tertiary mt-1">Export, import, or load sample data</p>
+              </div>
+              <div className="px-6 py-4 flex flex-wrap gap-2">
+                <button
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="border border-border px-4 py-2 rounded-md text-sm text-text-secondary hover:bg-surface-secondary transition-colors disabled:opacity-50"
+                >
+                  {exporting ? "Exporting..." : "Export All Data"}
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={importing}
+                  className="border border-border px-4 py-2 rounded-md text-sm text-text-secondary hover:bg-surface-secondary transition-colors disabled:opacity-50"
+                >
+                  {importing ? "Importing..." : "Import Data"}
+                </button>
+                <button
+                  onClick={handleLoadSample}
+                  disabled={loadingSample}
+                  className="border border-primary-300 px-4 py-2 rounded-md text-sm text-primary-600 hover:bg-primary-50 transition-colors disabled:opacity-50"
+                >
+                  {loadingSample ? "Loading..." : "Load Sample Data"}
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handleImport}
+                  className="hidden"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Recent Content */}
           <div className="mt-8 border border-border rounded-lg bg-surface">

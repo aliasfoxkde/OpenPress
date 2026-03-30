@@ -14,7 +14,7 @@ export default function AdminAI() {
     setError("");
     setOutput("");
     try {
-      const res = await api.post<{ data: { text?: string } }>("/api/ai/generate", {
+      const res = await api.post<{ data: { text?: string } }>("/ai/generate", {
         prompt: input,
         system: "You are a helpful content assistant for a CMS.",
       });
@@ -32,7 +32,7 @@ export default function AdminAI() {
     setError("");
     setOutput("");
     try {
-      const res = await api.post<{ data: { suggestions?: unknown[] } }>("/api/ai/suggest", { type, content: input });
+      const res = await api.post<{ data: { suggestions?: unknown[] } }>("/ai/suggest", { type, content: input });
       setOutput(JSON.stringify(res.data.suggestions, null, 2));
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Suggestion failed");
@@ -47,7 +47,7 @@ export default function AdminAI() {
     setError("");
     setOutput("");
     try {
-      const res = await api.post<{ data: { summary?: string } }>("/api/ai/summarize", { text: input });
+      const res = await api.post<{ data: { summary?: string } }>("/ai/summarize", { text: input });
       setOutput(res.data.summary || "No summary");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Summarization failed");
@@ -62,7 +62,7 @@ export default function AdminAI() {
     setError("");
     setOutput("");
     try {
-      const res = await api.post<{ data: { translation?: string } }>("/api/ai/translate", { text: input, target_lang: targetLang });
+      const res = await api.post<{ data: { translation?: string } }>("/ai/translate", { text: input, target_lang: targetLang });
       setOutput(res.data.translation || "No translation");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Translation failed");

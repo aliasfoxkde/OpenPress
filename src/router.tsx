@@ -141,6 +141,12 @@ const adminProductsRoute = createLazyRoute({
   lazyRouteComponent: () => import("./routes/admin/AdminProducts").then((m) => m.default),
 });
 
+const adminCompositeRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/composite",
+  lazyRouteComponent: () => import("./routes/admin/AdminComposite").then((m) => m.AdminComposite),
+});
+
 const adminOrdersRoute = createLazyRoute({
   getParentRoute: () => adminRoute,
   path: "/orders",
@@ -171,6 +177,42 @@ const adminProfileRoute = createLazyRoute({
   lazyRouteComponent: () => import("./routes/admin/UserProfile").then((m) => m.UserProfile),
 });
 
+const adminThemesRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/themes",
+  lazyRouteComponent: () => import("./routes/admin/AdminThemes").then((m) => m.AdminThemes),
+});
+
+const adminPaymentsRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/payments",
+  lazyRouteComponent: () => import("./routes/admin/AdminPayments").then((m) => m.AdminPayments),
+});
+
+const adminMarketingRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/marketing",
+  lazyRouteComponent: () => import("./routes/admin/AdminMarketing").then((m) => m.AdminMarketing),
+});
+
+const adminSocialRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/social",
+  lazyRouteComponent: () => import("./routes/admin/AdminSocial").then((m) => m.AdminSocial),
+});
+
+const adminComponentsRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/components",
+  lazyRouteComponent: () => import("./routes/admin/AdminComponents").then((m) => m.AdminComponents),
+});
+
+const adminNavigationRoute = createLazyRoute({
+  getParentRoute: () => adminRoute,
+  path: "/navigation",
+  lazyRouteComponent: () => import("./routes/admin/AdminNavigation").then((m) => m.AdminNavigation),
+});
+
 const routeTree = rootRoute.addChildren([
   homeRoute,
   shopRoute,
@@ -191,11 +233,18 @@ const routeTree = rootRoute.addChildren([
     adminUsersRoute,
     adminAIRoute,
     adminProductsRoute,
+    adminCompositeRoute,
     adminOrdersRoute,
     adminOrderDetailRoute,
     adminCommentsRoute,
     adminTaxonomiesRoute,
+    adminThemesRoute,
     adminProfileRoute,
+    adminPaymentsRoute,
+    adminMarketingRoute,
+    adminSocialRoute,
+    adminComponentsRoute,
+    adminNavigationRoute,
   ]),
 ]);
 

@@ -150,7 +150,7 @@ export function CommandPalette() {
 
       {/* Dialog */}
       <div
-        className="relative w-full max-w-lg bg-surface border border-border rounded-xl shadow-2xl overflow-hidden mx-4"
+        className="relative w-full max-w-lg bg-surface border border-border rounded-xl shadow-2xl overflow-hidden mx-4 glass-elevated"
         role="dialog"
         aria-modal="true"
         aria-label="Search"

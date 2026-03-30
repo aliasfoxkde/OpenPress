@@ -11,7 +11,7 @@ export function HomePage() {
   useEffect(() => {
     async function loadRecent() {
       try {
-        const res = await api.get<{ data: Array<{ id: string; slug: string; title: string; excerpt?: string; featured_image_url?: string | null; published_at?: string }> }>("/api/content?limit=3");
+        const res = await api.get<{ data: Array<{ id: string; slug: string; title: string; excerpt?: string; featured_image_url?: string | null; published_at?: string }> }>("/content?limit=3");
         setRecentPosts(res.data || []);
       } catch {
         // posts section is optional
@@ -83,14 +83,16 @@ export function HomePage() {
             {features.map((feature) => (
               <div
                 key={feature.title}
-                className="group border border-border rounded-xl p-6 bg-surface hover:border-primary-300 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300"
+                className="group border border-border rounded-xl p-6 bg-surface hover:border-primary-300 hover:shadow-lg hover:shadow-primary-500/5 transition-all duration-300 glass-card"
               >
-                <div className="w-10 h-10 flex items-center justify-center rounded-lg bg-primary-50 text-lg mb-4 group-hover:bg-primary-100 transition-colors">
-                  {feature.icon}
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 shrink-0 flex items-center justify-center rounded-lg bg-primary-50 text-lg group-hover:bg-primary-100 transition-colors">
+                    {feature.icon}
+                  </div>
+                  <h3 className="font-semibold text-text-primary text-lg">
+                    {feature.title}
+                  </h3>
                 </div>
-                <h3 className="font-semibold text-text-primary text-lg">
-                  {feature.title}
-                </h3>
                 <p className="mt-2 text-sm text-text-secondary leading-relaxed">
                   {feature.description}
                 </p>
@@ -156,7 +158,7 @@ export function HomePage() {
       )}
 
       {/* Architecture Section */}
-      <section className="py-16 sm:py-24 bg-surface-secondary">
+      <section className="py-16 sm:py-24 bg-surface-secondary overflow-hidden">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
             <div>
@@ -191,31 +193,132 @@ export function HomePage() {
               </ul>
             </div>
             <div className="mt-10 lg:mt-0">
-              <div className="bg-surface border border-border rounded-xl p-6 shadow-sm">
-                <h3 className="font-mono text-sm text-text-tertiary mb-4">
-                  System Architecture
-                </h3>
-                <pre className="text-xs sm:text-sm text-text-secondary leading-relaxed overflow-x-auto">
-{`┌─────────────────────────────┐
-│   Browser / PWA (React)     │
-│   CSR + Service Worker       │
-└──────────┬──────────────────┘
-           │
-┌──────────▼──────────────────┐
-│   Edge API (Workers)         │
-│   Hono Router + JWT Auth     │
-└──────────┬──────────────────┘
-           │
-┌──────────▼──────────────────┐
-│   Data Layer                 │
-│   D1 + R2 + KV + Vectorize   │
-└──────────┬──────────────────┘
-           │
-┌──────────▼──────────────────┐
-│   Plugin Runtime + Hooks     │
-│   Actions / Filters / Events │
-└─────────────────────────────┘`}
-                </pre>
+              {/* Animated Architecture Diagram */}
+              <div className="relative">
+                {/* Connecting lines */}
+                <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-primary-300/50 via-primary-400/30 to-primary-500/20 -translate-x-1/2" />
+
+                {/* Layer 1: Browser */}
+                <div className="relative flex justify-center mb-2">
+                  <div className="group relative w-full max-w-sm">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/50 dark:to-cyan-950/50 border border-blue-200/50 dark:border-blue-800/30 rounded-xl p-5 shadow-lg shadow-blue-500/5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10 15.3 15.3 0 0 1 4 10z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-text-primary">Browser / PWA</div>
+                          <div className="text-xs text-text-tertiary">React 19 + TanStack Router</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">CSR</span>
+                        <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Service Worker</span>
+                        <span className="text-[10px] bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full">Offline</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex justify-center my-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-400 animate-bounce">
+                    <path d="M12 5v14M19 12l-7 7-7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+
+                {/* Layer 2: Edge API */}
+                <div className="relative flex justify-center mb-2">
+                  <div className="group relative w-full max-w-sm">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-primary-500/20 to-violet-500/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-gradient-to-br from-primary-50 to-violet-50 dark:from-primary-950/50 dark:to-violet-950/50 border border-primary-200/50 dark:border-primary-800/30 rounded-xl p-5 shadow-lg shadow-primary-500/5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-primary-500 flex items-center justify-center">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M13 2L3 14h9l-1 8 10-10H4z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-text-primary">Edge API</div>
+                          <div className="text-xs text-text-tertiary">Cloudflare Workers + Hono</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full">JWT Auth</span>
+                        <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full">REST API</span>
+                        <span className="text-[10px] bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300 px-2 py-0.5 rounded-full">RBAC</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex justify-center my-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-400 animate-bounce">
+                    <path d="M12 5v14M19 12l-7 7-7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+
+                {/* Layer 3: Data */}
+                <div className="relative flex justify-center mb-2">
+                  <div className="group relative w-full max-w-sm">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 to-orange-500/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-950/50 dark:to-orange-950/50 border border-amber-200/50 dark:border-amber-800/30 rounded-xl p-5 shadow-lg shadow-amber-500/5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14"/><path d="M21 5v14"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-text-primary">Data Layer</div>
+                          <div className="text-xs text-text-tertiary">Cloudflare Storage</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">D1 SQLite</span>
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">R2 Storage</span>
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">KV Cache</span>
+                        <span className="text-[10px] bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 px-2 py-0.5 rounded-full">Vectorize</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Arrow */}
+                <div className="flex justify-center my-1">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-primary-400 animate-bounce">
+                    <path d="M12 5v14M19 12l-7 7-7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+
+                {/* Layer 4: Plugins */}
+                <div className="relative flex justify-center">
+                  <div className="group relative w-full max-w-sm">
+                    <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-2xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="relative bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border border-emerald-200/50 dark:border-emerald-800/30 rounded-xl p-5 shadow-lg shadow-emerald-500/5">
+                      <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                          </svg>
+                        </div>
+                        <div>
+                          <div className="font-semibold text-text-primary">Plugin Runtime</div>
+                          <div className="text-xs text-text-tertiary">Hooks &amp; Extensions</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">Actions</span>
+                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">Filters</span>
+                        <span className="text-[10px] bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full">Events</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

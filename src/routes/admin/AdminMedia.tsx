@@ -13,6 +13,137 @@ interface MediaItem {
   created_at: string;
 }
 
+function FaviconSection() {
+  const toast = useToast();
+  const [faviconUrl, setFaviconUrl] = useState(() => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+    return link?.href || "";
+  });
+  const [appleTouchIcon, setAppleTouchIcon] = useState(() => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+    return link?.href || "";
+  });
+  const faviconRef = useRef<HTMLInputElement>(null);
+  const appleRef = useRef<HTMLInputElement>(null);
+
+  async function handleFaviconUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/media", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const url = data?.data?.url || "";
+        setFaviconUrl(url);
+        // Update favicon in document head
+        let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = "icon";
+          document.head.appendChild(link);
+        }
+        link.href = url;
+        toast("Favicon updated", "success");
+      } else {
+        toast("Failed to upload favicon", "error");
+      }
+    } catch {
+      toast("Failed to upload favicon", "error");
+    }
+    if (faviconRef.current) faviconRef.current.value = "";
+  }
+
+  async function handleAppleTouchUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const token = localStorage.getItem("auth_token");
+      const res = await fetch("/media", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const url = data?.data?.url || "";
+        setAppleTouchIcon(url);
+        let link = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
+        if (!link) {
+          link = document.createElement("link");
+          link.rel = "apple-touch-icon";
+          document.head.appendChild(link);
+        }
+        link.href = url;
+        toast("Apple Touch Icon updated", "success");
+      } else {
+        toast("Failed to upload icon", "error");
+      }
+    } catch {
+      toast("Failed to upload icon", "error");
+    }
+    if (appleRef.current) appleRef.current.value = "";
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-lg border border-border bg-surface-secondary flex items-center justify-center overflow-hidden shrink-0">
+          {faviconUrl ? (
+            <img src={faviconUrl} alt="Favicon" className="w-8 h-8" />
+          ) : (
+            <span className="text-lg text-text-tertiary">...</span>
+          )}
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-medium text-text-primary">Favicon</div>
+          <div className="text-xs text-text-tertiary">32x32 or 64x64 PNG, ICO, or SVG</div>
+        </div>
+        <input ref={faviconRef} type="file" accept=".png,.ico,.svg,.jpg,.jpeg" onChange={handleFaviconUpload} className="hidden" />
+        <button onClick={() => faviconRef.current?.click()} className="border border-border px-3 py-1.5 rounded-md text-xs text-text-secondary hover:bg-surface-secondary transition-colors">
+          Upload
+        </button>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-lg border border-border bg-surface-secondary flex items-center justify-center overflow-hidden shrink-0">
+          {appleTouchIcon ? (
+            <img src={appleTouchIcon} alt="Apple Touch Icon" className="w-10 h-10 rounded" />
+          ) : (
+            <span className="text-lg text-text-tertiary">...</span>
+          )}
+        </div>
+        <div className="flex-1">
+          <div className="text-sm font-medium text-text-primary">Apple Touch Icon</div>
+          <div className="text-xs text-text-tertiary">180x180 PNG for iOS home screen</div>
+        </div>
+        <input ref={appleRef} type="file" accept=".png" onChange={handleAppleTouchUpload} className="hidden" />
+        <button onClick={() => appleRef.current?.click()} className="border border-border px-3 py-1.5 rounded-md text-xs text-text-secondary hover:bg-surface-secondary transition-colors">
+          Upload
+        </button>
+      </div>
+
+      <div className="text-xs text-text-tertiary border-t border-border pt-3">
+        <p className="font-medium text-text-secondary mb-1">Keyboard Shortcuts</p>
+        <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+          <span><kbd className="bg-surface-secondary px-1.5 py-0.5 rounded text-[10px]">Ctrl+K</kbd> Search</span>
+          <span><kbd className="bg-surface-secondary px-1.5 py-0.5 rounded text-[10px]">Ctrl+S</kbd> Save (editor)</span>
+          <span><kbd className="bg-surface-secondary px-1.5 py-0.5 rounded text-[10px]">Ctrl+B</kbd> Bold</span>
+          <span><kbd className="bg-surface-secondary px-1.5 py-0.5 rounded text-[10px]">Ctrl+I</kbd> Italic</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function AdminMedia() {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +158,7 @@ export function AdminMedia() {
     setLoading(true);
     try {
       const query = search ? `?search=${encodeURIComponent(search)}` : "";
-      const res = await api.get<{ data: MediaItem[] }>(`/api/media${query}`);
+      const res = await api.get<{ data: MediaItem[] }>(`/media${query}`);
       setItems(res?.data || []);
     } catch {
       // ignore
@@ -47,7 +178,7 @@ export function AdminMedia() {
       const formData = new FormData();
       formData.append("file", file);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch("/api/media", {
+      const res = await fetch("/media", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
@@ -64,7 +195,7 @@ export function AdminMedia() {
   async function confirmDelete() {
     if (!deleteTarget) return;
     try {
-      await api.delete(`/api/media/${deleteTarget}`);
+      await api.delete(`/media/${deleteTarget}`);
       setDeleteTarget(null);
       await fetchMedia();
     } catch (e) {
@@ -104,6 +235,17 @@ export function AdminMedia() {
           onChange={(e) => setSearch(e.target.value)}
           className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
         />
+      </div>
+
+      {/* Favicon & Site Icons */}
+      <div className="border border-border rounded-lg bg-surface mb-6">
+        <div className="px-6 py-4 border-b border-border">
+          <h2 className="font-semibold text-text-primary">Favicon &amp; Site Icons</h2>
+          <p className="text-xs text-text-tertiary mt-1">Upload icons for browser tabs, bookmarks, and home screen shortcuts</p>
+        </div>
+        <div className="px-6 py-4">
+          <FaviconSection />
+        </div>
       </div>
 
       <div

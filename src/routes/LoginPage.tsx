@@ -70,7 +70,7 @@ export function LoginPage() {
     setError("");
     setSubmitting(true);
     try {
-      await api.post("/api/auth/forgot-password", { email });
+      await api.post("/auth/forgot-password", { email });
       setView("forgot-success");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Failed to send reset email");
@@ -88,7 +88,7 @@ export function LoginPage() {
     }
     setSubmitting(true);
     try {
-      await api.post("/api/auth/reset-password", { token: resetToken, password });
+      await api.post("/auth/reset-password", { token: resetToken, password });
       setSuccess("Password has been reset. You can now sign in.");
       setView("login");
       setPassword("");

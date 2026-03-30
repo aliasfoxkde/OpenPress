@@ -36,7 +36,7 @@ export default function AdminProducts() {
     setLoading(true);
     try {
       const query = search ? `?search=${encodeURIComponent(search)}` : "";
-      const res = await api.get<{ data: Product[] }>(`/api/products${query}`);
+      const res = await api.get<{ data: Product[] }>(`/products${query}`);
       setProducts(res.data || []);
     } catch {
       // Products may not exist yet
@@ -50,7 +50,7 @@ export default function AdminProducts() {
     if (!form.title || !form.price) return;
     setSaving(true);
     try {
-      await api.post("/api/products", {
+      await api.post("/products", {
         title: form.title,
         price: Math.round(parseFloat(form.price) * 100),
         sku: form.sku || undefined,
@@ -71,7 +71,7 @@ export default function AdminProducts() {
   async function confirmDelete() {
     if (!deleteTarget) return;
     try {
-      await api.delete(`/api/products/${deleteTarget}`);
+      await api.delete(`/products/${deleteTarget}`);
       setProducts((p) => p.filter((prod) => prod.id !== deleteTarget));
       setDeleteTarget(null);
       toast("Product deleted", "success");

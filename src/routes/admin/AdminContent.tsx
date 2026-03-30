@@ -56,7 +56,7 @@ export function AdminContent() {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (statusFilter) params.set("status", statusFilter);
       if (search) params.set("search", search);
-      const res = await api.get<{ data: ContentItem[]; pagination: Pagination }>(`/api/content?${params}`);
+      const res = await api.get<{ data: ContentItem[]; pagination: Pagination }>(`/content?${params}`);
       setItems(res.data || []);
       setPagination(res.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
     } catch {
@@ -75,7 +75,7 @@ export function AdminContent() {
     if (!newTitle.trim()) return;
     setCreating(true);
     try {
-      const res = await api.post<{ data: { slug: string } }>("/api/content", {
+      const res = await api.post<{ data: { slug: string } }>("/content", {
         title: newTitle.trim(),
         type: newType,
         status: "draft",
@@ -97,7 +97,7 @@ export function AdminContent() {
   async function confirmDelete() {
     if (!deleteTarget) return;
     try {
-      await api.delete(`/api/content/${deleteTarget}`);
+      await api.delete(`/content/${deleteTarget}`);
       setDeleteTarget(null);
       await fetchContent();
       toast("Content moved to trash", "success");
@@ -109,7 +109,7 @@ export function AdminContent() {
   async function handleToggleStatus(slug: string, currentStatus: string) {
     const newStatus = currentStatus === "published" ? "draft" : "published";
     try {
-      await api.put(`/api/content/${slug}`, { status: newStatus });
+      await api.put(`/content/${slug}`, { status: newStatus });
       await fetchContent();
     } catch (e) {
       toast(e instanceof ApiError ? e.message : "Failed to update status", "error");
@@ -144,11 +144,11 @@ export function AdminContent() {
         if (!item) return Promise.resolve();
         switch (bulkAction) {
           case "publish":
-            return api.put(`/api/content/${item.slug}`, { status: "published" });
+            return api.put(`/content/${item.slug}`, { status: "published" });
           case "unpublish":
-            return api.put(`/api/content/${item.slug}`, { status: "draft" });
+            return api.put(`/content/${item.slug}`, { status: "draft" });
           case "trash":
-            return api.delete(`/api/content/${item.slug}`);
+            return api.delete(`/content/${item.slug}`);
           default:
             return Promise.resolve();
         }
