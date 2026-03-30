@@ -21,8 +21,8 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function getSiteUrl(c: { request: Request }): string {
-  const host = c.request.headers.get("Host");
+function getSiteUrl(c: { request?: Request; req?: { header(name: string): string | undefined } }): string {
+  const host = c.request?.headers?.get("Host") || c.req?.header("Host");
   return host ? `https://${host}` : "https://openpress.pages.dev";
 }
 
@@ -37,7 +37,7 @@ export async function handleSitemap(context: EventContext<Bindings, string, Reco
       .all(),
     db
       .prepare(
-        `SELECT slug, updated_at FROM products WHERE status = 'active' ORDER BY updated_at DESC`
+        `SELECT ci.slug, p.updated_at FROM products p JOIN content_items ci ON p.content_id = ci.id WHERE p.status = 'active' ORDER BY p.updated_at DESC`
       )
       .all(),
   ]);

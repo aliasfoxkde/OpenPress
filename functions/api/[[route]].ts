@@ -287,35 +287,12 @@ app.post("/api/comments/:slug", async (c) => {
 protectedRoutes.use("/comments/*", requireCapability("manage_comments"));
 protectedRoutes.route("/comments", comments);
 
-app.route("/api", protectedRoutes);
-
-// Public composite product routes
-app.route("/api/composite", composite);
-
-// Public social links
-app.route("/api/social", social);
-
-// Public reusable components
-app.route("/api/components", componentRoutes);
-
-// Public navigation
-app.route("/api/navigation", navigation);
-
-// Public AI assistant chat + widget config
-app.route("/api/ai-assistant", aiAssistant);
-
-// Public payment providers (for checkout)
-app.route("/api/payments", payments);
-
-// Public marketing (coupon apply/remove)
-app.route("/api/marketing", marketing);
+// === PUBLIC ROUTES (no auth required) — must be BEFORE protectedRoutes mount ===
 
 // Public cart routes (session-based, no auth required)
 app.route("/api/cart", cart);
 
 // Public product listing (no auth required)
-app.route("/api/composite", composite);
-
 app.get("/api/products", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
@@ -371,7 +348,7 @@ app.get("/api/products/:id", async (c) => {
   return c.json({ data: { ...product, variants: variants.results } });
 });
 
-// Public read endpoints (no auth required)
+// Public content read endpoints (no auth required)
 app.get("/api/content", async (c) => {
   const db = c.env.DB;
   const cache = c.env.CACHE;
@@ -508,6 +485,9 @@ app.route("/api/cron", cron);
 // Stripe checkout (protected - create session) and webhook (public)
 app.route("/api/checkout", stripeRoutes);
 app.route("/api/webhooks", stripeRoutes);
+
+// === PROTECTED ROUTES (auth required) — mounted LAST so public routes take priority ===
+app.route("/api", protectedRoutes);
 
 // 404 handler
 app.notFound((c) => {
