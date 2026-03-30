@@ -212,6 +212,81 @@ protectedRoutes.get("/stats", async (c) => {
 // Public hero slides (must be before protectedRoutes to avoid 401)
 app.route("/api", heroSlides);
 
+// Public comment endpoints — registered directly on app (not as sub-app) so
+// they only match /:slug paths and don't shadow the admin /api/comments route
+app.get("/api/comments/:slug", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const slug = c.req.param("slug");
+  const page = Math.max(1, parseInt(c.req.query("page") || "1"));
+  const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "50")));
+  const offset = (page - 1) * limit;
+
+  const content = await db.prepare("SELECT id FROM content_items WHERE slug = ? AND status = 'published'").bind(slug).first<{ id: string }>();
+  if (!content) {
+    return c.json({ error: { message: "Content not found", code: "NOT_FOUND" } }, 404);
+  }
+
+  const [items, countResult] = await Promise.all([
+    db.prepare(
+      `SELECT c.*, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) as reply_count
+       FROM comments c WHERE c.content_id = ? AND c.status = 'approved'
+       ORDER BY c.created_at ASC LIMIT ? OFFSET ?`
+    ).bind(content.id, limit, offset).all(),
+    db.prepare("SELECT COUNT(*) as total FROM comments WHERE content_id = ? AND c.status = 'approved'")
+      .bind(content.id).first<{ total: number }>(),
+  ]);
+
+  return c.json({
+    data: items.results,
+    pagination: { page, limit, total: countResult?.total || 0, totalPages: Math.ceil((countResult?.total || 0) / limit) },
+  });
+});
+
+app.post("/api/comments/:slug", async (c) => {
+  const db = c.env.DB;
+  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
+
+  const slug = c.req.param("slug");
+  const body = await c.req.json();
+  const { author_name, author_email, body: commentBody, parent_id } = body;
+
+  if (!author_name || !commentBody) {
+    return c.json({ error: { message: "Name and comment body are required", code: "VALIDATION" } }, 400);
+  }
+
+  if (author_name.length > 100 || commentBody.length > 5000) {
+    return c.json({ error: { message: "Comment too long", code: "VALIDATION" } }, 400);
+  }
+
+  const content = await db.prepare("SELECT id FROM content_items WHERE slug = ? AND status = 'published'").bind(slug).first<{ id: string }>();
+  if (!content) {
+    return c.json({ error: { message: "Content not found", code: "NOT_FOUND" } }, 404);
+  }
+
+  if (parent_id) {
+    const parent = await db.prepare("SELECT id FROM comments WHERE id = ? AND content_id = ?").bind(parent_id, content.id).first();
+    if (!parent) {
+      return c.json({ error: { message: "Parent comment not found", code: "NOT_FOUND" } }, 404);
+    }
+  }
+
+  const id = crypto.randomUUID();
+  const now = new Date().toISOString();
+
+  await db.prepare(
+    "INSERT INTO comments (id, content_id, author_name, author_email, body, parent_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)"
+  ).bind(id, content.id, author_name.trim(), author_email?.trim() || null, commentBody.trim(), parent_id || null, now).run();
+
+  return c.json({ data: { id, status: "pending" } }, 201);
+});
+
+// Comments - admin routes (protected) — must be registered on protectedRoutes
+// BEFORE app.route("/api", protectedRoutes) below
+protectedRoutes.use("/comments/*", requireCapability("manage_comments"));
+protectedRoutes.route("/comments", comments);
+
 app.route("/api", protectedRoutes);
 
 // Public composite product routes
@@ -426,82 +501,6 @@ app.get("/api/content/:slug", async (c) => {
 
 // SEO routes (public - sitemap, RSS, robots, search)
 app.route("/api/seo", seo);
-
-// Comments - public routes (GET/POST per content slug)
-const publicComments = new Hono<{ Bindings: Bindings; Variables: Variables }>();
-publicComments.get("/:slug", async (c) => {
-  const db = c.env.DB;
-  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
-
-  const slug = c.req.param("slug");
-  const page = Math.max(1, parseInt(c.req.query("page") || "1"));
-  const limit = Math.min(100, Math.max(1, parseInt(c.req.query("limit") || "50")));
-  const offset = (page - 1) * limit;
-
-  const content = await db.prepare("SELECT id FROM content_items WHERE slug = ? AND status = 'published'").bind(slug).first<{ id: string }>();
-  if (!content) {
-    return c.json({ error: { message: "Content not found", code: "NOT_FOUND" } }, 404);
-  }
-
-  const [items, countResult] = await Promise.all([
-    db.prepare(
-      `SELECT c.*, (SELECT COUNT(*) FROM comments WHERE parent_id = c.id) as reply_count
-       FROM comments c WHERE c.content_id = ? AND c.status = 'approved'
-       ORDER BY c.created_at ASC LIMIT ? OFFSET ?`
-    ).bind(content.id, limit, offset).all(),
-    db.prepare("SELECT COUNT(*) as total FROM comments WHERE content_id = ? AND c.status = 'approved'")
-      .bind(content.id).first<{ total: number }>(),
-  ]);
-
-  return c.json({
-    data: items.results,
-    pagination: { page, limit, total: countResult?.total || 0, totalPages: Math.ceil((countResult?.total || 0) / limit) },
-  });
-});
-
-publicComments.post("/:slug", async (c) => {
-  const db = c.env.DB;
-  if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
-
-  const slug = c.req.param("slug");
-  const body = await c.req.json();
-  const { author_name, author_email, body: commentBody, parent_id } = body;
-
-  if (!author_name || !commentBody) {
-    return c.json({ error: { message: "Name and comment body are required", code: "VALIDATION" } }, 400);
-  }
-
-  if (author_name.length > 100 || commentBody.length > 5000) {
-    return c.json({ error: { message: "Comment too long", code: "VALIDATION" } }, 400);
-  }
-
-  const content = await db.prepare("SELECT id FROM content_items WHERE slug = ? AND status = 'published'").bind(slug).first<{ id: string }>();
-  if (!content) {
-    return c.json({ error: { message: "Content not found", code: "NOT_FOUND" } }, 404);
-  }
-
-  if (parent_id) {
-    const parent = await db.prepare("SELECT id FROM comments WHERE id = ? AND content_id = ?").bind(parent_id, content.id).first();
-    if (!parent) {
-      return c.json({ error: { message: "Parent comment not found", code: "NOT_FOUND" } }, 404);
-    }
-  }
-
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-
-  await db.prepare(
-    "INSERT INTO comments (id, content_id, author_name, author_email, body, parent_id, status, created_at) VALUES (?, ?, ?, ?, ?, ?, 'pending', ?)"
-  ).bind(id, content.id, author_name.trim(), author_email?.trim() || null, commentBody.trim(), parent_id || null, now).run();
-
-  return c.json({ data: { id, status: "pending" } }, 201);
-});
-
-app.route("/api/comments", publicComments);
-
-// Comments - admin routes (protected)
-protectedRoutes.use("/comments/*", requireCapability("manage_comments"));
-protectedRoutes.route("/comments", comments);
 
 // Cron endpoints (for Workers Cron Trigger)
 app.route("/api/cron", cron);
