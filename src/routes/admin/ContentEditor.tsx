@@ -374,7 +374,15 @@ export function ContentEditor() {
             </svg>
           </button>
           <span className="text-sm text-text-tertiary">
-            {isCreateMode ? `New ${contentType === "page" ? "Page" : "Post"}` : `Edit ${contentType === "page" ? "Page" : "Post"}`}
+            {isCreateMode
+              ? `New ${contentType === "page" ? "Page" : "Post"}`
+              : (
+                <span className="flex items-center gap-1.5">
+                  <span className="text-text-tertiary">{contentType === "page" ? "Page" : "Post"}</span>
+                  <span className="text-text-tertiary">/</span>
+                  <span className="text-text-primary font-medium truncate max-w-xs">{title || "Untitled"}</span>
+                </span>
+              )}
           </span>
           {!isCreateMode && revisions.length > 0 && (
             <button
