@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
+import { reloadAnalytics } from "@/lib/analytics";
 
 interface Settings {
   [key: string]: string;
@@ -15,6 +16,9 @@ export function AdminSettings() {
     default_role: "viewer",
     posts_per_page: "20",
     allow_registration: "false",
+    analytics_provider: "none",
+    analytics_id: "",
+    analytics_custom: "",
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -40,6 +44,12 @@ export function AdminSettings() {
     setSaved(false);
     try {
       await api.put("/api/settings", settings);
+      // Reload analytics if provider changed
+      reloadAnalytics({
+        provider: (settings.analytics_provider as "google" | "plausible" | "custom" | "none") || "none",
+        trackingId: settings.analytics_id || "",
+        customScript: settings.analytics_custom || "",
+      });
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
     } catch (e) {
@@ -142,6 +152,51 @@ export function AdminSettings() {
                 <option value="viewer">Viewer</option>
               </select>
             </div>
+          </div>
+        </fieldset>
+
+        <fieldset className="border border-border rounded-lg p-4">
+          <legend className="text-sm font-medium text-text-primary px-2">Analytics</legend>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Analytics Provider</label>
+              <select
+                value={settings.analytics_provider || "none"}
+                onChange={(e) => setSettings({ ...settings, analytics_provider: e.target.value })}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus bg-surface"
+              >
+                <option value="none">None (disabled)</option>
+                <option value="google">Google Analytics (gtag.js)</option>
+                <option value="plausible">Plausible Analytics</option>
+                <option value="custom">Custom Script</option>
+              </select>
+            </div>
+            {(settings.analytics_provider === "google" || settings.analytics_provider === "plausible") && (
+              <div>
+                <label className="block text-sm text-text-secondary mb-1">
+                  {settings.analytics_provider === "google" ? "Measurement ID (G-XXXXXXXXXX)" : "Domain"}
+                </label>
+                <input
+                  type="text"
+                  value={settings.analytics_id || ""}
+                  onChange={(e) => setSettings({ ...settings, analytics_id: e.target.value })}
+                  placeholder={settings.analytics_provider === "google" ? "G-XXXXXXXXXX" : "example.com"}
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+                />
+              </div>
+            )}
+            {settings.analytics_provider === "custom" && (
+              <div>
+                <label className="block text-sm text-text-secondary mb-1">Custom Script (injected into &lt;head&gt;)</label>
+                <textarea
+                  rows={4}
+                  value={settings.analytics_custom || ""}
+                  onChange={(e) => setSettings({ ...settings, analytics_custom: e.target.value })}
+                  placeholder="// Your analytics script here&#10;// e.g., window._paq = window._paq || [];"
+                  className="w-full rounded-md border border-border px-3 py-2 text-sm font-mono focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+                />
+              </div>
+            )}
           </div>
         </fieldset>
 

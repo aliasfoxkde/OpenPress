@@ -4,6 +4,7 @@ import { cn } from "@/lib/cn";
 import { ToastProvider } from "@/components/ui/Toast";
 import { CommandPalette } from "@/components/ui/CommandPalette";
 import { useCartStore } from "@/stores/cart";
+import { useAnalytics } from "@/lib/analytics";
 
 function RouteLoader() {
   return (
@@ -34,6 +35,9 @@ export function RootLayout() {
   const isAdmin = routerState.location.pathname.startsWith("/admin");
   const cartItemCount = useCartStore((s) => s.itemCount());
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Analytics (page view tracking)
+  useAnalytics();
 
   // Close mobile menu on route change
   useEffect(() => {
