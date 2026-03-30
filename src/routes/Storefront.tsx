@@ -21,6 +21,7 @@ export function StorefrontPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("default");
 
   useSEO({
     title: "Shop",
@@ -82,23 +83,37 @@ export function StorefrontPage() {
         <p className="mt-2 text-text-secondary">Browse our products</p>
       </div>
 
-      {/* Search */}
+      {/* Search & Sort */}
       {products.length > 0 && (
-        <div className="mb-6">
+        <div className="mb-6 flex flex-col sm:flex-row gap-3">
           <input
             type="text"
             placeholder="Search products..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+            className="flex-1 max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
           />
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="rounded-md border border-border px-3 py-2 text-sm bg-surface focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+          >
+            <option value="default">Default order</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="name-asc">Name: A-Z</option>
+          </select>
         </div>
       )}
 
       {(() => {
-        const filtered = search
+        let filtered = search
           ? products.filter((p) => p.title.toLowerCase().includes(search.toLowerCase()) || p.excerpt?.toLowerCase().includes(search.toLowerCase()))
           : products;
+
+        if (sort === "price-asc") filtered = [...filtered].sort((a, b) => a.price - b.price);
+        else if (sort === "price-desc") filtered = [...filtered].sort((a, b) => b.price - a.price);
+        else if (sort === "name-asc") filtered = [...filtered].sort((a, b) => a.title.localeCompare(b.title));
 
         if (filtered.length === 0) {
           return (
