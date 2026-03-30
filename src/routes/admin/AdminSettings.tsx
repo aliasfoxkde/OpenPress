@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 
 interface Settings {
   [key: string]: string;
 }
 
 export function AdminSettings() {
+  const toast = useToast();
   const [settings, setSettings] = useState<Settings>({
     site_name: "OpenPress",
     site_description: "A modern, edge-native CMS",
@@ -40,8 +42,8 @@ export function AdminSettings() {
       await api.put("/api/settings", settings);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch {
-      // ignore
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to save settings", "error");
     } finally {
       setSaving(false);
     }

@@ -4,6 +4,7 @@ import { useContentStore } from "@/stores/content";
 import { useAuthStore } from "@/stores/auth";
 import { RichTextEditor, blockNoteToLegacyBlocks, legacyBlocksToBlockNote } from "@/components/editor/RichTextEditor";
 import { api } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 import type { ContentStatus } from "@shared/types";
 
 const STATUS_OPTIONS: { value: ContentStatus; label: string }[] = [
@@ -40,6 +41,7 @@ export function ContentEditor() {
   const search = useSearch({ strict: false }) as { slug?: string };
   const slug = search.slug;
   const user = useAuthStore((s) => s.user);
+  const toast = useToast();
 
   const {
     currentContent,
@@ -279,7 +281,7 @@ export function ContentEditor() {
         setHasChanges(false);
         void navigate({ to: "/admin/content/edit", search: { slug: newItem.slug } });
       } catch {
-        // Error handled in store
+        toast("Failed to create content", "error");
       }
     } else {
       try {
@@ -297,7 +299,7 @@ export function ContentEditor() {
         // Refresh revisions after save
         if (contentIdRef.current) loadRevisions(contentIdRef.current);
       } catch {
-        // Error handled in store
+        toast("Failed to save content", "error");
       }
     }
   }, [

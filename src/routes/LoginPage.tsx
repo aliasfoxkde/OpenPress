@@ -2,6 +2,19 @@ import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth";
 
+function getPasswordStrength(pw: string): { label: string; color: string } {
+  if (pw.length < 8) return { label: "Too short", color: "text-red-500" };
+  let score = 0;
+  if (pw.length >= 12) score++;
+  if (/[A-Z]/.test(pw)) score++;
+  if (/[0-9]/.test(pw)) score++;
+  if (/[^A-Za-z0-9]/.test(pw)) score++;
+  if (score <= 1) return { label: "Weak", color: "text-red-500" };
+  if (score <= 2) return { label: "Fair", color: "text-yellow-500" };
+  if (score <= 3) return { label: "Good", color: "text-green-500" };
+  return { label: "Strong", color: "text-green-600" };
+}
+
 export function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -16,6 +29,12 @@ export function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (isRegister && password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
     try {
       if (isRegister) {
         await register(email, password, name || undefined);
@@ -27,6 +46,8 @@ export function LoginPage() {
       setError(err instanceof Error ? err.message : "Authentication failed");
     }
   };
+
+  const strength = isRegister && password ? getPasswordStrength(password) : null;
 
   return (
     <div className="flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4">
@@ -42,7 +63,7 @@ export function LoginPage() {
           </p>
         </div>
         {error && (
-          <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 rounded-md">
+          <div className="mb-4 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
             {error}
           </div>
         )}
@@ -58,6 +79,8 @@ export function LoginPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Admin"
+                required
+                minLength={2}
                 className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
               />
             </div>
@@ -72,12 +95,14 @@ export function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              autoComplete={isRegister ? "email" : "username"}
               className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
             />
           </div>
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-text-secondary mb-1">
               Password
+              {isRegister && <span className="text-text-tertiary font-normal ml-1">(min 8 characters)</span>}
             </label>
             <input
               id="password"
@@ -86,8 +111,14 @@ export function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
+              autoComplete={isRegister ? "new-password" : "current-password"}
               className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
             />
+            {strength && (
+              <p className={`mt-1 text-xs ${strength.color}`}>
+                {strength.label}
+              </p>
+            )}
           </div>
           <button
             type="submit"

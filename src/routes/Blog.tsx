@@ -25,6 +25,7 @@ export function BlogPage() {
   const [posts, setPosts] = useState<ContentItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [activeCategory, setActiveCategory] = useState("");
@@ -49,6 +50,7 @@ export function BlogPage() {
   useEffect(() => {
     async function loadPosts() {
       setLoading(true);
+      setError(null);
       try {
         const params = new URLSearchParams({ page: String(page), limit: "12" });
         if (activeCategory) params.set("category", activeCategory);
@@ -56,7 +58,7 @@ export function BlogPage() {
         setPosts(res.data || []);
         if (res.pagination) setTotalPages(res.pagination.totalPages);
       } catch {
-        // silently fail
+        setError("Failed to load posts");
       } finally {
         setLoading(false);
       }
@@ -133,6 +135,16 @@ export function BlogPage() {
               </div>
             </div>
           ))}
+        </div>
+      ) : error ? (
+        <div className="text-center py-16">
+          <p className="text-text-tertiary mb-4">{error}</p>
+          <button
+            onClick={() => void loadPosts()}
+            className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+          >
+            Try again
+          </button>
         </div>
       ) : posts.length === 0 ? (
         <div className="text-center py-16">

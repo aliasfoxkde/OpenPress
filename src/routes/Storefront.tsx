@@ -29,18 +29,21 @@ export function StorefrontPage() {
     type: "website",
   });
 
-  useEffect(() => {
-    async function loadProducts() {
-      try {
-        const res = await api.get("/api/products");
-        setProducts(res.data || []);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to load products");
-      } finally {
-        setLoading(false);
-      }
+  async function loadProducts() {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.get("/api/products");
+      setProducts(res.data || []);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load products");
+    } finally {
+      setLoading(false);
     }
-    loadProducts();
+  }
+
+  useEffect(() => {
+    void loadProducts();
   }, []);
 
   if (loading) {
@@ -60,10 +63,14 @@ export function StorefrontPage() {
 
   if (error) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{error}</p>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 py-12 text-center">
+        <p className="text-text-tertiary mb-4">{error}</p>
+        <button
+          onClick={() => void loadProducts()}
+          className="text-sm text-primary-600 hover:text-primary-700 font-medium"
+        >
+          Try again
+        </button>
       </div>
     );
   }

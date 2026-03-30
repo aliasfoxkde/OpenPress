@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { api } from "../../lib/api";
+import { api, ApiError } from "../../lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ export default function AdminProducts() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ title: "", price: "", sku: "", compare_at_price: "", inventory: "0" });
   const [saving, setSaving] = useState(false);
+  const toast = useToast();
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -57,8 +59,8 @@ export default function AdminProducts() {
       setShowCreate(false);
       setForm({ title: "", price: "", sku: "", compare_at_price: "", inventory: "0" });
       await loadProducts();
-    } catch {
-      // handled silently
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to create product", "error");
     } finally {
       setSaving(false);
     }
@@ -70,8 +72,9 @@ export default function AdminProducts() {
       await api.delete(`/api/products/${deleteTarget}`);
       setProducts((p) => p.filter((prod) => prod.id !== deleteTarget));
       setDeleteTarget(null);
-    } catch {
-      // handled silently
+      toast("Product deleted", "success");
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to delete product", "error");
     }
   }
 

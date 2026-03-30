@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { api } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
+import { useToast } from "@/components/ui/Toast";
 
 interface ContentItem {
   id: string;
@@ -39,6 +40,7 @@ export function AdminContent() {
   const [creating, setCreating] = useState(false);
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
+  const toast = useToast();
 
   // Bulk selection
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -79,8 +81,8 @@ export function AdminContent() {
       setShowCreate(false);
       setNewTitle("");
       void navigate({ to: "/admin/content/edit", search: { slug: res.data?.slug } });
-    } catch {
-      // ignore
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to create content", "error");
     } finally {
       setCreating(false);
     }
@@ -96,8 +98,9 @@ export function AdminContent() {
       await api.delete(`/api/content/${deleteTarget}`);
       setDeleteTarget(null);
       await fetchContent();
-    } catch {
-      // ignore
+      toast("Content moved to trash", "success");
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to delete content", "error");
     }
   }
 
@@ -106,8 +109,8 @@ export function AdminContent() {
     try {
       await api.put(`/api/content/${slug}`, { status: newStatus });
       await fetchContent();
-    } catch {
-      // ignore
+    } catch (e) {
+      toast(e instanceof ApiError ? e.message : "Failed to update status", "error");
     }
   }
 

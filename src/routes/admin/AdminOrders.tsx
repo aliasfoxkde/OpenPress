@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../../lib/api";
+import { useToast } from "@/components/ui/Toast";
 
 interface Order {
   id: string;
@@ -21,6 +22,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function AdminOrders() {
+  const toast = useToast();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -38,7 +40,7 @@ export default function AdminOrders() {
       setOrders(res.data || []);
       if (res.pagination) setTotalPages(res.pagination.totalPages);
     } catch {
-      // handled silently
+      toast("Failed to load orders", "error");
     } finally {
       setLoading(false);
     }
