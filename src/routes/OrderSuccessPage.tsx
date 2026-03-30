@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { Link } from "@tanstack/react-router";
 import { api } from "@/lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 interface OrderLineItem {
   id: string;
@@ -25,6 +26,7 @@ interface OrderData {
 }
 
 export function OrderSuccessPage() {
+  useSEO({ title: "Order Confirmed", description: "Your order has been placed successfully", type: "website" });
   const navigate = useNavigate();
   const [order, setOrder] = useState<OrderData | null>(null);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import { useSEO } from "@/hooks/useSEO";
 
 export function NotFoundPage() {
+  useSEO({ title: "Page Not Found", description: "The page you're looking for doesn't exist", type: "website" });
   return (
     <div className="h-full flex items-center justify-center px-4">
       <div className="text-center">

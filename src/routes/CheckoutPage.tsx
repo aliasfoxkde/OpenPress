@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { api, ApiError } from "@/lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 interface CartItem {
   id: string;
@@ -24,6 +25,7 @@ interface CheckoutItem {
 }
 
 export function CheckoutPage() {
+  useSEO({ title: "Checkout", description: "Complete your OpenPress order", type: "website" });
   const navigate = useNavigate();
   const [items, setItems] = useState<CheckoutItem[]>([]);
   const [loading, setLoading] = useState(true);

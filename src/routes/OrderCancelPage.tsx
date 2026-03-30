@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import { useSEO } from "@/hooks/useSEO";
 
 export function OrderCancelPage() {
+  useSEO({ title: "Order Cancelled", description: "Your order has been cancelled", type: "website" });
   return (
     <div className="max-w-2xl mx-auto px-4 py-12 text-center">
       <div className="text-4xl mb-4">&#10007;</div>

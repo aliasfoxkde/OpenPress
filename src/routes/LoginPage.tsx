@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth";
 import { api, ApiError } from "@/lib/api";
+import { useSEO } from "@/hooks/useSEO";
 
 function getPasswordStrength(pw: string): { label: string; color: string } {
   if (pw.length < 8) return { label: "Too short", color: "text-red-500" };
@@ -19,6 +20,7 @@ function getPasswordStrength(pw: string): { label: string; color: string } {
 type View = "login" | "register" | "forgot" | "forgot-success" | "reset";
 
 export function LoginPage() {
+  useSEO({ title: "Sign In", description: "Sign in to your OpenPress dashboard or create an account", type: "website" });
   const [view, setView] = useState<View>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
