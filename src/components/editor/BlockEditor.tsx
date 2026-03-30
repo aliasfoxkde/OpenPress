@@ -2,6 +2,27 @@ import { useState, useRef, useCallback, type DragEvent, type KeyboardEvent } fro
 import { cn } from "@/lib/cn";
 import type { ContentBlock, BlockType } from "@openpress/shared";
 
+// ── Formatting helpers ──────────────────────────────────────────────
+function wrapSelection(
+  textarea: HTMLTextAreaElement,
+  blockId: string,
+  prefix: string,
+  suffix: string,
+  onUpdate: (id: string, data: Record<string, unknown>) => void,
+) {
+  const { selectionStart, selectionEnd, value } = textarea;
+  const selected = value.slice(selectionStart, selectionEnd) || "";
+  const newText =
+    value.slice(0, selectionStart) + `${prefix}${selected}${suffix}` + value.slice(selectionEnd);
+  onUpdate(blockId, { text: newText });
+  // Position cursor inside the markers
+  setTimeout(() => {
+    textarea.selectionStart = selectionStart + prefix.length;
+    textarea.selectionEnd = selectionEnd + prefix.length;
+    textarea.focus();
+  }, 0);
+}
+
 // ── Block type menu ─────────────────────────────────────────────────
 const BLOCK_TYPES: { value: BlockType; label: string }[] = [
   { value: "text", label: "Paragraph" },
@@ -41,6 +62,7 @@ export function BlockEditor({
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [showTypeMenu, setShowTypeMenu] = useState<string | null>(null);
+  const [activeTextarea, setActiveTextarea] = useState<HTMLTextAreaElement | null>(null);
   const blockRefs = useRef<Map<string, HTMLDivElement>>(new Map());
 
   // ── Drag handlers ───────────────────────────────────────────────
@@ -86,6 +108,19 @@ export function BlockEditor({
     setDragIndex(null);
     setDropIndex(null);
   }, []);
+
+  // ── Formatting toolbar ──────────────────────────────────────────────
+  const activeBlock = activeBlockId ? blocks.find((b) => b.id === activeBlockId) : null;
+  const isTextBlock = activeBlock?.block_type === "text" || activeBlock?.block_type === "heading";
+
+  const applyFormat = useCallback(
+    (prefix: string, suffix: string) => {
+      if (activeTextarea && activeBlockId) {
+        wrapSelection(activeTextarea, activeBlockId, prefix, suffix, onUpdateBlockData);
+      }
+    },
+    [activeTextarea, activeBlockId, onUpdateBlockData],
+  );
 
   // ── Keyboard shortcuts ──────────────────────────────────────────
   const handleKeyDown = useCallback(
@@ -274,6 +309,45 @@ export function BlockEditor({
 
             {/* Block content */}
             <div className="p-3 pl-2">
+              {/* Formatting toolbar for text/heading blocks */}
+              {!readOnly && activeBlockId === block.id && (block.block_type === "text" || block.block_type === "heading") && (
+                <div className="flex items-center gap-0.5 mb-1 pb-1 border-b border-border">
+                  <ToolbarButton
+                    title="Bold (Ctrl+B)"
+                    onClick={() => applyFormat("**", "**")}
+                  >
+                    <strong className="text-xs">B</strong>
+                  </ToolbarButton>
+                  <ToolbarButton
+                    title="Italic (Ctrl+I)"
+                    onClick={() => applyFormat("*", "*")}
+                  >
+                    <em className="text-xs">I</em>
+                  </ToolbarButton>
+                  <ToolbarButton
+                    title="Strikethrough"
+                    onClick={() => applyFormat("~~", "~~")}
+                  >
+                    <span className="text-xs line-through">S</span>
+                  </ToolbarButton>
+                  <span className="w-px h-4 bg-border mx-1" />
+                  <ToolbarButton
+                    title="Link (Ctrl+K)"
+                    onClick={() => applyFormat("[", "](url)")}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+                      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+                    </svg>
+                  </ToolbarButton>
+                  <ToolbarButton
+                    title="Code"
+                    onClick={() => applyFormat("`", "`")}
+                  >
+                    <span className="text-xs font-mono">&lt;&gt;</span>
+                  </ToolbarButton>
+                </div>
+              )}
               <BlockRenderer
                 block={block}
                 readOnly={readOnly}
@@ -288,6 +362,7 @@ export function BlockEditor({
                   setShowTypeMenu(null);
                 }}
                 onDelete={() => onRemoveBlock(block.id)}
+                onTextareaRef={setActiveTextarea}
               />
             </div>
 
@@ -327,6 +402,7 @@ interface BlockRendererProps {
   onToggleTypeMenu: () => void;
   onChangeType: (type: BlockType) => void;
   onDelete: () => void;
+  onTextareaRef: (el: HTMLTextAreaElement | null) => void;
 }
 
 function BlockRenderer({
@@ -338,6 +414,7 @@ function BlockRenderer({
   onToggleTypeMenu,
   onChangeType,
   onDelete,
+  onTextareaRef,
 }: BlockRendererProps) {
   const updateField = (field: string, value: unknown) => {
     onUpdateData(block.id, { ...block.data, [field]: value });
@@ -388,9 +465,11 @@ function BlockRenderer({
       <div className="flex-1 min-w-0">
         {block.block_type === "text" && (
           <textarea
+            ref={onTextareaRef}
             value={text}
             onChange={(e) => updateField("text", e.target.value)}
             onKeyDown={(e) => onKeyDown(block, e)}
+            onFocus={() => onTextareaRef(e.currentTarget)}
             readOnly={readOnly}
             placeholder="Type something..."
             rows={Math.max(2, text.split("\n").length)}
@@ -431,9 +510,11 @@ function BlockRenderer({
               </p>
             ) : (
               <textarea
+                ref={onTextareaRef}
                 value={text}
                 onChange={(e) => updateField("text", e.target.value)}
                 onKeyDown={(e) => onKeyDown(block, e)}
+                onFocus={() => onTextareaRef(e.currentTarget)}
                 placeholder="Heading text..."
                 rows={1}
                 className={cn(
@@ -741,6 +822,28 @@ function BlockRenderer({
         </button>
       )}
     </div>
+  );
+}
+
+// ── Toolbar button ────────────────────────────────────────────────────
+function ToolbarButton({
+  title,
+  onClick,
+  children,
+}: {
+  title: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      onClick={onClick}
+      className="p-1.5 text-text-secondary hover:text-text-primary hover:bg-surface-secondary rounded transition-colors"
+    >
+      {children}
+    </button>
   );
 }
 
