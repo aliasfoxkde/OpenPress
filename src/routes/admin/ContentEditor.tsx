@@ -27,6 +27,14 @@ interface Revision {
   created_at: string;
 }
 
+interface MediaItem {
+  id: string;
+  filename: string;
+  original_name: string;
+  mime_type: string;
+  url?: string;
+}
+
 export function ContentEditor() {
   const navigate = useNavigate();
   const search = useSearch({ strict: false }) as { slug?: string };
@@ -66,6 +74,11 @@ export function ContentEditor() {
   const [revisions, setRevisions] = useState<Revision[]>([]);
   const [showRevisions, setShowRevisions] = useState(false);
   const [restoringRevision, setRestoringRevision] = useState(false);
+
+  // Media picker
+  const [showMediaPicker, setShowMediaPicker] = useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
 
   // BlockNote editor content
   const [editorBlocks, setEditorBlocks] = useState<PartialBlock[]>([]);
@@ -191,6 +204,27 @@ export function ContentEditor() {
   const handleExcerptChange = useCallback((val: string) => { setExcerpt(val); markChanged(); }, [markChanged]);
   const handleStatusChange = useCallback((val: ContentStatus) => { setStatus(val); markChanged(); }, [markChanged]);
   const handleFeaturedImageChange = useCallback((val: string) => { setFeaturedImageUrl(val); markChanged(); }, [markChanged]);
+
+  async function openMediaPicker() {
+    setShowMediaPicker(true);
+    setMediaLoading(true);
+    try {
+      const res = await api.get<{ data: MediaItem[] }>("/api/media");
+      const images = (res?.data || []).filter((m) => m.mime_type?.startsWith("image/"));
+      setMediaItems(images);
+    } catch {
+      // ignore
+    } finally {
+      setMediaLoading(false);
+    }
+  }
+
+  function selectMedia(item: MediaItem) {
+    if (item.url) {
+      handleFeaturedImageChange(item.url);
+      setShowMediaPicker(false);
+    }
+  }
 
   const handleEditorChange = useCallback((blocks: PartialBlock[]) => {
     setEditorBlocks(blocks);
@@ -487,6 +521,13 @@ export function ContentEditor() {
           placeholder="https://example.com/image.jpg"
           className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
         />
+        <button
+          type="button"
+          onClick={openMediaPicker}
+          className="mt-2 text-xs text-primary-600 hover:text-primary-700 font-medium transition-colors"
+        >
+          Or choose from Media Library
+        </button>
       </div>
 
       {/* SEO */}
@@ -612,6 +653,41 @@ export function ContentEditor() {
       {hasChanges && (
         <div className="fixed bottom-4 right-4 bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-md text-xs shadow-md">
           Unsaved changes — autosaves in 30s (Ctrl+S to save now)
+        </div>
+      )}
+
+      {/* Media Picker Modal */}
+      {showMediaPicker && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50" onClick={() => setShowMediaPicker(false)}>
+          <div className="bg-surface rounded-xl w-full max-w-2xl max-h-[80vh] shadow-xl" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+              <h2 className="text-lg font-bold text-text-primary">Choose Image</h2>
+              <button onClick={() => setShowMediaPicker(false)} className="text-text-tertiary hover:text-text-primary text-lg">&times;</button>
+            </div>
+            <div className="p-5 overflow-y-auto max-h-[60vh]">
+              {mediaLoading ? (
+                <div className="text-center py-8 text-text-tertiary text-sm">Loading media...</div>
+              ) : mediaItems.length === 0 ? (
+                <div className="text-center py-8 text-text-tertiary text-sm">No images in the media library. Upload images from the Media page first.</div>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                  {mediaItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => selectMedia(item)}
+                      className={`aspect-square rounded-md border-2 overflow-hidden hover:border-primary-500 transition-colors ${featuredImageUrl === item.url ? "border-primary-500 ring-2 ring-primary-200" : "border-border"}`}
+                    >
+                      {item.url ? (
+                        <img src={item.url} alt={item.original_name} className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-surface-secondary flex items-center justify-center text-2xl opacity-30">&#128196;</div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
