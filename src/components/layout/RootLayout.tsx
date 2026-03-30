@@ -95,10 +95,10 @@ export function RootLayout() {
     <div className="min-h-screen bg-surface">
       <header
         className={cn(
-          "sticky top-0 z-50 transition-all duration-300 glass-surface",
+          "sticky top-0 z-50 transition-all duration-300",
           scrolled
             ? "border-b border-border bg-surface/95 shadow-sm"
-            : "border-b border-transparent bg-surface/70 backdrop-blur-md shadow-none"
+            : "border-b border-border bg-surface shadow-none"
         )}
       >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -119,81 +119,71 @@ export function RootLayout() {
               </span>
             </Link>
             <nav className="flex items-center gap-4">
-              {!isAdmin && (
-                <>
-                  {/* Mobile menu toggle */}
-                  <button
-                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                    className="sm:hidden p-1.5 text-text-tertiary hover:text-text-primary transition-colors"
-                    aria-label="Toggle menu"
-                  >
-                    <HamburgerIcon open={mobileMenuOpen} />
-                  </button>
+              {/* Mobile menu toggle */}
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="sm:hidden p-1.5 text-text-tertiary hover:text-text-primary transition-colors"
+                aria-label="Toggle menu"
+              >
+                <HamburgerIcon open={mobileMenuOpen} />
+              </button>
 
-                  {/* Search trigger */}
-                  <button
-                    onClick={() => {
-                      window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true }));
-                    }}
-                    className="hidden sm:flex items-center gap-2 text-sm text-text-tertiary border border-border rounded-md px-3 py-1.5 hover:border-border-focus transition-colors"
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                    </svg>
-                    <span className="hidden sm:inline">Search...</span>
-                    <kbd className="hidden sm:inline text-xs bg-surface-secondary px-1.5 py-0.5 rounded ml-2">⌘K</kbd>
-                  </button>
+              {/* Search trigger */}
+              <button
+                onClick={() => {
+                  window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true }));
+                }}
+                className="hidden sm:flex items-center gap-2 text-sm text-text-tertiary border border-border rounded-md px-3 py-1.5 hover:border-border-focus transition-colors"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
+                </svg>
+                <span className="hidden sm:inline">Search...</span>
+                <kbd className="hidden sm:inline text-xs bg-surface-secondary px-1.5 py-0.5 rounded ml-2">⌘K</kbd>
+              </button>
 
-                  <Link to="/" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
-                    Home
-                  </Link>
-                  <Link to="/blog" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
-                    Blog
-                  </Link>
-                  <Link to="/shop" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
-                    Shop
-                  </Link>
-                  <Link to="/checkout" className="hidden sm:flex text-sm text-text-secondary hover:text-text-primary transition-colors items-center gap-1 relative">
-                    Cart
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-                      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                    </svg>
-                    {cartItemCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
-                        {cartItemCount > 99 ? "99+" : cartItemCount}
-                      </span>
-                    )}
-                  </Link>
-                  {/* Mobile cart icon */}
-                  <Link to="/checkout" className="sm:hidden relative p-1.5 text-text-tertiary hover:text-text-primary transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
-                      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-                    </svg>
-                    {cartItemCount > 0 && (
-                      <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
-                        {cartItemCount > 99 ? "99+" : cartItemCount}
-                      </span>
-                    )}
-                  </Link>
-                </>
-              )}
-              {/* Search trigger (admin) */}
-              {isAdmin && (
-                <button
-                  onClick={() => {
-                    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true }));
-                  }}
-                  className="flex items-center gap-2 text-sm text-text-tertiary border border-border rounded-md px-3 py-1.5 hover:border-border-focus transition-colors"
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" />
-                  </svg>
-                  <span className="hidden sm:inline">Search...</span>
-                  <kbd className="hidden sm:inline text-xs bg-surface-secondary px-1.5 py-0.5 rounded ml-2">⌘K</kbd>
-                </button>
-              )}
+              <Link to="/" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                Home
+              </Link>
+              <Link to="/blog" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                Blog
+              </Link>
+              <Link to="/shop" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                Shop
+              </Link>
+              <Link to="/templates" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                Templates
+              </Link>
+              <Link to="/docs/api" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                API Docs
+              </Link>
+              <Link to="/docs/tutorial" className="hidden sm:block text-sm text-text-secondary hover:text-text-primary transition-colors">
+                Tutorial
+              </Link>
+              <Link to="/checkout" className="hidden sm:flex text-sm text-text-secondary hover:text-text-primary transition-colors items-center gap-1 relative">
+                Cart
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                </svg>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
+                    {cartItemCount > 99 ? "99+" : cartItemCount}
+                  </span>
+                )}
+              </Link>
+              {/* Mobile cart icon */}
+              <Link to="/checkout" className="sm:hidden relative p-1.5 text-text-tertiary hover:text-text-primary transition-colors">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+                </svg>
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center leading-none px-1">
+                    {cartItemCount > 99 ? "99+" : cartItemCount}
+                  </span>
+                )}
+              </Link>
               {/* Code editor toggle (admin only) */}
               {isAdmin && (
                 <button
@@ -252,7 +242,7 @@ export function RootLayout() {
       </header>
 
       {/* Mobile menu dropdown */}
-      {mobileMenuOpen && !isAdmin && (
+      {mobileMenuOpen && (
         <div className="sm:hidden border-b border-border bg-surface px-4 py-3 space-y-2">
           <button
             onClick={() => { window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, metaKey: true })); setMobileMenuOpen(false); }}
@@ -285,6 +275,27 @@ export function RootLayout() {
             Shop
           </Link>
           <Link
+            to="/templates"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Templates
+          </Link>
+          <Link
+            to="/docs/api"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            API Docs
+          </Link>
+          <Link
+            to="/docs/tutorial"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
+          >
+            Tutorial
+          </Link>
+          <Link
             to="/checkout"
             onClick={() => setMobileMenuOpen(false)}
             className="block text-sm text-text-secondary hover:text-text-primary px-3 py-2 rounded-md hover:bg-surface-secondary"
@@ -300,7 +311,7 @@ export function RootLayout() {
 
       {/* Footer (public pages only) */}
       {!isAdmin && (
-        <footer className="border-t border-border bg-surface-secondary mt-auto glass-surface">
+        <footer className="border-t border-border bg-surface-secondary mt-auto">
           {/* Main footer content */}
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">

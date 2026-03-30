@@ -76,12 +76,28 @@ export function HeroSlideshow() {
     return () => window.removeEventListener("keydown", handler);
   }, [next, prev]);
 
-  if (slides.length === 0) return null;
+  // Static fallback when no slides are loaded
+  const fallbackSlide: HeroSlide = {
+    id: "fallback",
+    title: "OpenPress",
+    subtitle: "Modern CMS for the Edge",
+    content: "Open-source, edge-native content management. Free on Cloudflare's global network.",
+    background_image_url: null,
+    background_gradient: "from-primary-950 via-primary-900 to-primary-800",
+    primary_button_text: "Get Started",
+    primary_button_url: "/docs/tutorial",
+    secondary_button_text: "View on GitHub",
+    secondary_button_url: "https://github.com/aliasfoxkde/OpenPress",
+    animation_type: "fade",
+  };
 
-  const slide = slides[current];
+  const activeSlides = slides.length > 0 ? slides : [fallbackSlide];
+
+  const slide = activeSlides[current];
   const animation = slide.animation_type || "slide";
 
   const getAnimationClass = () => {
+    if (slides.length === 0 && !isTransitioning) return "translate-x-0 opacity-100 scale-100";
     if (!isTransitioning) return "translate-x-0 opacity-100 scale-100";
     if (animation === "fade") return direction > 0 ? "translate-x-8 opacity-0" : "translate-x-[-32px] opacity-0";
     if (animation === "bounce") return direction > 0 ? "translate-x-8 opacity-0 scale-95" : "translate-x-[-32px] opacity-0 scale-95";
@@ -95,7 +111,7 @@ export function HeroSlideshow() {
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >
-      {slides.map((s, i) => (
+      {activeSlides.map((s, i) => (
         <div
           key={s.id}
           className={cn(
@@ -177,7 +193,7 @@ export function HeroSlideshow() {
       </div>
 
       {/* Navigation arrows */}
-      {slides.length > 1 && (
+      {activeSlides.length > 1 && (
         <>
           <button
             onClick={prev}
@@ -201,9 +217,9 @@ export function HeroSlideshow() {
       )}
 
       {/* Dot indicators */}
-      {slides.length > 1 && (
+      {activeSlides.length > 1 && (
         <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-          {slides.map((s, i) => (
+          {activeSlides.map((s, i) => (
             <button
               key={s.id}
               onClick={() => goTo(i, i > current ? 1 : -1)}

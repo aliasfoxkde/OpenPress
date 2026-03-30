@@ -307,6 +307,210 @@ export function HomePage() {
         </div>
       </section>
 
+      {/* Testimonials Section */}
+      <section className="py-16 sm:py-24 bg-surface-secondary">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
+              Loved by developers
+            </h2>
+            <p className="mt-4 text-text-secondary max-w-xl mx-auto">
+              See what people are saying about OpenPress.
+            </p>
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {testimonials.map((t) => (
+              <div key={t.name} className="rounded-xl border border-border bg-surface p-6">
+                <div className="flex items-center gap-1 mb-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <svg key={i} width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-amber-400">
+                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18-3.47L5 12.9l1.18-6.88L2 9.27l6.91-1.01L12 2z" />
+                    </svg>
+                  ))}
+                </div>
+                <p className="text-sm text-text-secondary leading-relaxed italic">"{t.quote}"</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-bold">
+                    {t.initial}
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-text-primary">{t.name}</div>
+                    <div className="text-xs text-text-tertiary">{t.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Showcase Section */}
+      <section className="py-16 sm:py-24 bg-surface">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
+              See it in action
+            </h2>
+            <p className="mt-4 text-text-secondary max-w-xl mx-auto">
+              From blogs to storefronts, OpenPress handles it all with a modern, edge-native architecture.
+            </p>
+          </div>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="group rounded-xl border border-border overflow-hidden bg-surface hover:shadow-lg transition-all duration-300">
+              <div className="aspect-video bg-gradient-to-br from-blue-500/10 to-primary-500/10 flex items-center justify-center">
+                <div className="text-5xl">📰</div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">Blog & Content</h3>
+                <p className="text-sm text-text-secondary mb-4">
+                  Rich block editor, categories, tags, SEO, comments, and RSS. Everything you need for a professional blog.
+                </p>
+                <Link to="/blog" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                  View Blog &rarr;
+                </Link>
+              </div>
+            </div>
+            <div className="group rounded-xl border border-border overflow-hidden bg-surface hover:shadow-lg transition-all duration-300">
+              <div className="aspect-video bg-gradient-to-br from-emerald-500/10 to-teal-500/10 flex items-center justify-center">
+                <div className="text-5xl">🛍️</div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">E-Commerce Store</h3>
+                <p className="text-sm text-text-secondary mb-4">
+                  Products, variants, cart, Stripe checkout, coupons, and order management. Launch your store in minutes.
+                </p>
+                <Link to="/shop" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                  Browse Store &rarr;
+                </Link>
+              </div>
+            </div>
+            <div className="group rounded-xl border border-border overflow-hidden bg-surface hover:shadow-lg transition-all duration-300">
+              <div className="aspect-video bg-gradient-to-br from-purple-500/10 to-pink-500/10 flex items-center justify-center">
+                <div className="text-5xl">🎨</div>
+              </div>
+              <div className="p-6">
+                <h3 className="text-lg font-semibold text-text-primary mb-2">Themes & Templates</h3>
+                <p className="text-sm text-text-secondary mb-4">
+                  Composable React themes, component registry, and reusable widgets. Customize every pixel.
+                </p>
+                <Link to="/templates" className="text-sm text-primary-600 hover:text-primary-700 font-medium">
+                  Explore Templates &rarr;
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact Us Section */}
+      <section className="py-16 sm:py-24 bg-surface-secondary">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-start">
+            <div>
+              <h2 className="text-3xl font-bold text-text-primary sm:text-4xl">
+                Get in touch
+              </h2>
+              <p className="mt-4 text-text-secondary text-lg leading-relaxed">
+                Have questions, feedback, or want to contribute? We'd love to hear from you.
+              </p>
+              <div className="mt-8 space-y-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 shrink-0 rounded-lg bg-primary-50 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                      <polyline points="22,6 12,13 2,6" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-text-primary">Email</h3>
+                    <p className="mt-1 text-sm text-text-secondary">hello@openpress.dev</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 shrink-0 rounded-lg bg-primary-50 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-1.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.089-.745-2.089-.162-2.089-.162 0-1.186.013-2.689.003-3.074C7.793 5.07 7.5 5.557 7.5 5.557 1.128-.18 2.316-.562 3.5-.934.108.778.417 1.305.76 1.605-2.665.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.645 1.653.24 2.873.12 3.176.765.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-text-primary">GitHub</h3>
+                    <a href="https://github.com/aliasfoxkde/OpenPress" target="_blank" rel="noopener noreferrer" className="mt-1 text-sm text-primary-600 hover:text-primary-700">
+                      github.com/aliasfoxkde/OpenPress &rarr;
+                    </a>
+                  </div>
+                </div>
+                <div className="flex items-start gap-4">
+                  <div className="w-10 h-10 shrink-0 rounded-lg bg-primary-50 flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-text-primary">Community</h3>
+                    <p className="mt-1 text-sm text-text-secondary">Open an issue or start a discussion on GitHub.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="mt-10 lg:mt-0">
+              <div className="border border-border rounded-xl bg-surface p-6 sm:p-8">
+                <h3 className="text-lg font-semibold text-text-primary mb-4">Send us a message</h3>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    const form = e.currentTarget;
+                    const formData = new FormData(form);
+                    const name = formData.get("name");
+                    const email = formData.get("email");
+                    const message = formData.get("message");
+                    window.location.href = `mailto:hello@openpress.dev?subject=Contact from ${name}&body=${encodeURIComponent(`From: ${name} (${email})\n\n${message}`)}`;
+                  }}
+                  className="space-y-4"
+                >
+                  <div>
+                    <label htmlFor="contact-name" className="block text-sm font-medium text-text-secondary mb-1">Name</label>
+                    <input
+                      id="contact-name"
+                      name="name"
+                      type="text"
+                      required
+                      placeholder="Your name"
+                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/20 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-email" className="block text-sm font-medium text-text-secondary mb-1">Email</label>
+                    <input
+                      id="contact-email"
+                      name="email"
+                      type="email"
+                      required
+                      placeholder="you@example.com"
+                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/20 transition-colors"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="contact-message" className="block text-sm font-medium text-text-secondary mb-1">Message</label>
+                    <textarea
+                      id="contact-message"
+                      name="message"
+                      required
+                      rows={4}
+                      placeholder="How can we help?"
+                      className="w-full rounded-lg border border-border px-3 py-2.5 text-sm focus:border-primary-400 focus:outline-none focus:ring-2 focus:ring-primary-400/20 transition-colors resize-none"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="w-full bg-primary-600 text-white py-2.5 rounded-lg hover:bg-primary-700 active:bg-primary-800 transition-colors font-medium text-sm shadow-sm"
+                  >
+                    Send Message
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 sm:py-20 bg-primary-900 text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center">
@@ -391,4 +595,26 @@ const highlights = [
   "KV cache for sub-millisecond reads",
   "Free tier covers most small-to-medium sites",
   "PWA-ready with offline support and push notifications",
+  "Completely free!",
+];
+
+const testimonials = [
+  {
+    name: "Alex Chen",
+    initial: "A",
+    role: "Full-Stack Developer",
+    quote: "OpenPress replaced our WordPress install perfectly. The edge performance is incredible — pages load in under 100ms globally. And it costs us nothing to run.",
+  },
+  {
+    name: "Sarah Miller",
+    initial: "S",
+    role: "Content Creator",
+    quote: "The block editor is intuitive and fast. I love that I can manage my blog, store, and audience all from one dashboard. The AI features are a game-changer for content creation.",
+  },
+  {
+    name: "James Park",
+    initial: "J",
+    role: "Startup Founder",
+    quote: "We launched our entire e-commerce store in under an hour. Zero infrastructure costs, zero vendor lock-in, and the Stripe integration was seamless.",
+  },
 ];

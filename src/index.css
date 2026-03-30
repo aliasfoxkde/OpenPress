@@ -236,15 +236,7 @@ html {
 /* ── Squirkle Back-to-Top Button ──────────────────────────── */
 
 .squirkle-btn {
-  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  animation: squirkle-morph 3s ease-in-out infinite;
-}
-
-@keyframes squirkle-morph {
-  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-  50% { border-radius: 50% 60% 30% 60% / 30% 40% 70% 60%; }
-  75% { border-radius: 40% 50% 60% 40% / 60% 40% 50% 50%; }
+  border-radius: 22.37%;
 }
 
 /* ── Fade In Up Animation ─────────────────────────────────── */
@@ -258,4 +250,74 @@ html {
 .fade-in-up.visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* ── Scroll-triggered reveal ─────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Stagger children */
+.reveal-stagger > .reveal:nth-child(1) { transition-delay: 0ms; }
+.reveal-stagger > .reveal:nth-child(2) { transition-delay: 80ms; }
+.reveal-stagger > .reveal:nth-child(3) { transition-delay: 160ms; }
+.reveal-stagger > .reveal:nth-child(4) { transition-delay: 240ms; }
+.reveal-stagger > .reveal:nth-child(5) { transition-delay: 320ms; }
+.reveal-stagger > .reveal:nth-child(6) { transition-delay: 400ms; }
+
+/* ── Custom Scrollbar ──────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(0.7 0.02 260 / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(0.7 0.02 260 / 0.5);
+}
+
+/* ── Selection ─────────────────────────────────────────── */
+
+::selection {
+  background: oklch(0.55 0.2 260 / 0.25);
+  color: inherit;
+}
+
+/* ── Focus visible ─────────────────────────────────────── */
+
+:focus-visible {
+  outline: 2px solid oklch(0.55 0.2 260);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Smooth image loading ──────────────────────────────── */
+
+img {
+  transition: opacity 0.3s ease;
+}
+
+img[loading] {
+  opacity: 0;
+}
+
+img[loaded] {
+  opacity: 1;
 }
