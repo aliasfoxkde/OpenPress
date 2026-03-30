@@ -33,7 +33,7 @@ function FaviconSection() {
       const formData = new FormData();
       formData.append("file", file);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch("/media", {
+      const res = await fetch("/api/media", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
@@ -67,7 +67,7 @@ function FaviconSection() {
       const formData = new FormData();
       formData.append("file", file);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch("/media", {
+      const res = await fetch("/api/media", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,
@@ -178,7 +178,7 @@ export function AdminMedia() {
       const formData = new FormData();
       formData.append("file", file);
       const token = localStorage.getItem("auth_token");
-      const res = await fetch("/media", {
+      const res = await fetch("/api/media", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
         body: formData,

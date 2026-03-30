@@ -61,7 +61,7 @@ export function AdminHeroSlides() {
 
   const loadSlides = useCallback(async () => {
     try {
-      const res = await api.get<{ data: HeroSlide[] }>("/admin/hero-slides");
+      const res = await api.get<{ data: HeroSlide[] }>("/hero-slides");
       setSlides(res.data || []);
     } catch {
       toast("Failed to load slides", "error");
@@ -105,10 +105,10 @@ export function AdminHeroSlides() {
     setSaving(true);
     try {
       if (editingId) {
-        await api.put(`/admin/hero-slides/${editingId}`, form);
+        await api.put(`/hero-slides/${editingId}`, form);
         toast("Slide updated", "success");
       } else {
-        await api.post("/admin/hero-slides", form);
+        await api.post("/hero-slides", form);
         toast("Slide created", "success");
       }
       setEditingId(null);
@@ -124,7 +124,7 @@ export function AdminHeroSlides() {
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this slide? This cannot be undone.")) return;
     try {
-      await api.delete(`/admin/hero-slides/${id}`);
+      await api.delete(`/hero-slides/${id}`);
       toast("Slide deleted", "success");
       if (editingId === id) {
         setEditingId(null);
@@ -138,7 +138,7 @@ export function AdminHeroSlides() {
 
   const handleToggleActive = async (slide: HeroSlide) => {
     try {
-      await api.put(`/admin/hero-slides/${slide.id}`, { is_active: !slide.is_active });
+      await api.put(`/hero-slides/${slide.id}`, { is_active: !slide.is_active });
       void loadSlides();
     } catch {
       toast("Failed to toggle slide", "error");
@@ -159,7 +159,7 @@ export function AdminHeroSlides() {
     // Update sort orders
     const items = reordered.map((s, i) => ({ id: s.id, sort_order: i }));
     try {
-      await api.put("/admin/hero-slides/reorder", { items });
+      await api.put("/hero-slides/reorder", { items });
       void loadSlides();
     } catch {
       toast("Failed to reorder slides", "error");

@@ -215,7 +215,7 @@ export function ContentEditor() {
     setShowMediaPicker(true);
     setMediaLoading(true);
     try {
-      const res = await api.get<{ data: MediaItem[] }>("/api/media");
+      const res = await api.get<{ data: MediaItem[] }>("/media");
       setMediaItems((res?.data || []).filter((m) => m.mime_type?.startsWith("image/")));
     } catch {
       // ignore

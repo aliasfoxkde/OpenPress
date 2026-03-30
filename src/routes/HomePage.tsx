@@ -427,10 +427,10 @@ export function HomePage() {
       <section className="relative py-16 sm:py-24 bg-surface-secondary">
         {/* Map background */}
         <div className="absolute inset-0 opacity-[0.15]">
-          <img
-            src="https://images.unsplash.com/photo-1524661135-92308546ae24?w=1920&q=60"
-            alt=""
-            className="w-full h-full object-cover"
+          <iframe
+            title="Map"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-122.5,37.7,-122.3,37.8&layer=mapnik"
+            className="w-full h-full border-0 grayscale"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-surface-secondary via-surface-secondary/90 to-surface-secondary" />
