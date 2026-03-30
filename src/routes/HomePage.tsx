@@ -1,5 +1,3 @@
-import { Link } from "@tanstack/react-router";
-
 export function HomePage() {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] flex flex-col">
@@ -174,35 +172,12 @@ export function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border bg-surface py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-text-primary">OpenPress</span>
-              <span className="text-text-tertiary text-sm">
-                &copy; {new Date().getFullYear()}
-              </span>
-            </div>
-            <nav className="flex flex-wrap items-center justify-center gap-4 text-sm text-text-secondary">
-              <Link to="/" className="hover:text-text-primary transition-colors">Home</Link>
-              <Link to="/blog" className="hover:text-text-primary transition-colors">Blog</Link>
-              <Link to="/shop" className="hover:text-text-primary transition-colors">Shop</Link>
-              <Link to="/checkout" className="hover:text-text-primary transition-colors">Cart</Link>
-              <Link to="/admin" className="hover:text-text-primary transition-colors">Admin</Link>
-            </nav>
-            <p className="text-xs text-text-tertiary text-center sm:text-right">
-              Powered by Cloudflare
-            </p>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
 
 const features = [
+
   {
     icon: "⚡",
     title: "Edge-Native",

@@ -24,6 +24,7 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [resetToken, setResetToken] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -71,6 +72,10 @@ export function LoginPage() {
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     setSubmitting(true);
     try {
       await api.post("/api/auth/reset-password", { token: resetToken, password });
@@ -144,8 +149,8 @@ export function LoginPage() {
               <input
                 id="reset-confirm"
                 type="password"
-                value={resetToken}
-                onChange={(e) => setResetToken(e.target.value)}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
                 autoComplete="new-password"

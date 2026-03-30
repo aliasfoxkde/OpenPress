@@ -303,8 +303,11 @@ auth.post("/reset-password", async (c) => {
   if (!token || !password) {
     return c.json({ error: { message: "Token and password are required", code: "VALIDATION_ERROR" } }, 400);
   }
-  if (password.length < 8) {
-    return c.json({ error: { message: "Password must be at least 8 characters", code: "VALIDATION_ERROR" } }, 400);
+  if (password.length < 8 || password.length > 128) {
+    return c.json({ error: { message: "Password must be between 8 and 128 characters", code: "VALIDATION_ERROR" } }, 400);
+  }
+  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+    return c.json({ error: { message: "Password must contain uppercase, lowercase, and a number", code: "VALIDATION_ERROR" } }, 400);
   }
 
   const user = await db.prepare("SELECT id, reset_token_expires FROM users WHERE reset_token = ?").bind(token).first<{ id: string; reset_token_expires: string }>();
@@ -312,7 +315,7 @@ auth.post("/reset-password", async (c) => {
     return c.json({ error: { message: "Invalid or expired reset token", code: "INVALID_TOKEN" } }, 400);
   }
 
-  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+  const hash = await hashPassword(password);
   await db.prepare("UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?")
     .bind(hash, user.id)
     .run();
