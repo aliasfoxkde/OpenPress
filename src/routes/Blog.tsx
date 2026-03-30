@@ -12,6 +12,7 @@ interface ContentItem {
   status: string;
   published_at: string;
   created_at: string;
+  author_name?: string;
 }
 
 interface Category {
@@ -71,8 +72,24 @@ export function BlogPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-text-primary">Blog</h1>
-        <p className="mt-2 text-text-secondary">Latest posts and updates</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-text-primary">Blog</h1>
+            <p className="mt-2 text-text-secondary">Latest posts and updates</p>
+          </div>
+          <a
+            href="/feed.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-text-tertiary hover:text-primary-600 transition-colors"
+            title="RSS Feed"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 11a9 9 0 0 1 9 9 9 9 0 0 1-18 0" />
+              <line x1="4" y1="11" x2="20" y2="11" />
+            </svg>
+          </a>
+        </div>
       </div>
 
       {/* Category filters */}
@@ -153,13 +170,17 @@ export function BlogPage() {
                   {post.excerpt && (
                     <p className="mt-2 text-text-secondary line-clamp-2">{post.excerpt}</p>
                   )}
-                  <time className="mt-2 block text-sm text-text-tertiary">
-                    {new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-text-tertiary">
+                    {post.author_name && <span>{post.author_name}</span>}
+                    {post.author_name && <span>&middot;</span>}
+                    <time>
+                      {new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </time>
+                  </div>
                 </div>
               </Link>
             ))}

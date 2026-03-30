@@ -145,8 +145,19 @@ export function AdminUsers() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <div className="text-text-tertiary">Loading users...</div>
+        <div className="py-8">
+          <div className="space-y-3 animate-pulse">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="w-8 h-8 bg-surface-secondary rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-surface-secondary rounded w-1/4" />
+                  <div className="h-3 bg-surface-secondary rounded w-1/3" />
+                </div>
+                <div className="h-6 bg-surface-secondary rounded-full w-16" />
+              </div>
+            ))}
+          </div>
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-x-auto">
@@ -210,8 +221,9 @@ export function AdminUsers() {
               ))}
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center text-text-tertiary">
-                    No users found.
+                  <td colSpan={5} className="px-4 py-16 text-center">
+                    <div className="text-text-tertiary text-4xl mb-3">👥</div>
+                    <p className="text-text-tertiary">No users found.</p>
                   </td>
                 </tr>
               )}

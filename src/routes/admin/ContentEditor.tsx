@@ -57,6 +57,7 @@ export function ContentEditor() {
   const [title, setTitle] = useState("");
   const [excerpt, setExcerpt] = useState("");
   const [status, setStatus] = useState<ContentStatus>("draft");
+  const [contentType, setContentType] = useState("post");
   const [hasChanges, setHasChanges] = useState(false);
   const [featuredImageUrl, setFeaturedImageUrl] = useState("");
   const [selectedTermIds, setSelectedTermIds] = useState<string[]>([]);
@@ -129,6 +130,7 @@ export function ContentEditor() {
       setTitle(currentContent.item.title);
       setExcerpt(currentContent.item.excerpt ?? "");
       setStatus(currentContent.item.status);
+      setContentType(currentContent.item.type || "post");
       setFeaturedImageUrl(currentContent.item.featured_image_url ?? "");
       contentIdRef.current = currentContent.item.id;
 
@@ -266,6 +268,7 @@ export function ContentEditor() {
       try {
         const newItem = await createContent({
           title: title.trim(),
+          type: contentType,
           status,
           blocks: blockData.length > 0 ? blockData : undefined,
           meta: seoMeta,
@@ -298,7 +301,7 @@ export function ContentEditor() {
       }
     }
   }, [
-    title, excerpt, status, editorBlocks, isCreateMode, slug,
+    title, excerpt, status, editorBlocks, isCreateMode, slug, contentType,
     featuredImageUrl, selectedTermIds, scheduledAt, createContent, saveContent, navigate,
   ]);
 
@@ -369,7 +372,7 @@ export function ContentEditor() {
             </svg>
           </button>
           <span className="text-sm text-text-tertiary">
-            {isCreateMode ? "New Post" : "Edit Post"}
+            {isCreateMode ? `New ${contentType === "page" ? "Page" : "Post"}` : `Edit ${contentType === "page" ? "Page" : "Post"}`}
           </span>
           {!isCreateMode && revisions.length > 0 && (
             <button
@@ -489,12 +492,34 @@ export function ContentEditor() {
         </div>
       )}
 
+      {/* Content Type (create mode only) */}
+      {isCreateMode && (
+        <div className="mb-4 flex items-center gap-3">
+          <span className="text-sm font-medium text-text-secondary">Type:</span>
+          <div className="inline-flex rounded-md border border-border">
+            {(["post", "page"] as const).map((t) => (
+              <button
+                key={t}
+                onClick={() => setContentType(t)}
+                className={`px-3 py-1 text-xs font-medium capitalize transition-colors ${
+                  contentType === t
+                    ? "bg-primary-600 text-white"
+                    : "bg-surface text-text-secondary hover:bg-surface-secondary"
+                } ${t === "post" ? "rounded-l-md" : "rounded-r-md"}`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Title */}
       <input
         type="text"
         value={title}
         onChange={(e) => handleTitleChange(e.target.value)}
-        placeholder="Post title..."
+        placeholder={contentType === "page" ? "Page title..." : "Post title..."}
         className="w-full text-3xl font-bold text-text-primary placeholder:text-text-tertiary border-0 bg-transparent focus:outline-none mb-4 p-0"
       />
 

@@ -25,6 +25,7 @@ export default function AdminOrders() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
 
   useEffect(() => {
     loadOrders();
@@ -49,6 +50,15 @@ export default function AdminOrders() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-text-primary">Orders</h1>
+      {orders.length > 0 && (
+        <input
+          type="text"
+          placeholder="Search orders..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+        />
+      )}
 
       {loading ? (
         <div className="animate-pulse space-y-3">
@@ -60,26 +70,30 @@ export default function AdminOrders() {
         <div className="text-center py-12 text-text-tertiary">No orders yet.</div>
       ) : (
         <>
-          <div className="overflow-x-auto rounded-lg border border-border">
+          {/* Desktop table */}
+          <div className="hidden sm:block overflow-x-auto rounded-lg border border-border">
             <table className="min-w-full divide-y divide-border">
               <thead className="bg-surface-secondary">
                 <tr>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Order ID</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase hidden sm:table-cell">Email</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Email</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Total</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase">Status</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-text-tertiary uppercase hidden md:table-cell">Date</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border bg-surface">
-                {orders.map((order) => (
+                {(search
+                  ? orders.filter((o) => o.id.toLowerCase().includes(search.toLowerCase()) || o.email.toLowerCase().includes(search.toLowerCase()) || o.status.toLowerCase().includes(search.toLowerCase()))
+                  : orders
+                ).map((order) => (
                   <tr key={order.id} className="hover:bg-surface-secondary transition-colors">
                     <td className="px-4 py-3 text-sm font-mono">
                       <Link to="/admin/orders/$id" params={{ id: order.id }} className="text-primary-600 hover:text-primary-700">
                         {order.id.slice(0, 8)}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-sm text-text-primary hidden sm:table-cell">{order.email}</td>
+                    <td className="px-4 py-3 text-sm text-text-primary">{order.email}</td>
                     <td className="px-4 py-3 text-sm font-medium text-text-primary">
                       {formatPrice(order.total)} {order.currency}
                     </td>
@@ -95,6 +109,32 @@ export default function AdminOrders() {
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile card view */}
+          <div className="sm:hidden space-y-3">
+            {(search
+              ? orders.filter((o) => o.id.toLowerCase().includes(search.toLowerCase()) || o.email.toLowerCase().includes(search.toLowerCase()) || o.status.toLowerCase().includes(search.toLowerCase()))
+              : orders
+            ).map((order) => (
+              <Link
+                key={order.id}
+                to="/admin/orders/$id"
+                params={{ id: order.id }}
+                className="block border border-border rounded-lg p-4 hover:bg-surface-secondary transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-sm text-primary-600">{order.id.slice(0, 8)}</span>
+                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[order.status] || "bg-surface-tertiary text-text-secondary"}`}>
+                    {order.status}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <span className="text-text-secondary">{order.email}</span>
+                  <span className="font-medium text-text-primary">{formatPrice(order.total)}</span>
+                </div>
+              </Link>
+            ))}
           </div>
 
           {totalPages > 1 && (

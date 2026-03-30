@@ -15,6 +15,7 @@ interface ContentItem {
   author_name?: string;
   updated_at: string;
   created_at: string;
+  revision_count?: number;
 }
 
 interface Pagination {
@@ -298,10 +299,25 @@ export function AdminContent() {
       {/* Content table */}
       <div className="border border-border rounded-lg overflow-x-auto">
         {loading ? (
-          <div className="px-4 py-8 text-center text-text-tertiary text-sm">Loading...</div>
+          <div className="px-4 py-8">
+            <div className="space-y-3 animate-pulse">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="flex items-center gap-4">
+                  <div className="w-4 h-4 bg-surface-secondary rounded" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 bg-surface-secondary rounded w-2/3" />
+                    <div className="h-3 bg-surface-secondary rounded w-1/3" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         ) : filtered.length === 0 ? (
-          <div className="px-4 py-8 text-center text-text-tertiary text-sm">
-            No content yet. Create your first post to get started.
+          <div className="px-4 py-16 text-center">
+            <div className="text-text-tertiary text-4xl mb-3">📝</div>
+            <p className="text-text-tertiary text-sm">
+              No content yet. Create your first post to get started.
+            </p>
           </div>
         ) : (
           <table className="w-full text-sm">
@@ -358,6 +374,11 @@ export function AdminContent() {
                     >
                       {item.status}
                     </button>
+                    {item.revision_count != null && item.revision_count > 0 && (
+                      <span className="ml-1.5 text-xs text-text-tertiary" title={`${item.revision_count} revision${item.revision_count > 1 ? "s" : ""}`}>
+                        ({item.revision_count} rev)
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-text-tertiary text-xs hidden md:table-cell">
                     {new Date(item.updated_at).toLocaleDateString()}

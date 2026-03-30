@@ -116,14 +116,31 @@ export function AdminSettings() {
 
         <fieldset className="border border-border rounded-lg p-4">
           <legend className="text-sm font-medium text-text-primary px-2">Registration</legend>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={settings.allow_registration === "true"}
-              onChange={(e) => setSettings({ ...settings, allow_registration: e.target.checked ? "true" : "false" })}
-            />
-            <span>Allow public registration</span>
-          </label>
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={settings.allow_registration === "true"}
+                onChange={(e) => setSettings({ ...settings, allow_registration: e.target.checked ? "true" : "false" })}
+              />
+              <span>Allow public registration</span>
+            </label>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Default Role for New Users</label>
+              <select
+                value={settings.default_role || "viewer"}
+                onChange={(e) => setSettings({ ...settings, default_role: e.target.value })}
+                className="w-full rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus bg-surface"
+              >
+                <option value="admin">Admin</option>
+                <option value="editor">Editor</option>
+                <option value="author">Author</option>
+                <option value="contributor">Contributor</option>
+                <option value="subscriber">Subscriber</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+          </div>
         </fieldset>
 
         <div className="flex items-center gap-4">
