@@ -33,4 +33,22 @@ describe("Auth API", () => {
     const res = await app.request("/api/auth/me");
     expect(res.status).toBe(404);
   });
+
+  it("should return 404 for forgot-password route", async () => {
+    const res = await app.request("/api/auth/forgot-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "test@test.com" }),
+    });
+    expect(res.status).toBe(404);
+  });
+
+  it("should return 404 for reset-password route", async () => {
+    const res = await app.request("/api/auth/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token: "fake-token", password: "newPassword123" }),
+    });
+    expect(res.status).toBe(404);
+  });
 });
