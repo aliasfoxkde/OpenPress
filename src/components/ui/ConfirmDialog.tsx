@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -22,23 +22,49 @@ export function ConfirmDialog({
   onCancel,
 }: ConfirmDialogProps) {
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (open) {
-      // Focus confirm button after render for keyboard accessibility
-      const timer = setTimeout(() => confirmRef.current?.focus(), 50);
-      return () => clearTimeout(timer);
-    }
-  }, [open]);
+  // Focus trap: keep Tab within the dialog
+  const getFocusableElements = useCallback((): HTMLElement[] => {
+    if (!dialogRef.current) return [];
+    return Array.from(
+      dialogRef.current.querySelectorAll(
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((el): el is HTMLElement => el instanceof HTMLElement);
+  }, []);
 
   useEffect(() => {
     if (!open) return;
+
+    // Focus confirm button after render
+    const timer = setTimeout(() => confirmRef.current?.focus(), 50);
+
     function handleKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onCancel();
+        return;
+      }
+      if (e.key === "Tab") {
+        e.preventDefault();
+        const focusable = getFocusableElements();
+        if (focusable.length === 0) return;
+        const active = document.activeElement as HTMLElement | null;
+        const idx = active ? focusable.indexOf(active) : -1;
+        const next = e.shiftKey
+          ? (idx <= 0 ? focusable.length - 1 : idx - 1)
+          : (idx >= focusable.length - 1 ? 0 : idx + 1);
+        focusable[next]?.focus();
+      }
     }
+
     window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [open, onCancel]);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("keydown", handleKey);
+    };
+  }, [open, onCancel, getFocusableElements]);
 
   if (!open) return null;
 
@@ -51,6 +77,7 @@ export function ConfirmDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/40" onClick={onCancel} />
       <div
+        ref={dialogRef}
         className="relative bg-surface rounded-xl p-6 w-full max-w-sm shadow-xl mx-4"
         role="alertdialog"
         aria-modal="true"

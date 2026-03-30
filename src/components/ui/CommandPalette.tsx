@@ -151,6 +151,9 @@ export function CommandPalette() {
       {/* Dialog */}
       <div
         className="relative w-full max-w-lg bg-surface border border-border rounded-xl shadow-2xl overflow-hidden mx-4"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Search"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Input */}
@@ -173,7 +176,7 @@ export function CommandPalette() {
         </div>
 
         {/* Results */}
-        <div className="max-h-72 overflow-y-auto py-2">
+        <div className="max-h-72 overflow-y-auto py-2" role="listbox" aria-activedescendant={results[selectedIndex]?.id ? `cmd-${results[selectedIndex].id}` : undefined}>
           {searching && (
             <div className="px-4 py-6 text-center text-xs text-text-tertiary">Searching...</div>
           )}
@@ -193,6 +196,9 @@ export function CommandPalette() {
                 return (
                   <button
                     key={item.id}
+                    id={`cmd-${item.id}`}
+                    role="option"
+                    aria-selected={globalIndex === selectedIndex}
                     onClick={() => handleSelect(item)}
                     onMouseEnter={() => setSelectedIndex(globalIndex)}
                     className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${
