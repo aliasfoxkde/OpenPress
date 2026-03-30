@@ -55,6 +55,7 @@ export function BlogPage() {
       try {
         const params = new URLSearchParams({ page: String(page), limit: "12" });
         if (activeCategory) params.set("category", activeCategory);
+        if (search) params.set("search", search);
         const res = await api.get(`/api/content?${params}`);
         setPosts(res.data || []);
         if (res.pagination) setTotalPages(res.pagination.totalPages);
@@ -64,8 +65,14 @@ export function BlogPage() {
         setLoading(false);
       }
     }
-    loadPosts();
-  }, [page, activeCategory]);
+    const timer = setTimeout(() => void loadPosts(), 300);
+    return () => clearTimeout(timer);
+  }, [page, activeCategory, search]);
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
 
   function handleCategoryClick(slug: string) {
     setActiveCategory(slug === activeCategory ? "" : slug);
@@ -130,7 +137,7 @@ export function BlogPage() {
           type="text"
           placeholder="Search posts..."
           value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          onChange={(e) => handleSearchChange(e.target.value)}
           className="w-full max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
         />
       </div>
@@ -158,28 +165,16 @@ export function BlogPage() {
             Try again
           </button>
         </div>
-      ) : (() => {
-        const filtered = search
-          ? posts.filter((p) =>
-              p.title.toLowerCase().includes(search.toLowerCase()) ||
-              p.excerpt?.toLowerCase().includes(search.toLowerCase()),
-            )
-          : posts;
-
-        if (filtered.length === 0) {
-          return (
-            <div className="text-center py-16">
-              <p className="text-text-tertiary text-lg">
-                {search ? "No posts match your search." : activeCategory ? "No posts in this category." : "No posts yet."}
-              </p>
-            </div>
-          );
-        }
-
-        return (
-          <>
-            <div className="space-y-8">
-              {filtered.map((post) => (
+      ) : posts.length === 0 ? (
+        <div className="text-center py-16">
+          <p className="text-text-tertiary text-lg">
+            {search ? "No posts match your search." : activeCategory ? "No posts in this category." : "No posts yet."}
+          </p>
+        </div>
+      ) : (
+        <>
+          <div className="space-y-8">
+            {posts.map((post) => (
               <Link
                 key={post.id}
                 to="/blog/$slug"
@@ -236,11 +231,9 @@ export function BlogPage() {
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1)
                 .filter((p) => {
-                  // Always show first, last, current, and neighbors
                   if (p === 1 || p === totalPages) return true;
                   if (p === page) return true;
                   if (Math.abs(p - page) <= 1) return true;
-                  // Show dots around gaps
                   if (p === 2 && page > 3) return true;
                   if (p === totalPages - 1 && page < totalPages - 2) return true;
                   return false;
@@ -276,8 +269,7 @@ export function BlogPage() {
             </nav>
           )}
         </>
-        );
-      })()}
+      )}
     </div>
   );
 }

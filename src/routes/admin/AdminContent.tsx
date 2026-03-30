@@ -55,6 +55,7 @@ export function AdminContent() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
       if (statusFilter) params.set("status", statusFilter);
+      if (search) params.set("search", search);
       const res = await api.get<{ data: ContentItem[]; pagination: Pagination }>(`/api/content?${params}`);
       setItems(res.data || []);
       setPagination(res.pagination || { page: 1, limit: 20, total: 0, totalPages: 0 });
@@ -66,8 +67,9 @@ export function AdminContent() {
   }
 
   useEffect(() => {
-    void fetchContent();
-  }, [statusFilter]);
+    const timer = setTimeout(() => void fetchContent(), 300);
+    return () => clearTimeout(timer);
+  }, [statusFilter, search]);
 
   async function handleCreate() {
     if (!newTitle.trim()) return;
@@ -171,9 +173,7 @@ export function AdminContent() {
     archived: "bg-surface-tertiary text-text-secondary",
   };
 
-  const filtered = search
-    ? items.filter((i) => i.title.toLowerCase().includes(search.toLowerCase()))
-    : items;
+  const filtered = items;
 
   return (
     <div>
