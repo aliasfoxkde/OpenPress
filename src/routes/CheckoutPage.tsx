@@ -143,7 +143,7 @@ export function CheckoutPage() {
           {items.map(({ cartItem, product }) => (
             <div key={cartItem.id} className="flex items-center gap-4 p-4">
               {product.featured_image_url ? (
-                <img src={product.featured_image_url} alt={product.title} className="w-16 h-16 object-cover rounded" />
+                <img src={product.featured_image_url} alt={product.title} loading="lazy" decoding="async" className="w-16 h-16 object-cover rounded" />
               ) : (
                 <div className="w-16 h-16 bg-surface-secondary rounded flex items-center justify-center text-text-tertiary text-xs">
                   No image

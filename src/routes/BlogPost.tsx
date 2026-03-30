@@ -215,7 +215,7 @@ function BlockRenderer({ block }: { block: ContentBlock }) {
     case "image":
       return (
         <figure className="rounded-xl overflow-hidden">
-          <img src={String(data.url || content)} alt={String(data.alt || "")} className="w-full" />
+          <img src={String(data.url || content)} alt={String(data.alt || "")} loading="lazy" decoding="async" className="w-full" />
           {data.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(data.caption)}</figcaption>}
         </figure>
       );
@@ -306,7 +306,7 @@ function BlockNoteBlockRenderer({ block }: { block: BlockNoteBlock }) {
     case "image":
       return (
         <figure className="rounded-xl overflow-hidden">
-          <img src={String(props.url || "")} alt={String(props.alt || "")} className="w-full" />
+          <img src={String(props.url || "")} alt={String(props.alt || "")} loading="lazy" decoding="async" className="w-full" />
           {props.caption && <figcaption className="text-sm text-text-tertiary mt-2 text-center">{String(props.caption)}</figcaption>}
         </figure>
       );

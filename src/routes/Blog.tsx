@@ -167,6 +167,8 @@ export function BlogPage() {
                     <img
                       src={post.featured_image_url}
                       alt={post.title}
+                      loading="lazy"
+                      decoding="async"
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                   </div>
@@ -200,25 +202,54 @@ export function BlogPage() {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="mt-12 flex justify-center gap-2">
+            <nav className="mt-12 flex justify-center items-center gap-1" aria-label="Pagination">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="rounded-md border border-border px-4 py-2 text-sm text-text-secondary disabled:opacity-50"
+                className="rounded-md border border-border px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-default transition-colors"
               >
                 Previous
               </button>
-              <span className="px-4 py-2 text-sm text-text-secondary">
-                Page {page} of {totalPages}
-              </span>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter((p) => {
+                  // Always show first, last, current, and neighbors
+                  if (p === 1 || p === totalPages) return true;
+                  if (p === page) return true;
+                  if (Math.abs(p - page) <= 1) return true;
+                  // Show dots around gaps
+                  if (p === 2 && page > 3) return true;
+                  if (p === totalPages - 1 && page < totalPages - 2) return true;
+                  return false;
+                })
+                .map((p, idx, arr) => {
+                  const prev = arr[idx - 1];
+                  const showEllipsisBefore = prev !== undefined && p - prev > 1;
+                  return (
+                    <span key={p} className="contents">
+                      {showEllipsisBefore && (
+                        <span className="px-1 text-text-tertiary text-sm">&hellip;</span>
+                      )}
+                      <button
+                        onClick={() => setPage(p)}
+                        className={`rounded-md px-3 py-1.5 text-sm transition-colors ${
+                          p === page
+                            ? "bg-primary-600 text-white font-medium"
+                            : "text-text-secondary hover:bg-surface-secondary"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    </span>
+                  );
+                })}
               <button
                 onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                 disabled={page === totalPages}
-                className="rounded-md border border-border px-4 py-2 text-sm text-text-secondary disabled:opacity-50"
+                className="rounded-md border border-border px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-default transition-colors"
               >
                 Next
               </button>
-            </div>
+            </nav>
           )}
         </>
       )}

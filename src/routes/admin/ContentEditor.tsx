@@ -717,7 +717,7 @@ export function ContentEditor() {
                       className={`aspect-square rounded-md border-2 overflow-hidden hover:border-primary-500 transition-colors ${featuredImageUrl === item.url ? "border-primary-500 ring-2 ring-primary-200" : "border-border"}`}
                     >
                       {item.url ? (
-                        <img src={item.url} alt={item.original_name} className="w-full h-full object-cover" />
+                        <img src={item.url} alt={item.original_name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       ) : (
                         <div className="w-full h-full bg-surface-secondary flex items-center justify-center text-2xl opacity-30">&#128196;</div>
                       )}

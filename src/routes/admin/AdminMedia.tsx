@@ -144,7 +144,7 @@ export function AdminMedia() {
             <div key={item.id} className="border border-border rounded-lg overflow-hidden bg-surface group">
               <div className="aspect-square bg-surface-secondary flex items-center justify-center text-4xl">
                 {item.mime_type.startsWith("image/") && item.url ? (
-                  <img src={item.url} alt={item.original_name} className="w-full h-full object-cover" />
+                  <img src={item.url} alt={item.original_name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                 ) : (
                   item.mime_type.startsWith("video/") ? "..." : "."
                 )}

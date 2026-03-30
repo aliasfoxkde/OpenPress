@@ -201,6 +201,33 @@ export function RootLayout() {
       )}
 
       <Outlet />
+
+      {/* Footer (public pages only) */}
+      {!isAdmin && (
+        <footer className="border-t border-border bg-surface-secondary mt-auto">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-text-tertiary">
+                &copy; {new Date().getFullYear()}{" "}
+                <Link to="/" className="hover:text-text-primary transition-colors">OpenPress</Link>
+              </div>
+              <nav className="flex items-center gap-4 text-sm">
+                <Link to="/" className="text-text-tertiary hover:text-text-primary transition-colors">Home</Link>
+                <Link to="/blog" className="text-text-tertiary hover:text-text-primary transition-colors">Blog</Link>
+                <Link to="/shop" className="text-text-tertiary hover:text-text-primary transition-colors">Shop</Link>
+              </nav>
+              <div className="flex items-center gap-3 text-text-tertiary">
+                <a href="/feed.xml" target="_blank" rel="noopener noreferrer" className="hover:text-text-primary transition-colors" title="RSS Feed">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M4 11a9 9 0 0 1 9 9 9 9 0 0 1-18 0" />
+                    <line x1="4" y1="11" x2="20" y2="11" />
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
+      )}
     </div>
     </ToastProvider>
   );
