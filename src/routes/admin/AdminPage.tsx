@@ -19,6 +19,7 @@ const navItems: NavItem[] = [
   { path: "/admin/comments", label: "Comments", icon: "💬", minRole: ["admin", "editor"] },
   { path: "/admin/ai", label: "AI Assistant", icon: "🤖", minRole: ["admin", "editor", "author"] },
   { path: "/admin/users", label: "Users", icon: "👥", minRole: ["admin"] },
+  { path: "/admin/taxonomies", label: "Taxonomies", icon: "🏷️", minRole: ["admin", "editor"] },
   { path: "/admin/settings", label: "Settings", icon: "⚙️", minRole: ["admin"] },
   { path: "/admin/profile", label: "Profile", icon: "👤", minRole: ["admin", "editor", "author", "contributor", "subscriber", "viewer"] },
 ];

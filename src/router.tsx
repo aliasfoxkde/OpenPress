@@ -25,6 +25,7 @@ import { CheckoutPage } from "./routes/CheckoutPage";
 import { OrderSuccessPage } from "./routes/OrderSuccessPage";
 import { OrderCancelPage } from "./routes/OrderCancelPage";
 import { AdminComments } from "./routes/admin/AdminComments";
+import { AdminTaxonomies } from "./routes/admin/AdminTaxonomies";
 import { UserProfile } from "./routes/admin/UserProfile";
 import { NotFoundPage } from "./routes/NotFoundPage";
 
@@ -164,6 +165,12 @@ const adminCommentsRoute = createRoute({
   component: AdminComments,
 });
 
+const adminTaxonomiesRoute = createRoute({
+  getParentRoute: () => adminRoute,
+  path: "/taxonomies",
+  component: AdminTaxonomies,
+});
+
 const adminProfileRoute = createRoute({
   getParentRoute: () => adminRoute,
   path: "/profile",
@@ -193,6 +200,7 @@ const routeTree = rootRoute.addChildren([
     adminOrdersRoute,
     adminOrderDetailRoute,
     adminCommentsRoute,
+    adminTaxonomiesRoute,
     adminProfileRoute,
   ]),
 ]);
