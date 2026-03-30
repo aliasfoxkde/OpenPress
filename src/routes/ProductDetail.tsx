@@ -3,6 +3,7 @@ import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useCartStore } from "../stores/cart";
 import { useSEO } from "@/hooks/useSEO";
+import { useStructuredData, buildProductData } from "@/hooks/useStructuredData";
 
 /** Strip dangerous elements/attributes from HTML to prevent XSS */
 function sanitizeHtml(html: string): string {
@@ -53,6 +54,19 @@ export function ProductDetailPage() {
     url: `${window.location.origin}/shop/${slug}`,
     type: "product",
   });
+
+  useStructuredData(
+    product
+      ? buildProductData({
+          title: product.title,
+          excerpt: product.excerpt || undefined,
+          url: `${window.location.origin}/shop/${slug}`,
+          image: product.featured_image_url || undefined,
+          price: product.price,
+          sku: product.sku || undefined,
+        })
+      : null,
+  );
 
   useEffect(() => {
     async function loadProduct() {

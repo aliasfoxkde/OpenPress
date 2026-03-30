@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useSEO } from "@/hooks/useSEO";
+import { useStructuredData, buildArticleData } from "@/hooks/useStructuredData";
 
 /** Strip dangerous elements/attributes from HTML to prevent XSS */
 function sanitizeHtml(html: string): string {
@@ -78,6 +79,21 @@ export function BlogPostPage() {
     author: post?.author_name,
     publishedTime: post?.published_at,
   });
+
+  // JSON-LD structured data
+  useStructuredData(
+    post
+      ? buildArticleData({
+          title: post.title,
+          excerpt: post.excerpt || undefined,
+          url: `${window.location.origin}/blog/${slug}`,
+          image: post.featured_image_url || undefined,
+          author: post.author_name,
+          publishedTime: post.published_at || undefined,
+          modifiedTime: post.meta?.updated_at || undefined,
+        })
+      : null,
+  );
 
   if (loading) {
     return (
