@@ -132,12 +132,17 @@ media.get("/:id/file", async (c) => {
     return c.json({ error: { message: "File not found in storage", code: "NOT_FOUND" } }, 404);
   }
 
-  return new Response(object.body, {
-    headers: {
-      "Content-Type": record.mime_type,
-      "Cache-Control": "public, max-age=31536000",
-    },
-  });
+  const headers: Record<string, string> = {
+    "Content-Type": record.mime_type,
+    "Cache-Control": "public, max-age=31536000",
+  };
+  // Prevent XSS in SVG files served from R2
+  if (record.mime_type === "image/svg+xml") {
+    headers["Content-Security-Policy"] = "script-src 'none'";
+    headers["Content-Disposition"] = "inline";
+  }
+
+  return new Response(object.body, { headers });
 });
 
 // DELETE /:id - Delete media file

@@ -54,6 +54,7 @@ export const useCartStore = create<CartState>((set, get) => ({
 
   addItem: async (item) => {
     const { items } = get();
+    const previousItems = [...items];
     const existing = items.find((i) => i.product_id === item.product_id);
 
     if (existing) {
@@ -67,26 +68,27 @@ export const useCartStore = create<CartState>((set, get) => ({
       set({ items: [...items, item] });
     }
 
-    // Sync to API
+    // Sync to API — revert on failure
     try {
       await api.post("/cart/add", {
         product_id: item.product_id,
         quantity: item.quantity,
       });
     } catch {
-      // API sync failed — local state is still valid
+      set({ items: previousItems });
     }
   },
 
   removeItem: async (productId) => {
-    const item = get().items.find((i) => i.product_id === productId);
-    set({ items: get().items.filter((i) => i.product_id !== productId) });
-    // Sync to API
-    if (item?.id) {
+    const { items } = get();
+    const previousItems = [...items];
+    set({ items: items.filter((i) => i.product_id !== productId) });
+    // Sync to API — revert on failure
+    if (previousItems.find((i) => i.product_id === productId)?.id) {
       try {
-        await api.delete(`/cart/${item.id}`);
+        await api.delete(`/cart/${previousItems.find((i) => i.product_id === productId)!.id}`);
       } catch {
-        // Ignore
+        set({ items: previousItems });
       }
     }
   },
@@ -96,18 +98,19 @@ export const useCartStore = create<CartState>((set, get) => ({
       await get().removeItem(productId);
       return;
     }
-    const item = get().items.find((i) => i.product_id === productId);
+    const { items } = get();
+    const previousItems = [...items];
     set({
-      items: get().items.map((i) =>
+      items: items.map((i) =>
         i.product_id === productId ? { ...i, quantity } : i,
       ),
     });
-    // Sync to API
-    if (item?.id) {
+    // Sync to API — revert on failure
+    if (previousItems.find((i) => i.product_id === productId)?.id) {
       try {
-        await api.put(`/cart/${item.id}`, { quantity });
+        await api.put(`/cart/${previousItems.find((i) => i.product_id === productId)!.id}`, { quantity });
       } catch {
-        // Ignore
+        set({ items: previousItems });
       }
     }
   },
