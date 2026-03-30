@@ -17,17 +17,15 @@ export function AdminMedia() {
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
+  const [search, setSearch] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   async function fetchMedia() {
     setLoading(true);
     try {
-      const res = await api.get("/api/media");
-      if (res.ok) {
-        const data = await res.json();
-        setItems(data.data || []);
-      }
+      const res = await api.get<{ data: MediaItem[] }>("/api/media");
+      setItems(res?.data || []);
     } catch {
       // ignore
     } finally {
@@ -92,7 +90,18 @@ export function AdminMedia() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-text-primary mb-6">Media</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-text-primary">Media</h1>
+        {items.length > 0 && (
+          <input
+            type="text"
+            placeholder="Search files..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-48 rounded-md border border-border px-3 py-1.5 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+          />
+        )}
+      </div>
 
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -113,11 +122,25 @@ export function AdminMedia() {
 
       {loading ? (
         <div className="text-center text-text-tertiary text-sm py-8">Loading...</div>
-      ) : items.length === 0 ? (
-        <div className="text-center text-text-tertiary text-sm py-8">No media files yet.</div>
-      ) : (
+      ) : (() => {
+        const filtered = search
+          ? items.filter((i) =>
+              i.original_name.toLowerCase().includes(search.toLowerCase()) ||
+              i.mime_type.toLowerCase().includes(search.toLowerCase()),
+            )
+          : items;
+
+        if (filtered.length === 0) {
+          return (
+            <div className="text-center text-text-tertiary text-sm py-8">
+              {search ? "No files match your search." : "No media files yet."}
+            </div>
+          );
+        }
+
+        return (
         <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {items.map((item) => (
+          {filtered.map((item) => (
             <div key={item.id} className="border border-border rounded-lg overflow-hidden bg-surface group">
               <div className="aspect-square bg-surface-secondary flex items-center justify-center text-4xl">
                 {item.mime_type.startsWith("image/") && item.url ? (
@@ -139,7 +162,8 @@ export function AdminMedia() {
             </div>
           ))}
         </div>
-      )}
+        );
+      })()}
 
       <ConfirmDialog
         open={!!deleteTarget}

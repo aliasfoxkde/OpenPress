@@ -442,6 +442,18 @@ export function ContentEditor() {
           >
             {isSaving ? "Saving..." : "Save"}
           </button>
+
+          {/* Preview */}
+          {status === "published" && slug && (
+            <a
+              href={`/blog/${slug}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-3 py-1.5 text-xs rounded border border-border text-text-secondary hover:bg-surface-secondary transition-colors"
+            >
+              Preview
+            </a>
+          )}
         </div>
       </div>
 

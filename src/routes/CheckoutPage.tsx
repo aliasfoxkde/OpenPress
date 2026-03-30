@@ -65,6 +65,10 @@ export function CheckoutPage() {
   }, [navigate]);
 
   const subtotal = items.reduce((sum, i) => sum + i.product.price * i.cartItem.quantity, 0);
+  const totalItems = items.reduce((sum, i) => sum + i.cartItem.quantity, 0);
+
+  const formatPrice = (cents: number) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
 
   async function handleCheckout() {
     setCreating(true);
@@ -129,25 +133,34 @@ export function CheckoutPage() {
       )}
 
       {/* Cart summary */}
-      <div className="border border-border rounded-lg divide-y divide-border mb-6">
-        {items.map(({ cartItem, product }) => (
-          <div key={cartItem.id} className="flex items-center gap-4 p-4">
-            {product.featured_image_url ? (
-              <img src={product.featured_image_url} alt={product.title} className="w-16 h-16 object-cover rounded" />
-            ) : (
-              <div className="w-16 h-16 bg-surface-secondary rounded flex items-center justify-center text-text-tertiary text-xs">
-                No image
+      <div className="border border-border rounded-lg mb-6">
+        <div className="px-4 py-3 border-b border-border bg-surface-secondary">
+          <span className="text-sm font-medium text-text-secondary">
+            {totalItems} item{totalItems !== 1 ? "s" : ""} in cart
+          </span>
+        </div>
+        <div className="divide-y divide-border">
+          {items.map(({ cartItem, product }) => (
+            <div key={cartItem.id} className="flex items-center gap-4 p-4">
+              {product.featured_image_url ? (
+                <img src={product.featured_image_url} alt={product.title} className="w-16 h-16 object-cover rounded" />
+              ) : (
+                <div className="w-16 h-16 bg-surface-secondary rounded flex items-center justify-center text-text-tertiary text-xs">
+                  No image
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-medium text-text-primary truncate">{product.title}</div>
+                <div className="text-xs text-text-tertiary">
+                  {formatPrice(product.price)} each &middot; Qty: {cartItem.quantity}
+                </div>
               </div>
-            )}
-            <div className="flex-1">
-              <div className="text-sm font-medium text-text-primary">{product.title}</div>
-              <div className="text-xs text-text-tertiary">Qty: {cartItem.quantity}</div>
+              <div className="text-sm font-medium text-text-primary whitespace-nowrap">
+                {formatPrice(product.price * cartItem.quantity)}
+              </div>
             </div>
-            <div className="text-sm font-medium text-text-primary">
-              ${(product.price * cartItem.quantity).toFixed(2)}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* Email + Total */}
@@ -165,7 +178,7 @@ export function CheckoutPage() {
 
         <div className="flex items-center justify-between py-3 border-t border-border">
           <span className="text-text-secondary">Subtotal</span>
-          <span className="font-medium text-text-primary">${subtotal.toFixed(2)}</span>
+          <span className="font-medium text-text-primary">{formatPrice(subtotal)}</span>
         </div>
         <div className="flex items-center justify-between py-3 border-t border-border">
           <span className="text-lg font-bold text-text-primary">Total</span>

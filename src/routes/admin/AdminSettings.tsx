@@ -21,11 +21,8 @@ export function AdminSettings() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await api.get("/api/settings");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data) setSettings(data.data);
-        }
+        const res = await api.get<{ data: Settings }>("/api/settings");
+        if (res?.data) setSettings(res.data);
       } catch {
         // ignore - use defaults
       } finally {

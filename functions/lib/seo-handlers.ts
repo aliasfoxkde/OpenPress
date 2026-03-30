@@ -29,15 +29,22 @@ function getSiteUrl(c: { req: { header: (name: string) => string | undefined } }
 export async function handleSitemap(context: { env: Env; req: Request }): Promise<Response> {
   const db = context.env.DB;
 
-  const items = await db
-    .prepare(
-      `SELECT slug, updated_at, published_at, type FROM content_items WHERE status = 'published' ORDER BY published_at DESC`
-    )
-    .all();
+  const [contentItems, products] = await Promise.all([
+    db
+      .prepare(
+        `SELECT slug, updated_at, published_at, type FROM content_items WHERE status = 'published' ORDER BY published_at DESC`
+      )
+      .all(),
+    db
+      .prepare(
+        `SELECT slug, updated_at FROM products WHERE status = 'active' ORDER BY updated_at DESC`
+      )
+      .all(),
+  ]);
 
   const siteUrl = getSiteUrl(context);
 
-  const urls = items.results.map((item: { slug: string; updated_at: string; published_at: string; type: string }) => {
+  const contentUrls = (contentItems.results as Array<{ slug: string; updated_at: string; published_at: string; type: string }>).map((item) => {
     const lastmod = item.updated_at || item.published_at || new Date().toISOString();
     const path = item.type === "page" ? `/${item.slug}` : `/blog/${item.slug}`;
     return `  <url>
@@ -47,6 +54,18 @@ export async function handleSitemap(context: { env: Env; req: Request }): Promis
     <priority>${item.type === "page" ? "0.8" : "0.6"}</priority>
   </url>`;
   });
+
+  const productUrls = (products.results as Array<{ slug: string; updated_at: string }>).map((item) => {
+    const lastmod = item.updated_at || new Date().toISOString();
+    return `  <url>
+    <loc>${siteUrl}/shop/${item.slug}</loc>
+    <lastmod>${new Date(lastmod).toISOString().split("T")[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.5</priority>
+  </url>`;
+  });
+
+  const urls = [...contentUrls, ...productUrls];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
