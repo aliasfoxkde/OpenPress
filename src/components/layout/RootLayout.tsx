@@ -316,7 +316,7 @@ export function RootLayout() {
       )}
 
       <Suspense fallback={<RouteLoader />}>
-        <div className="flex-1 overflow-y-auto">
+        <div id="main-content" className="flex-1 overflow-y-auto" role="main">
           <Outlet />
         </div>
       </Suspense>

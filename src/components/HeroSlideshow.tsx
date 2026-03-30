@@ -110,6 +110,9 @@ export function HeroSlideshow() {
       className="relative overflow-hidden text-white min-h-[400px] sm:min-h-[480px] lg:min-h-[520px]"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Featured content slideshow"
     >
       {activeSlides.map((s, i) => (
         <div
@@ -147,7 +150,7 @@ export function HeroSlideshow() {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:py-24 lg:py-32 flex flex-col items-center justify-center min-h-[400px] sm:min-h-[480px] lg:min-h-[520px] text-center">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-16 sm:py-24 lg:py-32 flex flex-col items-center justify-center min-h-[400px] sm:min-h-[480px] lg:min-h-[520px] text-center" aria-live="polite" aria-atomic="true">
         <div className={cn(
           "transition-all duration-500 ease-out",
           isTransitioning ? (animation === "zoom" ? "opacity-0 scale-95" : animation === "fade" ? "opacity-0 translate-y-4" : `opacity-0 translate-x-${direction > 0 ? "8" : "-8"}`) : "opacity-100 translate-y-0 translate-x-0",

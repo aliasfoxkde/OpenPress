@@ -393,7 +393,7 @@ export function AdminComposite() {
                             <div key={opt.id} className="px-6 py-3 flex items-center justify-between">
                               <div className="flex items-center gap-3">
                                 {opt.product_image ? (
-                                  <img src={opt.product_image} alt="" className="w-10 h-10 rounded object-cover" />
+                                  <img src={opt.product_image} alt={opt.product_name || "Product option"} className="w-10 h-10 rounded object-cover" />
                                 ) : (
                                   <div className="w-10 h-10 rounded bg-surface-secondary" />
                                 )}
