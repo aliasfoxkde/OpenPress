@@ -31,6 +31,7 @@ import { NotFoundPage } from "./routes/NotFoundPage";
 
 const rootRoute = createRootRoute({
   component: RootLayout,
+  notFoundComponent: NotFoundPage,
 });
 
 const homeRoute = createRoute({
