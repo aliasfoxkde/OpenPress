@@ -29,6 +29,7 @@ export function BlogPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [activeCategory, setActiveCategory] = useState("");
+  const [search, setSearch] = useState("");
 
   // Fetch categories on mount
   useEffect(() => {
@@ -123,6 +124,17 @@ export function BlogPage() {
         </div>
       )}
 
+      {/* Search */}
+      <div className="mb-6">
+        <input
+          type="text"
+          placeholder="Search posts..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full max-w-md rounded-md border border-border px-3 py-2 text-sm focus:border-border-focus focus:outline-none focus:ring-1 focus:ring-border-focus"
+        />
+      </div>
+
       {loading ? (
         <div className="space-y-8 animate-pulse">
           {[...Array(3)].map((_, i) => (
@@ -146,16 +158,28 @@ export function BlogPage() {
             Try again
           </button>
         </div>
-      ) : posts.length === 0 ? (
-        <div className="text-center py-16">
-          <p className="text-text-tertiary text-lg">
-            {activeCategory ? "No posts in this category." : "No posts yet."}
-          </p>
-        </div>
-      ) : (
-        <>
-          <div className="space-y-8">
-            {posts.map((post) => (
+      ) : (() => {
+        const filtered = search
+          ? posts.filter((p) =>
+              p.title.toLowerCase().includes(search.toLowerCase()) ||
+              p.excerpt?.toLowerCase().includes(search.toLowerCase()),
+            )
+          : posts;
+
+        if (filtered.length === 0) {
+          return (
+            <div className="text-center py-16">
+              <p className="text-text-tertiary text-lg">
+                {search ? "No posts match your search." : activeCategory ? "No posts in this category." : "No posts yet."}
+              </p>
+            </div>
+          );
+        }
+
+        return (
+          <>
+            <div className="space-y-8">
+              {filtered.map((post) => (
               <Link
                 key={post.id}
                 to="/blog/$slug"
@@ -252,7 +276,8 @@ export function BlogPage() {
             </nav>
           )}
         </>
-      )}
+        );
+      })()}
     </div>
   );
 }
