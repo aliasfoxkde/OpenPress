@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useSearch } from "@tanstack/react-router";
+import { Link, useNavigate, useSearch } from "@tanstack/react-router";
 import { api, ApiError } from "@/lib/api";
 
 interface CartItem {
@@ -37,7 +37,8 @@ export function CheckoutPage() {
         const res = await api.get<{ data: CartItem[] }>("/cart");
         const cartItems = res.data || [];
         if (cartItems.length === 0) {
-          navigate({ to: "/shop" });
+          setItems([]);
+          setLoading(false);
           return;
         }
 
@@ -116,7 +117,12 @@ export function CheckoutPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-text-primary mb-6">Checkout</h1>
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold text-text-primary">Checkout</h1>
+        <Link to="/shop" className="text-sm text-primary-600 hover:text-primary-700 font-medium transition-colors">
+          &larr; Continue Shopping
+        </Link>
+      </div>
 
       {error && (
         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">{error}</div>

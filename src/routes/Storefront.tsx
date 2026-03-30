@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useCartStore } from "../stores/cart";
+import { useSEO } from "@/hooks/useSEO";
 
 interface Product {
   id: string;
@@ -20,6 +21,13 @@ export function StorefrontPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
+
+  useSEO({
+    title: "Shop",
+    description: "Browse our products",
+    url: `${window.location.origin}/shop`,
+    type: "website",
+  });
 
   useEffect(() => {
     async function loadProducts() {

@@ -2,6 +2,19 @@ import { useState, useEffect } from "react";
 import { Link, useParams } from "@tanstack/react-router";
 import { api } from "../lib/api";
 import { useCartStore } from "../stores/cart";
+import { useSEO } from "@/hooks/useSEO";
+
+/** Strip dangerous elements/attributes from HTML to prevent XSS */
+function sanitizeHtml(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?>/gi, "")
+    .replace(/ on\w+\s*=\s*"[^"]*"/gi, "")
+    .replace(/ on\w+\s*=\s*'[^']*'/gi, "")
+    .replace(/<form[\s\S]*?<\/form>/gi, "");
+}
 
 interface Variant {
   id: string;
@@ -31,6 +44,15 @@ export function ProductDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [addedToCart, setAddedToCart] = useState(false);
+  const [quantity, setQuantity] = useState(1);
+
+  useSEO({
+    title: product?.title,
+    description: product?.excerpt,
+    image: product?.featured_image_url || undefined,
+    url: `${window.location.origin}/shop/${slug}`,
+    type: "product",
+  });
 
   useEffect(() => {
     async function loadProduct() {
@@ -56,7 +78,7 @@ export function ProductDetailPage() {
       product_id: product.id,
       title: product.title,
       price: product.price,
-      quantity: 1,
+      quantity,
       sku: product.sku || undefined,
       featured_image_url: product.featured_image_url || undefined,
     });
@@ -153,6 +175,26 @@ export function ProductDetailPage() {
             </div>
           )}
 
+          {/* Quantity */}
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-text-secondary">Qty</label>
+            <div className="flex items-center border border-border rounded-md">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                -
+              </button>
+              <span className="px-3 py-2 text-sm text-text-primary min-w-[2rem] text-center">{quantity}</span>
+              <button
+                onClick={() => setQuantity(quantity + 1)}
+                className="px-3 py-2 text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
           <button
             onClick={handleAddToCart}
             className="w-full rounded-lg bg-primary-600 px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary-700 transition-colors"
@@ -163,7 +205,7 @@ export function ProductDetailPage() {
           {/* Content */}
           {product.content && (
             <div className="prose prose-gray max-w-none pt-6 border-t">
-              <div dangerouslySetInnerHTML={{ __html: product.content }} />
+              <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(product.content) }} />
             </div>
           )}
         </div>
