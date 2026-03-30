@@ -19,6 +19,12 @@ interface AuthState {
   checkAuth: () => void;
 }
 
+function saveAuth(data: { user: User; access_token: string; csrf_token?: string }) {
+  localStorage.setItem("auth_token", data.access_token);
+  localStorage.setItem("auth_user", JSON.stringify(data.user));
+  if (data.csrf_token) localStorage.setItem("csrf_token", data.csrf_token);
+}
+
 export const useAuthStore = create<AuthState>((set) => ({
   user: (() => {
     try {
@@ -35,20 +41,13 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email: string, password: string) => {
     set({ isLoading: true });
     try {
-      const res = await api.post<{ data: { user: User; access_token: string; expires_in: number } }>("/api/auth/login", { email, password });
-      const body = await res.json();
+      // api.post() returns parsed JSON: { data: { user, access_token, ... } }
+      const res = await api.post<{ data: { user: User; access_token: string; expires_in: number; csrf_token: string } }>("/api/auth/login", { email, password });
 
-      if (!res.ok) {
-        throw new Error(body.error?.message || "Login failed");
-      }
-
-      localStorage.setItem("auth_token", body.data.access_token);
-      localStorage.setItem("auth_user", JSON.stringify(body.data.user));
-      if (body.data.csrf_token) localStorage.setItem("csrf_token", body.data.csrf_token);
-
+      saveAuth(res.data);
       set({
-        user: body.data.user,
-        token: body.data.access_token,
+        user: res.data.user,
+        token: res.data.access_token,
         isAuthenticated: true,
         isLoading: false,
       });
@@ -62,19 +61,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ isLoading: true });
     try {
       const res = await api.post<{ data: { user: User; access_token: string; expires_in: number; csrf_token?: string } }>("/api/auth/register", { email, password, name });
-      const body = await res.json();
 
-      if (!res.ok) {
-        throw new Error(body.error?.message || "Registration failed");
-      }
-
-      localStorage.setItem("auth_token", body.data.access_token);
-      localStorage.setItem("auth_user", JSON.stringify(body.data.user));
-      if (body.data.csrf_token) localStorage.setItem("csrf_token", body.data.csrf_token);
-
+      saveAuth(res.data);
       set({
-        user: body.data.user,
-        token: body.data.access_token,
+        user: res.data.user,
+        token: res.data.access_token,
         isAuthenticated: true,
         isLoading: false,
       });

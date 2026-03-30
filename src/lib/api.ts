@@ -11,6 +11,30 @@ export class ApiError extends Error {
   }
 }
 
+let isRefreshing = false;
+let refreshPromise: Promise<string | null> | null = null;
+
+async function refreshAccessToken(): Promise<string | null> {
+  try {
+    const res = await fetch(`${API_BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // Refresh token is sent via httpOnly cookie automatically
+    });
+
+    if (!res.ok) return null;
+
+    const body = await res.json();
+    const token = body.data?.access_token;
+    if (token) {
+      localStorage.setItem("auth_token", token);
+    }
+    return token;
+  } catch {
+    return null;
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -47,6 +71,40 @@ async function request<T>(
     ...options,
     headers,
   });
+
+  // Auto-refresh token on 401
+  if (response.status === 401 && token) {
+    if (!isRefreshing) {
+      isRefreshing = true;
+      refreshPromise = refreshAccessToken().finally(() => {
+        isRefreshing = false;
+        refreshPromise = null;
+      });
+    }
+
+    const newToken = await refreshPromise;
+    if (newToken) {
+      // Retry with new token
+      headers["Authorization"] = `Bearer ${newToken}`;
+      const retry = await fetch(url, { ...options, headers });
+      if (!retry.ok) {
+        const body = await retry.json().catch(() => ({}));
+        throw new ApiError(
+          retry.status,
+          body.code || "UNKNOWN_ERROR",
+          body.message || `Request failed: ${retry.status}`,
+        );
+      }
+      return retry.json();
+    }
+
+    // Refresh failed — clear auth and redirect to login
+    localStorage.removeItem("auth_token");
+    localStorage.removeItem("auth_user");
+    localStorage.removeItem("csrf_token");
+    window.location.href = "/login";
+    throw new ApiError(401, "UNAUTHORIZED", "Session expired. Please sign in again.");
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({}));

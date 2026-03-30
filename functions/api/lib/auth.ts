@@ -232,9 +232,22 @@ auth.post("/refresh", async (c) => {
   const db = c.env.DB;
   if (!db) return c.json({ error: { message: "Database not configured", code: "DB_ERROR" } }, 503);
 
-  const body = await c.req.json();
-  const { refresh_token } = body;
-  if (!refresh_token) {
+  // Read refresh token from httpOnly cookie first, then fall back to request body
+  let refreshToken = "";
+  const cookieHeader = c.req.header("Cookie");
+  if (cookieHeader) {
+    const match = cookieHeader.match(/(?:^|;\s*)refresh_token=([^;]+)/);
+    if (match) refreshToken = match[1];
+  }
+  if (!refreshToken) {
+    try {
+      const body = await c.req.json();
+      refreshToken = body.refresh_token || "";
+    } catch {
+      // body may not be JSON
+    }
+  }
+  if (!refreshToken) {
     return c.json({ error: { message: "Refresh token required", code: "VALIDATION" } }, 400);
   }
 
