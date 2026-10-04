@@ -102,15 +102,6 @@ export function AdminThemes() {
 
   const activeTheme = themes.find((t) => t.id === activeId) || themes[0];
 
-  useEffect(() => {
-    saveThemes(themes);
-  }, [themes]);
-
-  useEffect(() => {
-    localStorage.setItem(ACTIVE_KEY, activeId);
-    applyTheme(activeTheme);
-  }, [activeId, themes]);
-
   function applyTheme(theme: CustomTheme) {
     const root = document.documentElement;
     root.style.setProperty("--theme-primary", theme.colors.primary);
@@ -125,6 +116,15 @@ export function AdminThemes() {
     root.style.setProperty("--theme-body-font", theme.fonts.body);
     root.style.setProperty("--theme-mono-font", theme.fonts.mono);
   }
+
+  useEffect(() => {
+    saveThemes(themes);
+  }, [themes]);
+
+  useEffect(() => {
+    localStorage.setItem(ACTIVE_KEY, activeId);
+    applyTheme(activeTheme);
+  }, [activeId, themes]);
 
   function handleCreate() {
     const newTheme: CustomTheme = {
@@ -152,12 +152,17 @@ export function AdminThemes() {
   }
 
   function handleDuplicate(theme: CustomTheme) {
+    // Only ever invoked from the duplicate button's onClick — never during
+    // render — so the impure timestamp reads here are safe (purity lint
+    // cannot see the call context through the JSX arrow).
+    // eslint-disable-next-line react-hooks/purity
+    const now = Date.now();
     const dup: CustomTheme = {
       ...theme,
-      id: `custom-${Date.now()}`,
+      id: `custom-${now}`,
       name: `${theme.name} (Copy)`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: new Date(now).toISOString(),
+      updated_at: new Date(now).toISOString(),
     };
     setThemes([...themes, dup]);
     toast("Theme duplicated", "success");

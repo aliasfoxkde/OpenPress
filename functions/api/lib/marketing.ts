@@ -425,7 +425,7 @@ marketing.post("/cart/apply-coupon", async (c) => {
   }
 
   // Calculate discount
-  let discount = 0;
+  let discount: number;
   if (coupon.type === "percentage") {
     discount = Math.round(subtotal * (coupon.value / 100) * 100) / 100;
   } else {
