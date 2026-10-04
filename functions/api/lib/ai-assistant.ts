@@ -466,7 +466,7 @@ aiAssistant.get("/ai/widget/config", async (c) => {
     },
   });
 
-  // Cache for 5 minutes
+  // Cache write-through on miss
   if (cache) {
     const body = JSON.stringify({
       data: {
@@ -483,7 +483,10 @@ aiAssistant.get("/ai/widget/config", async (c) => {
         auto_open: !!config.auto_open,
       },
     });
-    await cache.put("ai:widget:config", body, { expirationTtl: 300 });
+    // 1h TTL — the admin config PUT deletes this key on every save, so the
+    // TTL is only a backstop; a short one would re-write the key on every
+    // expiry for every site that embeds the widget.
+    await cache.put("ai:widget:config", body, { expirationTtl: 3600 });
   }
 
   return response;
