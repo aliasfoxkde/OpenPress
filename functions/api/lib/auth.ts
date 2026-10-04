@@ -9,9 +9,12 @@ const auth = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 // Apply stricter rate limiting to all auth routes
 auth.use("*", authRateLimit());
 
-// JWT secret - in production, set via `wrangler secret put JWT_SECRET`
-function getJwtSecret(c: any): string {
-  return c.env?.JWT_SECRET || "openpress-secret-key-2026-change-me-in-production";
+// JWT secret - set via the dashboard or `wrangler secret put JWT_SECRET`.
+// There is deliberately NO fallback value: a secret anyone can read from
+// the repo would let them forge valid tokens. Callers fail closed (503 on
+// auth issuance, 401 on verification) until the secret is configured.
+function getJwtSecret(c: any): string | null {
+  return c.env?.JWT_SECRET || null;
 }
 
 const ACCESS_TOKEN_EXPIRY = 3600; // 1 hour
@@ -130,7 +133,11 @@ auth.post("/register", async (c) => {
     .bind(id, email, name || email.split("@")[0], passwordHash, "subscriber", now, now)
     .run();
 
-  const token = await generateAccessToken(id, email, "subscriber", getJwtSecret(c));
+  const jwtSecret = getJwtSecret(c);
+  if (!jwtSecret) {
+    return c.json({ error: { message: "Authentication is not configured", code: "AUTH_NOT_CONFIGURED" } }, 503);
+  }
+  const token = await generateAccessToken(id, email, "subscriber", jwtSecret);
   const refreshToken = generateRefreshToken();
   const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
 
@@ -194,7 +201,11 @@ auth.post("/login", async (c) => {
     return c.json({ error: { message: "Invalid credentials", code: "INVALID_CREDENTIALS" } }, 401);
   }
 
-  const token = await generateAccessToken(user.id, user.email, user.role, getJwtSecret(c));
+  const jwtSecret = getJwtSecret(c);
+  if (!jwtSecret) {
+    return c.json({ error: { message: "Authentication is not configured", code: "AUTH_NOT_CONFIGURED" } }, 503);
+  }
+  const token = await generateAccessToken(user.id, user.email, user.role, jwtSecret);
   const refreshToken = generateRefreshToken();
   const now = new Date().toISOString();
   const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
@@ -258,7 +269,11 @@ auth.post("/demo-login", async (c) => {
     user = { id, email: DEMO_EMAIL, name: "Demo User", role: "admin", password_hash: passwordHash };
   }
 
-  const token = await generateAccessToken(user.id, user.email, user.role, getJwtSecret(c));
+  const jwtSecret = getJwtSecret(c);
+  if (!jwtSecret) {
+    return c.json({ error: { message: "Authentication is not configured", code: "AUTH_NOT_CONFIGURED" } }, 503);
+  }
+  const token = await generateAccessToken(user.id, user.email, user.role, jwtSecret);
   const refreshToken = generateRefreshToken();
   const now = new Date().toISOString();
   const refreshExpiry = new Date(Date.now() + REFRESH_TOKEN_EXPIRY * 1000).toISOString();
@@ -329,7 +344,11 @@ auth.post("/refresh", async (c) => {
     return c.json({ error: { message: "Invalid or expired refresh token", code: "INVALID_TOKEN" } }, 401);
   }
 
-  const accessToken = await generateAccessToken(session.user_id, session.email, session.role, getJwtSecret(c));
+  const jwtSecret = getJwtSecret(c);
+  if (!jwtSecret) {
+    return c.json({ error: { message: "Authentication is not configured", code: "AUTH_NOT_CONFIGURED" } }, 503);
+  }
+  const accessToken = await generateAccessToken(session.user_id, session.email, session.role, jwtSecret);
 
   return c.json({
     data: {
@@ -410,8 +429,12 @@ export const authMiddleware = async (c: any, next: any) => {
     return c.json({ error: { message: "Authorization required", code: "UNAUTHORIZED" } }, 401);
   }
 
+  const jwtSecret = getJwtSecret(c);
+  if (!jwtSecret) {
+    return c.json({ error: { message: "Invalid or expired token", code: "INVALID_TOKEN" } }, 401);
+  }
   try {
-    const payload = await jwtVerify(getJwtSecret(c), authHeader.slice(7), { alg: "HS256" });
+    const payload = await jwtVerify(jwtSecret, authHeader.slice(7), { alg: "HS256" });
     c.set("user", { id: payload.sub, email: payload.email, role: payload.role });
     return next();
   } catch {

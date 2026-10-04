@@ -53,4 +53,29 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },
+  {
+    // Service workers run in the worker global scope where `self`, `caches`,
+    // etc. are runtime globals, not undefined variables.
+    files: ["public/sw.js"],
+    languageOptions: {
+      globals: {
+        self: "readonly",
+        fetch: "readonly",
+        caches: "readonly",
+        clients: "readonly",
+        importScripts: "readonly",
+        skipWaiting: "readonly",
+        registration: "readonly",
+      },
+    },
+  },
+  {
+    // Pages Functions run in the Workers runtime, which provides `fetch`.
+    files: ["functions/**/*.ts"],
+    languageOptions: {
+      globals: {
+        fetch: "readonly",
+      },
+    },
+  },
 );

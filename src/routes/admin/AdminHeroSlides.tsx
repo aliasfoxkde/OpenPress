@@ -282,8 +282,8 @@ export function AdminHeroSlides() {
         </div>
       )}
 
-      {/* Edit/Create form */}
-      {(editingId !== null || true) && (
+      {/* Edit/Create form — always mounted; highlighting follows editingId */}
+      {(
         <div className={cn(
           "mt-6 border rounded-lg bg-surface overflow-hidden",
           editingId ? "border-primary-300" : "border-border",
