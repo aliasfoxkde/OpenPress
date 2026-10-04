@@ -114,9 +114,14 @@ protectedRoutes.use("*", async (c, next) => {
 
   try {
     const { SignJWT } = await import("jose");
-    // Simple JWT verification
+    // Simple JWT verification. No fallback secret: without JWT_SECRET every
+    // token must fail verification (a public fallback would let anyone
+    // forge tokens).
     const token = authHeader.slice(7);
-    const jwtSecret = c.env?.JWT_SECRET || "openpress-secret-key-2026-change-me-in-production";
+    const jwtSecret = c.env?.JWT_SECRET;
+    if (!jwtSecret) {
+      return c.json({ error: { message: "Invalid or expired token", code: "INVALID_TOKEN" } }, 401);
+    }
     const secret = new TextEncoder().encode(jwtSecret);
     const { payload } = await import("jose").then(async (jose) => {
       return await jose.jwtVerify(token, secret);
