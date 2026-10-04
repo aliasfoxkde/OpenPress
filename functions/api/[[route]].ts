@@ -88,9 +88,11 @@ app.get("/api/site", async (c) => {
     },
   };
 
-  // Cache for 5 minutes
+  // Cache for 1 hour. TTLs here are backstops only — successful settings
+  // mutations purge the "settings:" prefix via cachePurgeOnMutation, so a
+  // short TTL would just re-write the key on every expiry for hot sites.
   if (cache) {
-    await cache.put("settings:site", JSON.stringify(response), { expirationTtl: 300 });
+    await cache.put("settings:site", JSON.stringify(response), { expirationTtl: 3600 });
   }
 
   return c.json(response);
@@ -418,10 +420,11 @@ app.get("/api/content", async (c) => {
     },
   });
 
-  // Cache page 1 for 5 minutes
+  // Cache page 1 for 1 hour (content mutations purge "content:list:", so the
+  // TTL is only a backstop — see cachePurgeOnMutation).
   if (cache && page === 1) {
     const body = JSON.stringify({ data: items.results, pagination: { page, limit, total: countResult?.total || 0, totalPages: Math.ceil((countResult?.total || 0) / limit) } });
-    await cache.put(cacheKey, body, { expirationTtl: 300 });
+    await cache.put(cacheKey, body, { expirationTtl: 3600 });
   }
 
   return response;
@@ -467,10 +470,11 @@ app.get("/api/content/:slug", async (c) => {
     data: { ...item, blocks: blocks.results, terms: terms.results },
   });
 
-  // Cache for 5 minutes
+  // Cache for 1 hour (content mutations purge "content:<slug>" directly, so
+  // the TTL is only a backstop — see cachePurgeOnMutation).
   if (cache) {
     const body = JSON.stringify({ data: { ...item, blocks: blocks.results, terms: terms.results } });
-    await cache.put(cacheKey, body, { expirationTtl: 300 });
+    await cache.put(cacheKey, body, { expirationTtl: 3600 });
   }
 
   return response;
