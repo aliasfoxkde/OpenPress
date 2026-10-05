@@ -13,7 +13,8 @@ import { SEOPanel } from "@/components/editor/sidebar/SEOPanel";
 import { EditorBottomBar } from "@/components/editor/EditorBottomBar";
 import type { ContentStatus, BlockType } from "@shared/types";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// BlockNote blocks are structural and version-dependent; they are converted to
+// the legacy content_blocks format on save.
 type PartialBlock = any;
 
 interface Term {
@@ -143,8 +144,20 @@ export function ContentEditor() {
     void loadTaxonomies();
   }, []);
 
+  // The store swaps `currentContent` for a new object on every local block edit,
+  // so the sync below must key on *which* record was loaded, not on object
+  // identity. The ref keeps the freshest record readable inside the effect
+  // without widening the dependency to the whole object (which would reset the
+  // form — and the user's unsaved edits — on each block change).
+  const loadedContentRef = useRef(currentContent);
+  useEffect(() => {
+    loadedContentRef.current = currentContent;
+  });
+  const loadedItemId = currentContent?.item.id;
+
   // Sync local state from loaded content
   useEffect(() => {
+    const currentContent = loadedContentRef.current;
     if (currentContent) {
       setTitle(currentContent.item.title);
       setExcerpt(currentContent.item.excerpt ?? "");
@@ -181,7 +194,7 @@ export function ContentEditor() {
 
       loadRevisions(currentContent.item.id);
     }
-  }, [currentContent?.item.id]);
+  }, [loadedItemId]);
 
   async function loadRevisions(contentId: string) {
     try {

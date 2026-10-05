@@ -180,6 +180,7 @@ export function AdminTaxonomies() {
         message={`Delete "${deleteTarget?.name}"? This cannot be undone.`}
         confirmLabel="Delete"
         variant="danger"
+        busy={deleting}
         onConfirm={() => void confirmDelete()}
         onCancel={() => setDeleteTarget(null)}
       />

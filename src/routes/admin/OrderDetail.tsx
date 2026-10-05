@@ -197,6 +197,20 @@ export function OrderDetail() {
             </div>
           </div>
         )}
+
+        {/* Billing */}
+        {billing && (
+          <div className="border border-border rounded-lg bg-surface">
+            <div className="px-4 py-3 border-b border-border">
+              <h2 className="text-sm font-semibold text-text-primary">Billing Address</h2>
+            </div>
+            <div className="p-4 text-sm text-text-primary">
+              {Object.entries(billing).map(([key, value]) => (
+                <div key={key} className="capitalize">{String(value)}</div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Line Items */}

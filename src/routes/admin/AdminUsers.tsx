@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useAuthStore } from "@/stores/auth";
 import { api, ApiError } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -53,7 +53,8 @@ export function AdminUsers() {
   const [deleting, setDeleting] = useState(false);
   const [changingRoleId, setChangingRoleId] = useState<string | null>(null);
 
-  async function fetchUsers() {
+
+  const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -71,12 +72,12 @@ export function AdminUsers() {
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [page, search]);
 
   useEffect(() => {
     const timer = setTimeout(() => void fetchUsers(), 300);
     return () => clearTimeout(timer);
-  }, [page, search]);
+  }, [fetchUsers]);
 
   const handleRoleChange = async (userId: string, newRole: UserRole) => {
     setChangingRoleId(userId);
@@ -262,6 +263,7 @@ export function AdminUsers() {
         message={`Delete user "${deleteTarget?.name}"? Their content will be reassigned to you.`}
         confirmLabel="Delete"
         variant="danger"
+        busy={deleting}
         onConfirm={() => void confirmDelete()}
         onCancel={() => setDeleteTarget(null)}
       />
