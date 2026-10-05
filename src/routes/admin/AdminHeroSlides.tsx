@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useToast } from "@/components/ui/Toast";
 
@@ -36,7 +36,21 @@ const ANIMATION_TYPES = [
   { label: "Zoom", value: "zoom" },
 ];
 
-const emptySlide: Omit<HeroSlide, "id"> = {
+/**
+ * Editable shape of a slide. Unlike the stored row it has no `id`/`created_at`
+ * (both are server-assigned) and text fields are non-nullable — the form
+ * normalizes DB nulls to "" on load and back to null only for the image URL.
+ */
+type HeroSlideForm = Omit<HeroSlide, "id" | "created_at" | "subtitle" | "content" | "primary_button_text" | "primary_button_url" | "secondary_button_text" | "secondary_button_url"> & {
+  subtitle: string;
+  content: string;
+  primary_button_text: string;
+  primary_button_url: string;
+  secondary_button_text: string;
+  secondary_button_url: string;
+};
+
+const emptySlide: HeroSlideForm = {
   title: "",
   subtitle: "",
   content: "",
@@ -56,7 +70,7 @@ export function AdminHeroSlides() {
   const [slides, setSlides] = useState<HeroSlide[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState(emptySlide);
+  const [form, setForm] = useState<HeroSlideForm>(emptySlide);
   const [saving, setSaving] = useState(false);
 
   const loadSlides = useCallback(async () => {
@@ -165,8 +179,6 @@ export function AdminHeroSlides() {
       toast("Failed to reorder slides", "error");
     }
   };
-
-  const imageInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div>
