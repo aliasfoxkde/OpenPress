@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { api, ApiError } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
@@ -11,6 +11,14 @@ interface MediaItem {
   size_bytes: number;
   url?: string;
   created_at: string;
+}
+
+/** POST /api/media returns the stored row but no `url`; only the list adds it. */
+type MediaUploadResponse = { data?: { id: string; url?: string } };
+
+/** Public URL for an uploaded object, matching GET /api/media/:id/file. */
+function mediaFileUrl(item: { url?: string; id: string }): string {
+  return item.url || `/api/media/${item.id}/file`;
 }
 
 function FaviconSection() {
@@ -39,8 +47,9 @@ function FaviconSection() {
         body: formData,
       });
       if (res.ok) {
-        const data = await res.json();
-        const url = data?.data?.url || "";
+        const data = (await res.json()) as MediaUploadResponse;
+        if (!data.data) throw new Error("Upload returned no record");
+        const url = mediaFileUrl(data.data);
         setFaviconUrl(url);
         // Update favicon in document head
         let link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
@@ -73,8 +82,9 @@ function FaviconSection() {
         body: formData,
       });
       if (res.ok) {
-        const data = await res.json();
-        const url = data?.data?.url || "";
+        const data = (await res.json()) as MediaUploadResponse;
+        if (!data.data) throw new Error("Upload returned no record");
+        const url = mediaFileUrl(data.data);
         setAppleTouchIcon(url);
         let link = document.querySelector<HTMLLinkElement>('link[rel="apple-touch-icon"]');
         if (!link) {
@@ -154,7 +164,7 @@ export function AdminMedia() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const toast = useToast();
 
-  async function fetchMedia() {
+  const fetchMedia = useCallback(async () => {
     setLoading(true);
     try {
       const query = search ? `?search=${encodeURIComponent(search)}` : "";
@@ -165,12 +175,12 @@ export function AdminMedia() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [search]);
 
   useEffect(() => {
     const timer = setTimeout(() => void fetchMedia(), 300);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [fetchMedia]);
 
   async function uploadFile(file: File) {
     setUploading(true);

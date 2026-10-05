@@ -113,7 +113,8 @@ export function AdminComponents() {
 
   async function duplicate(id: string) {
     try {
-      await api.post(`/components/admin/components/${id}/duplicate`);
+      // The endpoint clones from the stored row and accepts no body.
+      await api.post(`/components/admin/components/${id}/duplicate`, {});
       toast("Component duplicated", "success");
       await fetchComponents();
     } catch {

@@ -5,7 +5,8 @@ import { useAuthStore } from "@/stores/auth";
 import type { UserRole } from "@shared/types";
 
 class AdminErrorBoundary extends Component<{ children: React.ReactNode }, { hasError: boolean; error: Error | null }> {
-  state = { hasError: false, error: null };
+  // Annotated so `error` is `Error | null`, not narrowed to `null` by the initializer.
+  state: { hasError: boolean; error: Error | null } = { hasError: false, error: null };
   static getDerivedStateFromError(error: Error) { return { hasError: true, error }; }
   render() {
     if (this.state.hasError) {

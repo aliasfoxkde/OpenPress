@@ -42,6 +42,9 @@ interface RecentComment {
   created_at: string;
 }
 
+/** Envelope for the list endpoints the export dumps without inspecting. */
+type ApiListEnvelope = { data: Record<string, unknown>[] };
+
 export function AdminDashboard() {
   const navigate = useNavigate();
   const user = useAuthStore((s) => s.user);
@@ -107,13 +110,15 @@ export function AdminDashboard() {
   async function handleExport() {
     setExporting(true);
     try {
+      // The export is a pass-through dump of whatever the API returns, so each
+      // payload stays a generic record rather than a re-declared row type.
       const [contentRes, productsRes, ordersRes, usersRes, settingsRes, commentsRes] = await Promise.all([
-        api.get("/content?limit=100").catch(() => ({ data: [] })),
-        api.get("/products?limit=100").catch(() => ({ data: [] })),
-        api.get("/orders?limit=100").catch(() => ({ data: [] })),
-        api.get("/users").catch(() => ({ data: [] })),
-        api.get("/settings").catch(() => ({ data: {} })),
-        api.get("/comments?limit=100").catch(() => ({ data: [] })),
+        api.get<ApiListEnvelope>("/content?limit=100").catch(() => ({ data: [] })),
+        api.get<ApiListEnvelope>("/products?limit=100").catch(() => ({ data: [] })),
+        api.get<ApiListEnvelope>("/orders?limit=100").catch(() => ({ data: [] })),
+        api.get<ApiListEnvelope>("/users").catch(() => ({ data: [] })),
+        api.get<{ data: Record<string, unknown> }>("/settings").catch(() => ({ data: {} })),
+        api.get<ApiListEnvelope>("/comments?limit=100").catch(() => ({ data: [] })),
       ]);
       const exportData = {
         exported_at: new Date().toISOString(),
