@@ -1,4 +1,4 @@
-import { Outlet, Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Outlet, Link, useRouterState } from "@tanstack/react-router";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { cn } from "@/lib/cn";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -54,7 +54,7 @@ export function RootLayout() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [codeEditorOpen, setCodeEditorOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const scrollTimeout = useRef<ReturnType<typeof setTimeout>>();
+  const scrollTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   // Analytics (page view tracking)
   useAnalytics();

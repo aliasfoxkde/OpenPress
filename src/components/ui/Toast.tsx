@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, createContext, useContext, type ReactNode } from "react";
+import { useState, useRef, useCallback, createContext, useContext, type ReactNode } from "react";
 
 type ToastType = "success" | "error" | "info";
 
@@ -20,10 +20,12 @@ export function useToast() {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
-  let nextId = 0;
+  // Ref (not render-scoped `let`) so ids keep counting across renders instead of
+  // restarting at 1 and colliding with a toast whose dismiss timer is still live.
+  const nextIdRef = useRef(0);
 
   const toast = useCallback((message: string, type: ToastType = "info") => {
-    const id = ++nextId;
+    const id = ++nextIdRef.current;
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));

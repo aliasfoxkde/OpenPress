@@ -35,61 +35,7 @@ export function CommandPalette() {
     return () => window.removeEventListener("keydown", handleKey);
   }, []);
 
-  // Focus input when opened
-  useEffect(() => {
-    if (open) {
-      setQuery("");
-      setSelectedIndex(0);
-      setResults(getStaticCommands());
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [open]);
-
-  // Search when query changes
-  useEffect(() => {
-    if (!open) return;
-    if (query.trim().length < 2) {
-      setResults(getStaticCommands());
-      setSelectedIndex(0);
-      return;
-    }
-    const q = query.toLowerCase();
-    const timer = setTimeout(() => void doSearch(q), 300);
-    return () => clearTimeout(timer);
-  }, [query, open]);
-
-  // Reset selected index when results change
-  useEffect(() => {
-    setSelectedIndex(0);
-  }, [results]);
-
-  async function doSearch(q: string) {
-    setSearching(true);
-    try {
-      const res = await api.get<{ data: Array<{ id: string; slug: string; title: string; type: string; excerpt?: string }> }>(
-        `/seo/search?q=${encodeURIComponent(q)}&limit=5`
-      );
-      const searchResults: CommandItem[] = (res.data || []).map((r) => ({
-        id: `search-${r.id}`,
-        label: r.title,
-        group: "Search Results",
-        action: () => { setOpen(false); void navigate({ to: `/${r.type === "page" ? "" : "blog/"}${r.slug}` }); },
-        icon: r.type === "page" ? "📄" : "📰",
-      }));
-      const filtered = getStaticCommands().filter(
-        (cmd) => cmd.label.toLowerCase().includes(q) || cmd.group.toLowerCase().includes(q)
-      );
-      setResults([...filtered, ...searchResults]);
-    } catch {
-      setResults(getStaticCommands().filter(
-        (cmd) => cmd.label.toLowerCase().includes(q) || cmd.group.toLowerCase().includes(q)
-      ));
-    } finally {
-      setSearching(false);
-    }
-  }
-
-  function getStaticCommands(): CommandItem[] {
+  const getStaticCommands = useCallback((): CommandItem[] => {
     const close = () => setOpen(false);
     if (isAdmin) {
       return [
@@ -114,7 +60,61 @@ export function CommandPalette() {
       { id: "nav-checkout", label: "Go to Cart", group: "Navigation", action: () => { close(); void navigate({ to: "/checkout" }); }, icon: "🛒" },
       { id: "action-dashboard", label: "Go to Dashboard", group: "Actions", action: () => { close(); void navigate({ to: "/admin" }); }, icon: "📊" },
     ];
-  }
+  }, [isAdmin, navigate]);
+
+  const doSearch = useCallback(async (q: string) => {
+    setSearching(true);
+    try {
+      const res = await api.get<{ data: Array<{ id: string; slug: string; title: string; type: string; excerpt?: string }> }>(
+        `/seo/search?q=${encodeURIComponent(q)}&limit=5`
+      );
+      const searchResults: CommandItem[] = (res.data || []).map((r) => ({
+        id: `search-${r.id}`,
+        label: r.title,
+        group: "Search Results",
+        action: () => { setOpen(false); void navigate({ to: `/${r.type === "page" ? "" : "blog/"}${r.slug}` }); },
+        icon: r.type === "page" ? "📄" : "📰",
+      }));
+      const filtered = getStaticCommands().filter(
+        (cmd) => cmd.label.toLowerCase().includes(q) || cmd.group.toLowerCase().includes(q)
+      );
+      setResults([...filtered, ...searchResults]);
+    } catch {
+      setResults(getStaticCommands().filter(
+        (cmd) => cmd.label.toLowerCase().includes(q) || cmd.group.toLowerCase().includes(q)
+      ));
+    } finally {
+      setSearching(false);
+    }
+  }, [getStaticCommands, navigate]);
+
+  // Focus input when opened
+  useEffect(() => {
+    if (open) {
+      setQuery("");
+      setSelectedIndex(0);
+      setResults(getStaticCommands());
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [open, getStaticCommands]);
+
+  // Search when query changes
+  useEffect(() => {
+    if (!open) return;
+    if (query.trim().length < 2) {
+      setResults(getStaticCommands());
+      setSelectedIndex(0);
+      return;
+    }
+    const q = query.toLowerCase();
+    const timer = setTimeout(() => void doSearch(q), 300);
+    return () => clearTimeout(timer);
+  }, [query, open, doSearch, getStaticCommands]);
+
+  // Reset selected index when results change
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [results]);
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === "ArrowDown") {
