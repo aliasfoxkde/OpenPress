@@ -257,6 +257,8 @@ export function BlockEditor({
             ref={(el) => {
               if (el) blockRefs.current.set(block.id, el);
             }}
+            onDragOver={(e) => handleDragOver(e, index)}
+            onDrop={(e) => handleDrop(e, index)}
             className={cn(
               "group relative rounded-lg border transition-all",
               activeBlockId === block.id
@@ -310,7 +312,7 @@ export function BlockEditor({
             {/* Block content */}
             <div className="p-3 pl-2">
               {/* Formatting toolbar for text/heading blocks */}
-              {!readOnly && activeBlockId === block.id && (block.block_type === "text" || block.block_type === "heading") && (
+              {!readOnly && activeBlockId === block.id && isTextBlock && (
                 <div className="flex items-center gap-0.5 mb-1 pb-1 border-b border-border">
                   <ToolbarButton
                     title="Bold (Ctrl+B)"
