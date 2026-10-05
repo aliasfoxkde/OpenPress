@@ -3,6 +3,7 @@ import { useNavigate, Link } from "@tanstack/react-router";
 import { useAuthStore } from "@/stores/auth";
 import { api, ApiError } from "@/lib/api";
 import { useSEO } from "@/hooks/useSEO";
+import type { AuthUser } from "@shared/types";
 
 function getPasswordStrength(pw: string): { label: string; color: string } {
   if (pw.length < 8) return { label: "Too short", color: "text-red-500" };
@@ -43,7 +44,7 @@ export function LoginPage() {
     setError("");
     setSubmitting(true);
     try {
-      const res = await api.post<{ data: { user: { id: string; email: string; name: string; role: string }; access_token: string; expires_in: number; csrf_token: string } }>("/auth/demo-login", {});
+      const res = await api.post<{ data: { user: AuthUser; access_token: string; expires_in: number; csrf_token: string } }>("/auth/demo-login", {});
       localStorage.setItem("auth_token", res.data.access_token);
       localStorage.setItem("auth_user", JSON.stringify(res.data.user));
       localStorage.setItem("csrf_token", res.data.csrf_token);

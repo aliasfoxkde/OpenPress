@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { api, ApiError } from "../../lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { useToast } from "@/components/ui/Toast";
@@ -27,12 +27,7 @@ export default function AdminProducts() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const timer = setTimeout(() => void loadProducts(), 300);
-    return () => clearTimeout(timer);
-  }, [search]);
-
-  async function loadProducts() {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
       const query = search ? `?search=${encodeURIComponent(search)}` : "";
@@ -43,7 +38,12 @@ export default function AdminProducts() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [search]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => void loadProducts(), 300);
+    return () => clearTimeout(timer);
+  }, [loadProducts]);
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();

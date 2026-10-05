@@ -29,8 +29,7 @@ export function HeroSlideshow() {
   const [current, setCurrent] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [direction, setDirection] = useState(1);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const [loadedImages, setLoadedImages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -52,10 +51,9 @@ export function HeroSlideshow() {
     }
   }, [slides]);
 
-  const goTo = useCallback((index: number, dir: number) => {
+  const goTo = useCallback((index: number) => {
     if (isTransitioning || slides.length <= 1) return;
     setIsTransitioning(true);
-    setDirection(dir);
     setTimeout(() => {
       setCurrent(index);
       setIsTransitioning(false);
@@ -66,11 +64,11 @@ export function HeroSlideshow() {
   }, [isTransitioning, slides.length]);
 
   const next = useCallback(() => {
-    goTo((current + 1) % slides.length, 1);
+    goTo((current + 1) % slides.length);
   }, [current, slides.length, goTo]);
 
   const prev = useCallback(() => {
-    goTo((current - 1 + slides.length) % slides.length, -1);
+    goTo((current - 1 + slides.length) % slides.length);
   }, [current, slides.length, goTo]);
 
   // Auto-rotate
@@ -290,7 +288,7 @@ export function HeroSlideshow() {
           {activeSlides.map((s, i) => (
             <button
               key={s.id}
-              onClick={() => goTo(i, i > current ? 1 : -1)}
+              onClick={() => goTo(i)}
               className={cn(
                 "h-2 rounded-full transition-all duration-500",
                 i === current ? "bg-white w-8 shadow-lg shadow-white/30" : "bg-white/30 hover:bg-white/50 w-2",

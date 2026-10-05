@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { api, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth";
@@ -50,7 +50,7 @@ export function AdminContent() {
   // Non-admin roles see only their own content by default
   const isLimitedRole = user && !["admin", "editor"].includes(user.role);
 
-  async function fetchContent(page = 1) {
+  const fetchContent = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
@@ -64,12 +64,12 @@ export function AdminContent() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [statusFilter, search]);
 
   useEffect(() => {
     const timer = setTimeout(() => void fetchContent(), 300);
     return () => clearTimeout(timer);
-  }, [statusFilter, search]);
+  }, [fetchContent]);
 
   async function handleCreate() {
     if (!newTitle.trim()) return;

@@ -2,11 +2,9 @@ import {
   createRouter,
   createRootRoute,
   createRoute,
-  lazyRouteComponent,
 } from "@tanstack/react-router";
-// TanStack Router v1.120+ lazyRouteComponent support
-// Type definitions may lag behind installed version
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// TanStack Router v1.120+ ships lazyRouteComponent typings that lag behind the
+// runtime, so route definitions are cast to the shape the router accepts.
 const createLazyRoute = createRoute as any;
 import { RootLayout } from "./components/layout/RootLayout";
 import { HomePage } from "./routes/HomePage";

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { api, ApiError } from "../../lib/api";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
@@ -35,7 +35,7 @@ export function AdminComments() {
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const toast = useToast();
 
-  async function fetchComments() {
+  const fetchComments = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({ page: String(page), limit: "20" });
@@ -48,12 +48,12 @@ export function AdminComments() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, statusFilter]);
 
   useEffect(() => {
     const timer = setTimeout(() => void fetchComments(), 300);
     return () => clearTimeout(timer);
-  }, [page, statusFilter]);
+  }, [fetchComments]);
 
   async function updateStatus(id: string, status: string) {
     setUpdatingId(id);

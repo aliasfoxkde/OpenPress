@@ -1,5 +1,6 @@
 import { useCreateBlockNote, BlockNoteViewRaw, BlockNoteDefaultUI } from "@blocknote/react";
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+// BlockNote's block shape is structural and version-dependent; the editor is
+// used opaquely here (see blockNoteToLegacyBlocks below).
 type BNBlock = any;
 
 interface RichTextEditorProps {
@@ -18,7 +19,6 @@ interface RichTextEditorProps {
  * - Keyboard shortcuts (Ctrl+B, Ctrl+I, Ctrl+K, etc.)
  */
 export function RichTextEditor({ initialContent, onChange, editable = true }: RichTextEditorProps) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const editor = useCreateBlockNote({
     initialContent: initialContent?.length ? initialContent : undefined,
     uploadFile: async (file: File) => {

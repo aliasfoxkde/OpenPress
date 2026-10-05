@@ -70,14 +70,12 @@ function initCustom(script: string) {
 function trackPageView(path: string, config: AnalyticsConfig) {
   if (config.provider === "google" && config.trackingId) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).gtag?.("event", "page_view", { page_path: path });
     } catch {
       // ignore
     }
   } else if (config.provider === "plausible" && config.trackingId) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).plausible?.("pageview", { u: path });
     } catch {
       // ignore
@@ -111,7 +109,8 @@ export function useAnalytics() {
     }
   }, []);
 
-  // Track page views on route changes
+  // Track page views on route changes. This also covers the first render: the
+  // init effect above has already flipped `initialized` by the time this runs.
   useEffect(() => {
     if (!initialized || !path || path === lastPath) return;
     lastPath = path;
@@ -119,14 +118,6 @@ export function useAnalytics() {
     const timer = setTimeout(() => trackPageView(path, configRef.current), 50);
     return () => clearTimeout(timer);
   }, [path]);
-
-  // Track initial page
-  useEffect(() => {
-    if (!initialized || !path || lastPath) return;
-    lastPath = path;
-    const timer = setTimeout(() => trackPageView(path, configRef.current), 50);
-    return () => clearTimeout(timer);
-  }, [initialized, path]);
 }
 
 /**
@@ -136,14 +127,12 @@ export function trackEvent(name: string, props?: Record<string, string>) {
   const config = loadConfig();
   if (config.provider === "google" && config.trackingId) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).gtag?.("event", name, props);
     } catch {
       // ignore
     }
   } else if (config.provider === "plausible" && config.trackingId) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).plausible?.(name, { props });
     } catch {
       // ignore

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from "vitest";
+import { describe, it, expect } from "vitest";
 import { hashPassword, verifyPassword } from "../../functions/api/lib/auth";
 
 // ─── Password hashing ──────────────────────────────────────────────────────

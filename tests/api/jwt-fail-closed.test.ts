@@ -18,8 +18,18 @@ import { SignJWT } from "jose";
 
 // The real Pages entrypoint (the [[route]] catch-all with the inline auth
 // middleware), exercised through onRequest like the runtime would.
-import { onRequest } from "../../functions/api/[[route]].ts";
+import { onRequest } from "../../functions/api/[[route]]";
 import { hashPassword } from "../../functions/api/lib/auth";
+
+/** Shape every assertion below reads off an API response. */
+interface ApiBody {
+  error?: { code?: string; message?: string };
+  data?: { access_token?: string };
+}
+
+async function readBody(res: Response): Promise<ApiBody> {
+  return (await res.json()) as ApiBody;
+}
 
 /** The secret that used to be the hardcoded fallback — now attacker-known. */
 const OLD_PUBLIC_FALLBACK = "openpress-secret-key-2026-change-me-in-production";
@@ -70,9 +80,9 @@ describe("JWT fail-closed (no hardcoded fallback secret)", () => {
       },
     );
     expect(res.status).toBe(503);
-    const body = await res.json();
-    expect(body.error.code).toBe("AUTH_NOT_CONFIGURED");
-    expect(body.error.message).not.toContain("token");
+    const body = await readBody(res);
+    expect(body.error?.code).toBe("AUTH_NOT_CONFIGURED");
+    expect(body.error?.message).not.toContain("token");
     expect(body.data?.access_token).toBeUndefined();
   });
 
@@ -90,8 +100,8 @@ describe("JWT fail-closed (no hardcoded fallback secret)", () => {
       { method: "POST" },
     );
     expect(res.status).toBe(503);
-    const body = await res.json();
-    expect(body.error.code).toBe("AUTH_NOT_CONFIGURED");
+    const body = await readBody(res);
+    expect(body.error?.code).toBe("AUTH_NOT_CONFIGURED");
     expect(body.data?.access_token).toBeUndefined();
   });
 
@@ -107,7 +117,7 @@ describe("JWT fail-closed (no hardcoded fallback secret)", () => {
       { headers: { Authorization: `Bearer ${forged}` } },
     );
     expect(res.status).toBe(401);
-    expect((await res.json()).error.code).toBe("INVALID_TOKEN");
+    expect((await readBody(res)).error?.code).toBe("INVALID_TOKEN");
   });
 
   it("a token forged with the old public fallback is still rejected when a real secret is configured", async () => {

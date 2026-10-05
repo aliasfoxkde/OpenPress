@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "@tanstack/react-router";
 import { api } from "../../lib/api";
 import { useToast } from "@/components/ui/Toast";
@@ -29,12 +29,7 @@ export default function AdminOrders() {
   const [totalPages, setTotalPages] = useState(1);
   const [search, setSearch] = useState("");
 
-  useEffect(() => {
-    const timer = setTimeout(() => void loadOrders(), 300);
-    return () => clearTimeout(timer);
-  }, [page, search]);
-
-  async function loadOrders() {
+  const loadOrders = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get<{ data: Order[]; pagination?: { totalPages: number } }>(`/orders?page=${page}&limit=20${search ? `&search=${encodeURIComponent(search)}` : ""}`);
@@ -45,7 +40,12 @@ export default function AdminOrders() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [page, search, toast]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => void loadOrders(), 300);
+    return () => clearTimeout(timer);
+  }, [loadOrders]);
 
   const formatPrice = (cents: number) =>
     new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(cents / 100);
