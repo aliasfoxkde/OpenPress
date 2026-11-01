@@ -19,6 +19,18 @@ OpenPress is a modern content management system and web application platform tha
 
 Designed for Cloudflare-native deployment, including a low-cost single-project setup. **Do not assume a guaranteed $0 bill**: actual cost depends on current Cloudflare plan limits, request volume, database/storage usage, Workers AI consumption, and enabled services. Verify current pricing and quotas before production deployment.
 
+### Cost drivers to verify before deployment
+
+| Service | Usage that can affect cost | Operational check |
+|---|---|---|
+| Workers / Pages Functions | Requests, CPU time, and plan limits | Measure production request volume and execution time |
+| D1 | Reads, writes, storage, and database limits | Inspect query patterns, database size, and current plan quotas |
+| R2 | Stored data and operations; egress treatment is a separate pricing dimension | Estimate retained media and upload/download/list operation volume |
+| KV | Reads, writes, deletes, and stored data | Review cache hit rate, TTLs, and write amplification |
+| Workers AI | Model-specific input/output usage and availability | Track inference volume and current model pricing/limits |
+
+These are cost dimensions, not a price quote. Recheck Cloudflare's current pricing and limits for the account and enabled products before publishing a deployment estimate.
+
 ---
 
 ## Features
