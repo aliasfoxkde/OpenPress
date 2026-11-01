@@ -17,7 +17,7 @@ OpenPress is a modern content management system and web application platform tha
 - **KV** for sub-millisecond caching
 - **Workers AI** for content generation and translation
 
-All on Cloudflare's **free tier** ($0 cost).
+Designed for Cloudflare-native deployment, including a low-cost single-project setup. **Do not assume a guaranteed $0 bill**: actual cost depends on current Cloudflare plan limits, request volume, database/storage usage, Workers AI consumption, and enabled services. Verify current pricing and quotas before production deployment.
 
 ---
 
@@ -45,7 +45,7 @@ All on Cloudflare's **free tier** ($0 cost).
 | Frontend | Vite 6, React 19, TanStack Router v1.120, Tailwind CSS v4, Zustand v5 |
 | API | Hono v4 on Cloudflare Pages Functions |
 | Database | Cloudflare D1 (SQLite at edge) |
-| Storage | Cloudflare R2 (S3-compatible, zero egress) |
+| Storage | Cloudflare R2 (S3-compatible; no egress fees does not mean storage/operation costs are zero) |
 | Cache | Cloudflare KV |
 | AI | Cloudflare Workers AI |
 | Auth | JWT (jose) + SHA-256 |
