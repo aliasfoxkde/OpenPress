@@ -17,7 +17,19 @@ OpenPress is a modern content management system and web application platform tha
 - **KV** for sub-millisecond caching
 - **Workers AI** for content generation and translation
 
-All on Cloudflare's **free tier** ($0 cost).
+Designed for Cloudflare-native deployment, including a low-cost single-project setup. **Do not assume a guaranteed $0 bill**: actual cost depends on current Cloudflare plan limits, request volume, database/storage usage, Workers AI consumption, and enabled services. Verify current pricing and quotas before production deployment.
+
+### Cost drivers to verify before deployment
+
+| Service | Usage that can affect cost | Operational check |
+|---|---|---|
+| Workers / Pages Functions | Requests, CPU time, and plan limits | Measure production request volume and execution time |
+| D1 | Reads, writes, storage, and database limits | Inspect query patterns, database size, and current plan quotas |
+| R2 | Stored data and operations; egress treatment is a separate pricing dimension | Estimate retained media and upload/download/list operation volume |
+| KV | Reads, writes, deletes, and stored data | Review cache hit rate, TTLs, and write amplification |
+| Workers AI | Model-specific input/output usage and availability | Track inference volume and current model pricing/limits |
+
+These are cost dimensions, not a price quote. Recheck Cloudflare's current pricing and limits for the account and enabled products before publishing a deployment estimate.
 
 ---
 
@@ -45,7 +57,7 @@ All on Cloudflare's **free tier** ($0 cost).
 | Frontend | Vite 6, React 19, TanStack Router v1.120, Tailwind CSS v4, Zustand v5 |
 | API | Hono v4 on Cloudflare Pages Functions |
 | Database | Cloudflare D1 (SQLite at edge) |
-| Storage | Cloudflare R2 (S3-compatible, zero egress) |
+| Storage | Cloudflare R2 (S3-compatible; no egress fees does not mean storage/operation costs are zero) |
 | Cache | Cloudflare KV |
 | AI | Cloudflare Workers AI |
 | Auth | JWT (jose) + SHA-256 |
